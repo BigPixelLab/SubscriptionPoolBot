@@ -17,6 +17,8 @@ class Coupon(typing.NamedTuple):
 
     @classmethod
     def get(cls, code: str) -> 'Coupon':
-        return database.single(Coupon, """
-            select * from "Coupon" where code = %s
-        """, code)
+        return database.single(
+            Coupon,
+            """ select * from "Coupon" where code = %(coupon_code)s """,
+            coupon_code=code
+        )
