@@ -1,0 +1,21 @@
+<message-set>
+    <message if="show">
+        <img src="{service.banner}"/>
+
+        <h1>{service.name}</h1>
+        <br/>
+
+        <p>{service.description}</p>
+
+        <inline-keyboard>
+            <kr for="sub_plan" in="sub_plans">
+                <button callback_data="buy:{sub_plan.id}">
+                    {sub_plan.name} - {sub_plan.price}₽
+                </button>
+            </kr>
+        </inline-keyboard>
+    </message>
+    <message if-not="show">
+        Мы пока не работаем с этим сервисом
+    </message>
+</message-set>
