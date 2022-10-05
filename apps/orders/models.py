@@ -18,9 +18,9 @@ class Order(typing.NamedTuple):
     closed_at: typing.Optional[datetime.datetime]  # TODO: Change in the database
 
     def get_subscription(self):
-        return database.single(Subscription, 'select * from "Subscription" where id = %s', self.subscription)
+        return database.single(Subscription, 'select * from "Subscription" where id = %(id)s', id=self.subscription)
 
     def get_processed_by(self):
         if self.processed_by is None:
             return None
-        return database.single(Employee, 'select * from "Employee" where id = %s', self.processed_by)
+        return database.single(Employee, 'select * from "Employee" where id = %(id)s', id=self.processed_by)

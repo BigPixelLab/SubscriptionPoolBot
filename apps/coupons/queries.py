@@ -6,10 +6,10 @@ def get_coupon_by_code(code: str) -> models.Coupon:
     return database.single(models.Coupon, """
         select * from "Coupon"
         where
-            code = %s
+            code = %(code)s
             -- no is_expired check cause we just need coupon, expired or not
         limit 1
-    """, code)
+    """, code=code)
 
 
 def is_promo_used_by_customer(code: str, customer: int):

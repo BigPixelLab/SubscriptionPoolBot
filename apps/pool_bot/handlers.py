@@ -20,8 +20,8 @@ async def on_startup():
             join "Subscription" S on O.subscription = S.id
         where
             not O.is_cont_notified and 
-            O.closed_at + S.duration - %s <= %s
-    """, settings.NOTIFY_CUSTOMER_BEFORE_DAYS, datetime.datetime.now())
+            O.closed_at + S.duration - %(temp1)s <= %(temp2)s
+    """, temp1=settings.NOTIFY_CUSTOMER_BEFORE_DAYS, temp2=datetime.datetime.now())
 
     for order in notify:
         subscription = search_models.Subscription.get(order.id)

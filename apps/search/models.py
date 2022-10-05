@@ -23,7 +23,7 @@ class Service(typing.NamedTuple):
 
     @classmethod
     def get(cls, _id: int) -> 'Service':
-        return database.single(Service, 'select * from "Service" where id = %s', _id)
+        return database.single(Service, 'select * from "Service" where id = %(id)s', id=_id)
 
 
 class Subscription(typing.NamedTuple):
@@ -43,8 +43,8 @@ class Subscription(typing.NamedTuple):
     """If set, will not be shown if no activation code is available"""
 
     def get_service(self) -> Service:
-        return database.single(Service, 'select * from "Service" where id = %s', self.service)
+        return database.single(Service, 'select * from "Service" where id = %(id)s', id=self.service)
 
     @classmethod
     def get(cls, _id: int) -> 'Subscription':
-        return database.single(Subscription, 'select * from "Subscription" where id = %s', _id)
+        return database.single(Subscription, 'select * from "Subscription" where id = %(id)s', id=_id)

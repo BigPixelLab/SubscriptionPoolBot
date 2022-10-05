@@ -23,7 +23,7 @@ def get_top_open_orders(limit: int) -> list[models.OrderInfo]:
         where
             closed_at is null
         order by created_at
-        limit %s
-    """, limit)
+        limit %(limit)s
+    """, limit=limit)
     return [models.OrderInfo(*result) for result in results]
 
