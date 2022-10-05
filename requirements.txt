@@ -1,3 +1,4 @@
 aiogram==3.0.0b4
 fuzzywuzzy==0.18.0
 Pillow==9.2.0
+glQiwiApi==2.16
