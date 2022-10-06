@@ -1,6 +1,6 @@
 aiogram==3.0.0b4
-fuzzywuzzy==0.18.0
+glqiwiapi==2.16
 Pillow==9.2.0
-glQiwiApi==2.16
 psycopg2==2.9.3
-python-Levenshtein==0.20.5
+snakeviz==2.1.1
+Levenshtein~=0.20.5
