@@ -21,10 +21,12 @@ routers: list[aiogram.Router] = [
     pool_bot_router,
     operator_router,
     coupon_router,
-    search_router,  # Must be at the end, contains handler that takes all text messages
     purchase_router,
     router
 ]
 
 if settings.DEBUG:
     routers.append(debug_router)
+
+# Must be at the end, contains handler that takes all text messages
+routers.append(search_router)
