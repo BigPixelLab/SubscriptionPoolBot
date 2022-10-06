@@ -1,4 +1,4 @@
-from fuzzywuzzy import fuzz
+from Levenshtein import ratio
 
 import settings
 from . import models
@@ -13,6 +13,6 @@ def transliterate(text: str) -> str:
     )
 
 
-def get_suggested_service(request: str, services: list[models.Service]) -> tuple[models.Service, int]:
-    service = max(services, key=lambda s: fuzz.ratio(request, s.name))
-    return service, fuzz.ratio(request, service)
+def get_suggested_service(request: str, services: list[models.Service]) -> tuple[models.Service, float]:
+    service = max(services, key=lambda s: ratio(request, s.name))
+    return service, ratio(request, service.name)
