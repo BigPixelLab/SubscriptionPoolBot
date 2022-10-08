@@ -1,0 +1,26 @@
+<message>
+    <h1>ПАНЕЛЬ ОПЕРАТОРА</h1>
+    <p>Последние заказы (<m>{count}</m>):</p>
+
+    <p for="id created_at taken_by service subscription price" in="orders">
+        <p>
+            <b><u> "#{id}" </u></b>
+            <x> - {created_at:%X %x}</x>
+            <up><b> {service} </b></up>
+        </p>
+        <p lp="2">
+            <x> {subscription} </x> <x> {price}₽ </x>
+
+            <x if="taken_by" lp="3">
+                <a href="tg://user?id={taken_by}">
+                    <x> taken </x>
+                </a>
+            </x>
+        </p>
+    </p>
+
+    <inline-keyboard>
+        <button callback_data="cp:update"> Обновить </button>
+        <button callback_data="order:take_top"> Взять заказ </button>
+    </inline-keyboard>
+</message>

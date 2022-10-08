@@ -15,6 +15,6 @@ router.message(
 
 # Update operator panel
 router.callback_query(
-    F.data == 'opp:update',
+    F.data == 'cp:update',
     filters.is_employee
 )(handlers.update_operator_panel_handler)

@@ -124,6 +124,15 @@ def paragraph_parser(element, context) -> InlineText:
     return InlineText(mp(element, '', value.center(width, fill), ''))
 
 
+# Additive
+
+@Scope.register('set', message_scope, element_scope)
+def set_cv_parser(element, context) -> None:
+    cv_attr = element.attributes['cv']
+    to_attr = element.attributes['to']
+    context[cv_attr.value] = eval(to_attr.value, {}, context)
+
+
 # Aiogram specific stuff
 
 @Scope.register('img', message_scope)

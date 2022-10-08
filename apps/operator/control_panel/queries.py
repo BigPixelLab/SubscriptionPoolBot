@@ -8,15 +8,12 @@ def get_total_orders():
     """)
 
 
-def get_top_open_orders(limit: int) -> list[models.OrderInfo]:
-    results = database.fetch_rows("""
+def get_top_open_orders(limit: int) -> list:
+    return database.fetch_rows("""
         select
-            O.id, 
-            O.created_at, 
-            O.processed_by is not null, 
+            O.id, O.created_at, O.processed_by, 
             E.name, 
-            S.name, 
-            S.price 
+            S.name, S.price 
         from "Order" as O
             join "Subscription" S on S.id = O.subscription
             join "Service" E on E.id = S.service
@@ -25,5 +22,3 @@ def get_top_open_orders(limit: int) -> list[models.OrderInfo]:
         order by created_at
         limit %(limit)s
     """, limit=limit)
-    return [models.OrderInfo(*result) for result in results]
-

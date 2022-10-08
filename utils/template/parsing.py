@@ -93,6 +93,9 @@ def parse_message(root: minidom.Element, context: Context) -> MessageRender:
                 raise ValueError('Only one keyboard can be specified per message')
             render.keyboard = result
 
+        elif result is None:
+            return
+
         else:
             raise NotImplementedError('This type of result is not implemented')
 
@@ -115,6 +118,9 @@ def parse_element(root: minidom.Element, context: Context) -> str:
 
         elif isinstance(result, BlockText):
             layout.append_block(result)
+
+        elif result is None:
+            return
 
         else:
             raise NotImplementedError('This type of result is not implemented')

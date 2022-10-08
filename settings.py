@@ -1,7 +1,7 @@
 import decimal
 import os
 
-from apps.operators.settings import *
+from apps.operator.settings import *
 from apps.pool_bot.settings import *
 from apps.search.settings import *
 

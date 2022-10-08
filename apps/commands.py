@@ -2,7 +2,7 @@ import aiogram
 from aiogram import F
 
 import settings
-from apps.operators.commands import router as operator_router
+from apps.operator.commands import router as operator_router
 from apps.pool_bot.commands import router as pool_bot_router
 from apps.search.commands import router as search_router
 from apps.coupons.commands import router as coupon_router

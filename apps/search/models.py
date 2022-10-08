@@ -23,7 +23,20 @@ class Service(typing.NamedTuple):
 
     @classmethod
     def get(cls, _id: int) -> 'Service':
-        return database.single(Service, 'select * from "Service" where id = %(id)s', id=_id)
+        return database.single(
+            Service,
+            """ select * from "Service" where id = %(id)s """,
+            f'Getting service with id {_id}',
+            id=_id
+        )
+
+    @classmethod
+    def get_name(cls, _id: int) -> str:
+        return database.single_value(
+            """ select name from "Service" where id=%(id)s """,
+            f'Getting name of service with id {_id}',
+            id=_id
+        )
 
 
 class Subscription(typing.NamedTuple):

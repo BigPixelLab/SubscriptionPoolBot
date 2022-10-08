@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+from contextlib import suppress
 from dataclasses import dataclass
 from typing import Any
 
 import aiogram
+from aiogram.exceptions import TelegramBadRequest
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton
 
 Context = dict[str, Any]
@@ -38,6 +40,24 @@ class MessageRender:
         if self.photo:
             return await bot.send_photo(chat_id, **self.export_for_aiogram())
         return await bot.send_message(chat_id, **self.export_for_aiogram())
+
+    async def edit(self, chat_id: int, message_id: int, bot: aiogram.Bot = None):
+        bot = bot or aiogram.Bot.get_current()
+        with suppress(TelegramBadRequest):
+            exported = self.export_for_aiogram()
+            if 'photo' in exported:
+                exported.pop('photo')
+                await bot.edit_message_caption(
+                    chat_id=chat_id,
+                    message_id=message_id,
+                    **exported
+                )
+                return
+            await bot.edit_message_text(
+                chat_id=chat_id,
+                message_id=message_id,
+                **exported
+            )
 
 
 class MessageRenderList(list[MessageRender]):

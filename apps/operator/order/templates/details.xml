@@ -1,0 +1,27 @@
+<message>
+    <p>ЗАКАЗ <u>#{order.id}</u></p>
+    <p>на покупку <m>{service} {sub.name}</m></p>
+    <br/>
+    <p>Подал: <a href="tg://user?id={order.customer_id}">ПОЛЬЗОВАТЕЛЬ</a></p>
+    <p>Оператор: <a href="tg://user?id={order.processed_by}">ОПЕРАТОР</a></p>
+    <p if="activation_code">
+        <br/>
+        <p>Код активации:</p>
+        <p><m>{activation_code}</m></p>
+        <p>=============</p>
+    </p>
+    <br/>
+    <p>Открыт: <m>{order.created_at:%X %x}</m></p>
+    <p>Закрыт: <m>{order.closed_at:%X %x}</m></p>
+    <br/>
+    <p>Сервис: <b>{service}</b></p>
+    <p>Подписка: <m>{sub.name}</m></p>
+    <p>Длительность: <m>{sub.duration} дней</m></p>
+    <p>Цена: <m>{sub.price} руб</m></p>
+    <p>Оплачено: <m>{order.total} руб</m></p>
+
+    <inline-keyboard>
+        <button callback_data="order:return:{order.id}"> Вернуть </button>
+        <button callback_data="order:close:{order.id}"> Закрыть </button>
+    </inline-keyboard>
+</message>
