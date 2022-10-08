@@ -8,4 +8,4 @@ class OrderCallback(CallbackData, prefix='order'):
     # Customer is part of the "Order" table.
     # Sending it separately to save on call
     # to the database
-    customer: int
+    customer_id: int

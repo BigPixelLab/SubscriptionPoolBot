@@ -12,9 +12,7 @@
             <x> {subscription} </x> <x> {price}₽ </x>
 
             <x if="taken_by" lp="3">
-                <a href="tg://user?id={taken_by}">
-                    <x> taken </x>
-                </a>
+                <a href="tg://user?id={taken_by}"> taken </a>
             </x>
         </p>
     </p>

@@ -1,29 +1,53 @@
 import datetime
 import typing
+from dataclasses import dataclass
 
 from apps.operator.models import Employee
 from apps.search.models import Subscription
 from utils import database
 
 
-class Order(typing.NamedTuple):
+@dataclass
+class Order:
     id: int
-    subscription: int  # Subscription.id
-    coupon: typing.Optional[str]  # Coupon  (for promo-coupons)
+    """ Order ID """
+    subscription: int
+    """ Subscription ID """
+    coupon: typing.Optional[str]
+    """ Coupon code, that been activated then order been placed """
     total: float
+    """ Final payment amount """
  
     customer_id: int
-    processed_by: typing.Optional[int]  # Employee.id
+    """ Telegram ID of the user who placed the order """
+
+    processed_by: typing.Optional[int]
+    """ Telegram ID of the user who processing order """
     created_at: datetime.datetime
+    """ Date and time of the moment then order been placed """
     closed_at: typing.Optional[datetime.datetime]
+    """ Dane and time of the moment then order been closed """
+
+    is_cont_notified: bool
+    """ Is customer who placed the order already notified about continuation """
 
     def get_subscription(self):
-        return database.single(Subscription, 'select * from "Subscription" where id = %(id)s', id=self.subscription)
+        return database.single(
+            Subscription,
+            """ select * from "Subscription" where id = %(id)s """,
+            f'Getting subscription of order #{self.id}',
+            id=self.subscription
+        )
 
     def get_processed_by(self):
         if self.processed_by is None:
             return None
-        return database.single(Employee, 'select * from "Employee" where id = %(id)s', id=self.processed_by)
+        return database.single(
+            Employee,
+            """ select * from "Employee" where id = %(id)s """,
+            f'Getting operator of order #{self.id}',
+            id=self.processed_by
+        )
 
     @classmethod
     def get(cls, _id: int) -> 'Order':
@@ -35,14 +59,69 @@ class Order(typing.NamedTuple):
         )
 
     @classmethod
-    def mark_as_taken(cls, order_id: int, operator_id: int):
+    def get_top(cls) -> 'Order':
+        return database.single(
+            Order,
+            """
+                select * from "Order"
+                where
+                    processed_by is null and
+                    closed_at is null
+                order by created_at limit 1
+            """,
+            'Getting top order from queue'
+        )
+
+    @classmethod
+    def mark_as_taken(cls, _id: int, operator_id: int):
         database.execute(
             """
                 update "Order" set
                     processed_by = %(operator_id)s
                 where id = %(order_id)s
             """,
-            f'Marking order #{order_id} as taken',
+            f'Marking order #{_id} as taken',
             operator_id=operator_id,
-            order_id=order_id
+            order_id=_id
+        )
+
+    @classmethod
+    def is_taken_by(cls, _id: int, operator_id: int):
+        return bool(database.single_value(
+            """
+                select count(*) from "Order"
+                where
+                    id = %(_id)s and
+                    processed_by = %(processed_by)s
+            """,
+            f'Setting order #{_id} to be taken by {operator_id}',
+            processed_by=operator_id,
+            id=_id
+        ))
+
+    @classmethod
+    def return_to_queue(cls, _id: int):
+        database.execute(
+            """
+                update "Order" set
+                    processed_by = null
+                where id = %(id)s
+            """,
+            f'Returning order #{_id} back to the queue',
+            id=_id
+        )
+
+    @classmethod
+    def close(cls, _id: int, operator_id: int):
+        database.execute(
+            """
+                update "Order" set
+                    processed_by = %(processed_by)s,
+                    closed_at = %(closed_at)s
+                where id = %(id)s
+            """,
+            f'Closing order #{_id} by operator {operator_id}',
+            processed_by=operator_id,
+            closed_at=datetime.datetime.now(),
+            id=_id
         )

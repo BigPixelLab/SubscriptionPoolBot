@@ -43,7 +43,7 @@ async def take_top_order_handler(query: CallbackQuery):
 async def take_specific_order_handler(query: CallbackQuery, callback_data: callbacks.OrderCallback):
     take_order(callback_data.order, query.from_user.id)
     await gls.bot.send_message(
-        callback_data.customer,
+        callback_data.customer_id,
         **render_notification(
             TEMPLATES / 'taken_notification.html',
             callback_data.order,
@@ -60,7 +60,7 @@ async def return_order_handler(query: CallbackQuery, callback_data: callbacks.Or
     await query.message.delete()
     return_order(callback_data.order)
     await gls.bot.send_message(
-        callback_data.customer,
+        callback_data.customer_id,
         **render_notification(
             TEMPLATES / 'returned_notification.html',
             callback_data.order,
@@ -76,7 +76,7 @@ async def close_order_handler(query: CallbackQuery, callback_data: callbacks.Ord
     await query.message.delete()
     close_order(callback_data.order, query.from_user.id)
     await gls.bot.send_message(
-        callback_data.customer,
+        callback_data.customer_id,
         **render_notification(
             TEMPLATES / 'closed_notification.html',
             callback_data.order,

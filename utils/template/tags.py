@@ -31,7 +31,7 @@ def paragraph_parser(element, context) -> InlineText:
 
 @Scope.register('a', message_scope, element_scope)
 def paragraph_parser(element, context) -> InlineText:
-    href = element.attributes.get('href')
+    href = element.attributes.get('href').value.format_map(context)
     value = parse_element(element, context)
     return InlineText(mp(element, f'<a href="{href}">', value, '</a>'))
 

@@ -11,34 +11,68 @@ TEMPLATES = Path('apps/operator/order/templates')
 
 
 async def take_top_order_handler(query: CallbackQuery):
-    query_result = queries.get_top_order_info()
-    if not query_result:
+    order = order_models.Order.get_top()
+
+    if not order:
         await query.answer('Нет активных заказов')
         return
 
-    order_id, customer_id = query_result
-
-    order_models.Order.mark_as_taken(order_id, query.from_user.id)
+    order_models.Order.mark_as_taken(order.id, query.from_user.id)
+    # Instances are not updated automatically, so setting attribute
+    # manually to avoid executing another database query
+    order.processed_by = query.from_user.id
 
     await template.render(TEMPLATES / 'notify/taken.xml', {
-        'order_id': order_id,
-    }).send(customer_id)
+        'operator_id': query.from_user.id,
+        'order_id': order.id
+    }).send(order.customer_id)
 
-    order = order_models.Order.get(order_id)
-    subscription = search_models.Subscription.get(order.subscription)
+    subscription = order.get_subscription()
     service = search_models.Service.get_name(subscription.service)
 
     activation_code = None
     if subscription.is_code_required:
         activation_code = queries.get_activation_code(order.id)
 
+    # TODO: Что если код активации не пришёл из базу
+
     await template.render(TEMPLATES / 'details.xml', {
         'order': order,
-        'subscription': subscription,
+        'sub': subscription,
         'service': service,
         'activation_code': activation_code
     }).send(query.message.chat.id)
 
 
 async def return_order_handler(query: CallbackQuery, callback_data: callbacks.OrderCallback):
-    ...
+    if not order_models.Order.is_taken_by(callback_data.order, query.from_user.id):
+        await query.answer('Заказ может вернуть только взявший его оператор')
+        return
+
+    await query.message.delete()
+
+    order_models.Order.return_to_queue(callback_data.order)
+
+    await template.render(TEMPLATES / 'notify/returned.xml', {
+        'operator_id': query.from_user.id,
+        'order_id': callback_data.order
+    }).send(callback_data.customer_id)
+
+    await query.answer('Заказ успешно возвращён в очередь')
+
+
+async def close_order_handler(query: CallbackQuery, callback_data: callbacks.OrderCallback):
+    if not order_models.Order.is_taken_by(callback_data.order, query.from_user.id):
+        await query.answer('Заказ может закрыть только взявший его оператор')
+        return
+
+    await query.message.delete()
+
+    order_models.Order.close(callback_data.order, query.from_user.id)
+
+    await template.render(TEMPLATES / 'notify/closed.xml', {
+        'operator_id': query.from_user.id,
+        'order_id': callback_data.order
+    }).send(callback_data.customer_id)
+
+    await query.answer('Заказ успешно закрыт')

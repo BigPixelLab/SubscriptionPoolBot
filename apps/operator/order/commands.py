@@ -2,7 +2,7 @@ import aiogram
 from aiogram import F
 
 from .. import filters
-from . import callbacks, handlers_
+from . import callbacks, handlers
 
 router = aiogram.Router()
 
