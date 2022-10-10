@@ -6,7 +6,7 @@
     <p>Оператор:
         <set cv="processed" to="order.processed_by"/>
         <a if="processed" href="tg://user?id={order.processed_by}">ОПЕРАТОР</a>
-        <p if-not="processed">не обрабатывается</p>
+        <x if-not="processed">не обрабатывается</x>
     </p>
     <p if="activation_code">
         <br/>
@@ -18,13 +18,13 @@
     <p>Открыт: {order.created_at:%X %x}</p>
     <p>Закрыт:
         <set cv="closed" to="order.closed_at"/>
-        <p if="closed">{order.closed_at:%X %x}</p>
-        <p if-not="closed">не закрыт</p>
+        <x if="closed">{order.closed_at:%X %x}</x>
+        <x if-not="closed">не закрыт</x>
     </p>
     <br/>
     <p>Сервис: <b><up>{service}</up></b></p>
     <p>Подписка: {sub.name}</p>
-    <p>Длительность: <m>{sub.duration} дней</m></p>
+    <p>Длительность: <m>{sub.duration}</m></p>
     <p>Цена: {sub.price}₽ </p>
     <p>Оплачено: {order.total}₽ </p>
 
