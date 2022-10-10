@@ -10,7 +10,8 @@ def get_services_ordered_by_popularity():
                     join "Subscription" S on O.subscription = S.id
                 where S.service = E.id
             ) desc
-        """
+        """,
+        'Getting names of all supported services'
     )
 
 
@@ -18,5 +19,6 @@ def get_support():
     return database.single_value(
         """
             select chat_id from "Support" limit 1
-        """
+        """,
+        'Getting that one support contact'
     )

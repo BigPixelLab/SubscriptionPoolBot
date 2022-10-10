@@ -56,8 +56,18 @@ class Subscription(typing.NamedTuple):
     """If set, will not be shown if no activation code is available"""
 
     def get_service(self) -> Service:
-        return database.single(Service, 'select * from "Service" where id = %(id)s', id=self.service)
+        return database.single(
+            Service,
+            """ select * from "Service" where id = %(id)s """,
+            f'Getting service {self.service} for subscription {self.id}',
+            id=self.service
+        )
 
     @classmethod
     def get(cls, _id: int) -> 'Subscription':
-        return database.single(Subscription, 'select * from "Subscription" where id = %(id)s', id=_id)
+        return database.single(
+            Subscription,
+            """ select * from "Subscription" where id = %(id)s """,
+            f'Getting subscription {_id}',
+            id=_id
+        )

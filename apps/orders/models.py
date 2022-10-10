@@ -2,10 +2,12 @@ import datetime
 import typing
 from dataclasses import dataclass
 
+from aiogram.filters import Command
+
 from apps.operator.models import Employee
 from apps.search.models import Subscription
 from utils import database
-
+Command
 
 @dataclass
 class Order:
@@ -94,7 +96,7 @@ class Order:
                     id = %(id)s and
                     processed_by = %(processed_by)s
             """,
-            f'Setting order #{_id} to be taken by {operator_id}',
+            f'Checking if order #{_id} is taken by {operator_id}',
             processed_by=operator_id,
             id=_id
         ))

@@ -15,13 +15,19 @@ TEMPLATES = Path('apps/pool_bot/templates')
 async def on_startup():
     """This command will run each time on startup. Hopefully everyday"""
 
-    notify = database.fetch(order_models.Order, """
-        select * from "Order" O
-            join "Subscription" S on O.subscription = S.id
-        where
-            not O.is_cont_notified and 
-            O.closed_at + S.duration - %(temp1)s <= %(temp2)s
-    """, temp1=settings.NOTIFY_CUSTOMER_BEFORE_DAYS, temp2=datetime.datetime.now())
+    notify = database.fetch(
+        order_models.Order,
+        """
+            select * from "Order" O
+                join "Subscription" S on O.subscription = S.id
+            where
+                not O.is_cont_notified and 
+                O.closed_at + S.duration - %(interval)s <= %(now)s
+        """,
+        'Getting orders to notify',
+        interval=settings.NOTIFY_CUSTOMER_BEFORE_DAYS,
+        now=datetime.datetime.now()
+    )
 
     for order in notify:
         subscription = search_models.Subscription.get(order.id)

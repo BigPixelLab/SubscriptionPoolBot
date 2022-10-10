@@ -20,5 +20,6 @@ class Coupon(typing.NamedTuple):
         return database.single(
             Coupon,
             """ select * from "Coupon" where code = %(coupon_code)s """,
+            f'Getting coupon with code "{code}"',
             coupon_code=code
         )

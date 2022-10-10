@@ -6,9 +6,10 @@ from utils import database
 
 
 def is_employee(message: aiogram.types.Message | aiogram.types.CallbackQuery) -> bool:
-    employee = database.single_value(
+    user = message.from_user.id
+    return database.single_value(
         # Count of employees with given telegram-id, zero if no such employee
-        """ select count(*) from "Employee" where chat_id = %(chat_id)s """,
-        chat_id=message.from_user.id
+        """ select count(*) > 0 from "Employee" where chat_id = %(user)s """,
+        f'Checking if the user {user} is an employee',
+        user=user
     )
-    return bool(employee)
