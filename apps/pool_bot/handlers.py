@@ -24,7 +24,7 @@ async def on_startup():
                 not O.is_cont_notified and 
                 O.closed_at + S.duration - %(interval)s <= %(now)s
         """,
-        'Getting orders to notify',
+        'Getting orders that need to be notified',
         interval=settings.NOTIFY_CUSTOMER_BEFORE_DAYS,
         now=datetime.datetime.now()
     )
