@@ -1,12 +1,12 @@
 <message>
     <h1>ПАНЕЛЬ ОПЕРАТОРА</h1>
-    <p>Последние заказы (<m>{count}</m>):</p>
+    <p>Последние заказы (<m>{count}</m> / <m>{total_count}</m>):</p>
 
     <p for="id created_at taken_by service subscription price" in="orders">
         <p>
             <b><u> "#{id}" </u></b>
             <x> - {created_at:%X %x}</x>
-            <up><b> {service} </b></up>
+            <b><up> {service} </up></b>
         </p>
         <p lp="2">
             <x> {subscription} </x> <x> {price}₽ </x>
@@ -16,6 +16,7 @@
             </x>
         </p>
     </p>
+    <p if-not="orders"> Нет активных заказов </p>
 
     <inline-keyboard>
         <button callback_data="cp:update"> Обновить </button>

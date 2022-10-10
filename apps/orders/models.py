@@ -91,7 +91,7 @@ class Order:
             """
                 select count(*) from "Order"
                 where
-                    id = %(_id)s and
+                    id = %(id)s and
                     processed_by = %(processed_by)s
             """,
             f'Setting order #{_id} to be taken by {operator_id}',

@@ -2,11 +2,19 @@ from . import models
 from utils import database
 
 
-def get_total_orders():
-    return database.single_value(
-        """ select count(*) from "Order" """,
+def get_orders_count() -> tuple[int, int]:
+    orders_count, total_count = database.single_row(
+        """
+            select
+                -- Open orders
+                (select count(*) from "Order" where closed_at is null),
+                
+                -- Total orders
+                (select count(*) from "Order")
+        """,
         'Getting the number of orders'
     )
+    return orders_count, total_count
 
 
 def get_top_open_orders(limit: int) -> list:
