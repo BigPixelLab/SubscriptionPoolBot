@@ -10,6 +10,7 @@ def is_promo_used_by_customer(code: str, customer: int) -> bool:
                 O.coupon = %(coupon_code)s and
                 O.customer_id = %(customer_id)s
         """,
+        f'Getting the number of order where coupon={code} and customer_id={customer}',
         coupon_code=code,
         customer_id=customer
     )

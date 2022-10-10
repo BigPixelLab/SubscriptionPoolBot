@@ -1,6 +1,8 @@
 from pathlib import Path
 
-from aiogram.types import CallbackQuery
+from aiogram.types import CallbackQuery, Message
+
+from aiogram.filters import CommandObject
 
 from utils import template
 from . import queries, callbacks
@@ -8,6 +10,39 @@ from ...orders import models as order_models
 from ...search import models as search_models
 
 TEMPLATES = Path('apps/operator/order/templates')
+
+
+async def take_order_by_id(message: Message, command: CommandObject):
+    print(command.args)
+    order_id = int(command.args)
+    order = order_models.Order.get(order_id)
+
+    if not order:
+        await message.answer(f'Заказ с id = {order_id} не найден')
+        return
+
+    order_models.Order.mark_as_taken(order_id, message.from_user.id)
+    order.processed_by = message.from_user.id
+    print(order)
+
+    await template.render(TEMPLATES / 'notify/taken.xml', {
+        'operator_id': message.from_user.id,
+        'order_id': order.id
+    }).send(order.customer_id)
+
+    subscription = order.get_subscription()
+    service = search_models.Service.get_name(subscription.service)
+
+    activation_code = None
+    if subscription.is_code_required:
+        activation_code = queries.get_activation_code(order_id)
+
+    await template.render(TEMPLATES / 'details.xml', {
+        'order': order,
+        'sub': subscription,
+        'service': service,
+        'activation_code': activation_code
+    }).send(message.chat.id)
 
 
 async def take_top_order_handler(query: CallbackQuery):
