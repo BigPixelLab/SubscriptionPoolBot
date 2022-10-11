@@ -7,6 +7,7 @@ from . import callbacks, handlers
 
 router = aiogram.Router()
 
+# Take order by id
 router.message(
     Command(commands=['order']),
     filters.is_employee
