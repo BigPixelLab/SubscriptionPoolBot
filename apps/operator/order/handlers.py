@@ -14,12 +14,10 @@ TEMPLATES = Path('apps/operator/order/templates')
 
 async def take_order_by_id(message: Message, command: CommandObject):
     try:
-        int(command.args)
+        order_id = int(command.args)
     except ValueError:
         await message.answer('Номер заказа должен иметь числовое значение')
         return
-    else:
-        order_id = int(command.args)
 
     order = order_models.Order.get(order_id)
 
@@ -27,12 +25,12 @@ async def take_order_by_id(message: Message, command: CommandObject):
         await message.answer(f'Заказ с id = {order_id} не найден')
         return
 
-    if order.processed_by is None:
-        order_models.Order.mark_as_taken(order_id, message.from_user.id)
-        order.processed_by = message.from_user.id
-    else:
+    if order.processed_by is not None:
         await message.answer(f'Заказ с id = {order_id} уже обрабатывается другим оператором')
         return
+
+    order_models.Order.mark_as_taken(order_id, message.from_user.id)
+    order.processed_by = message.from_user.id
 
     await template.render(TEMPLATES / 'notify/taken.xml', {
         'operator_id': message.from_user.id,
