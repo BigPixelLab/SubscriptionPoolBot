@@ -1,10 +1,17 @@
 import aiogram
 from aiogram import F
+from aiogram.filters import Command
 
 from .. import filters
 from . import callbacks, handlers
 
 router = aiogram.Router()
+
+# Take order by id
+router.message(
+    Command(commands=['order']),
+    filters.is_employee
+)(handlers.take_order_by_id)
 
 # Take top order
 router.callback_query(

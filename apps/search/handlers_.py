@@ -27,7 +27,7 @@ TEMPLATES = Path('apps/search/templates')
 async def search_handler(message: Message, state: FSMContext):
     services = database.fetch(models.Service, """
         select * from "Service"
-    """)
+    """, 'Getting services from Service')
 
     suggestions = search_suggestions(
         transliterate(message.text),
@@ -99,8 +99,8 @@ async def show_more_callback(query: CallbackQuery,
     coupon: Coupon | None = None
     if coupon_code:
         coupon = database.single(Coupon, """
-            select * from "Coupon" where code = %s limit 1
-        """, coupon_code)
+            select * from "Coupon" where code = %(code)s limit 1
+        """, 'Getting one coupon from Coupon', code=coupon_code)
 
     buttons = []
     for sub_info in sub_info_list:
@@ -179,13 +179,13 @@ def get_subscriptions_in_stock(service_id: int) -> list[SubscriptionInfo]:
             S.id, S.name, S.price, E.name, E.description, E.logo, E.short
         from "Subscription" as S
             join "Service" E on E.id = S.service
-        where S.service = %s and (
+        where S.service = %(service_id)s and (
             -- Count of activation codes for current subscription
             select count(*) from "ActivationCodes" as AC
             where AC.subscription = S.id and AC.linked_order is null
         ) >= 1
         order by S.duration
-    """, service_id)
+    """, 'Getting subscription info that has service_id', service_id=service_id)
 
     return [
         SubscriptionInfo(*sub_info)
@@ -212,18 +212,18 @@ async def payment_verification_handler(query: PreCheckoutQuery):
 def is_subscription_in_stock(sub_id: int):
     return database.single_value("""
         select count(*) from "ActivationCodes"
-        where subscription = %s and linked_order is null
-    """, sub_id)
+        where subscription = %(sub_id)s and linked_order is null
+    """, 'Getting the number of subscription in stock', sub_id=sub_id)
 
 
 def is_coupon_valid(coupon: str):
     return database.single_value("""
         select count(*) from "Coupon"
-        where code = %s and (
+        where code = %(coupon)s and (
             is_promo = true and is_expired = false or 
             is_promo = false
         )
-    """, coupon)
+    """, 'Getting a valid coupon from Coupon', coupon=coupon)
 
 
 # MONEY TRANSFERRED -------------------
@@ -277,8 +277,8 @@ def render_confirmation(order_id: int, *, as_caption: bool = False):
         select E.bought, E.name, S.name from "Order" O
             join "Subscription" S on S.id = O.subscription
             join "Service" E on E.id = S.service
-        where O.id = %s
-    """, order_id)
+        where O.id = %(id)s
+    """, id=order_id)
 
     return banner, template_.render(TEMPLATES / 'confirmation.html', {
         'order': order_id,
@@ -298,27 +298,27 @@ def place_order(sub_id, coupon, total, user_id):
     created_at = datetime.datetime.now()
     return created_at, database.single_value("""
         insert into "Order" (subscription, coupon, total, customer_id, created_at)
-        values (%s, %s, %s, %s, %s) returning id
-    """, sub_id, coupon, total, user_id, created_at)
+        values (%(sub_id)s, %(coupon)s, %(total)s, %(customer_id)s, %(created_at)s) returning id
+    """, sub_id=sub_id, coupon=coupon, total=total, customer_id=user_id, created_at=created_at)
 
 
 def get_order_queue_length(at_time: datetime.datetime):
     return database.single_value("""
-        select count(*) from "Order" where created_at <= %s and closed_at is null
-    """, at_time)
+        select count(*) from "Order" where created_at <= %(created_at)s and closed_at is null
+    """, created_at=at_time)
 
 
 def claim_activation_code(order_id: int, sub_id: int):
     database.execute("""
         update "ActivationCodes" set
-            linked_order = %s
+            linked_order = %(linked_order)s
         where id = (
             -- First unclaimed activation code for given subscription
             select AC.id from "ActivationCodes" as AC
-            where AC.linked_order is null and AC.subscription = %s
+            where AC.linked_order is null and AC.subscription = %(sub_id)s
             order by AC.id limit 1
         )
-    """, order_id, sub_id)
+    """, linked_order=order_id, sub_id=sub_id)
 
 
 def use_coupon(coupon: str):
@@ -327,6 +327,6 @@ def use_coupon(coupon: str):
         delete from "Coupon"
         where is_promo = false and id = (
             select C.id from "Coupon" C
-            where C.code = %s limit 1
+            where C.code = %(coupon)s limit 1
         )
-    """, coupon)
+    """, coupon=coupon)
