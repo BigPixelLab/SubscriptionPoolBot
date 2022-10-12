@@ -13,13 +13,13 @@ TEMPLATES = Path('apps/operator/order/templates')
 
 
 async def view_order_by_id(message: Message, command: CommandObject):
+    if command.args is None:
+        await message.answer('Вы не ввели номер заказа, пожалуйста, попробуйте ещё раз')
+        return
     try:
         order_id = int(command.args)
     except ValueError:
         await message.answer('Номер заказа должен иметь числовое значение')
-        return
-    except TypeError:
-        await message.answer('Вы не ввели номер заказа, пожалуйста, попробуйте ещё раз')
         return
 
     order = order_models.Order.get(order_id)
