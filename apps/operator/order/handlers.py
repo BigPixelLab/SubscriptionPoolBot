@@ -12,6 +12,37 @@ from ...search import models as search_models
 TEMPLATES = Path('apps/operator/order/templates')
 
 
+async def view_order_by_id(message: Message, command: CommandObject):
+    try:
+        order_id = int(command.args)
+    except ValueError:
+        await message.answer('Номер заказа должен иметь числовое значение')
+        return
+    except TypeError:
+        await message.answer('Вы не ввели номер заказа, пожалуйста, попробуйте ещё раз')
+        return
+
+    order = order_models.Order.get(order_id)
+
+    if not order:
+        await message.answer(f'Заказ с id = {order_id} не найден')
+        return
+
+    subscription = order.get_subscription()
+    service = search_models.Service.get_name(subscription.service)
+
+    activation_code = None
+    if subscription.is_code_required:
+        activation_code = queries.get_activation_code(order_id)
+
+    await template.render(TEMPLATES / 'details.xml', {
+        'order': order,
+        'sub': subscription,
+        'service': service,
+        'activation_code': activation_code
+    }).send(message.chat.id)
+
+
 async def take_order_by_id(message: Message, command: CommandObject):
     try:
         order_id = int(command.args)
