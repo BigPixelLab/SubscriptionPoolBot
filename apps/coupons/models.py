@@ -49,3 +49,18 @@ class Coupon(typing.NamedTuple):
             """,
             code=code
         )
+
+    @classmethod
+    def is_used(cls, code: str, user: int):
+        return database.single_value(
+            """
+                -- If there is at least one order from customer with given coupon, coupon considered as used
+                select count(*) > 0 from "Order" O
+                where
+                    O.coupon = %(code)s and
+                    O.customer_id = %(user)s
+            """,
+            f'Getting information about whether the coupon "{code}" was used by the user {user}',
+            code=code,
+            user=user
+        )

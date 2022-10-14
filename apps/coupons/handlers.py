@@ -6,7 +6,7 @@ import aiogram.types
 from aiogram.fsm.context import FSMContext
 
 from utils import manage_message, template
-from . import models, queries
+from . import models
 
 TEMPLATES = Path('apps/coupons/templates')
 
@@ -24,7 +24,7 @@ async def coupon_handler(message: aiogram.types.Message, coupon_code: str, state
         }).send(message.chat.id)
         return
 
-    if queries.is_promo_used_by_customer(coupon_code, message.from_user.id):
+    if models.Coupon.is_used(coupon_code, message.from_user.id):
         await template.render(TEMPLATES / 'used_by_customer.xml', {
             'coupon': coupon
         }).send(message.chat.id)

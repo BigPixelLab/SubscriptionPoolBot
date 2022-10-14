@@ -39,31 +39,6 @@ async def on_startup():
             'service': service
         }).send(order.customer_id)
 
-    # notifications = database.fetch_rows("""
-    #     select
-    #         O.id,
-    #         O."user",
-    #         S.name,
-    #         E.name
-    #     from "Notification" N
-    #         join "Order" O on O.id = N."order"
-    #         join "Subscription" S on S.id = O.subscription
-    #         join "Service" E on E.id = S.service
-    #     where
-    #         (N.created_at + S.duration - '3 days'::interval)::date <= %s
-    # """, datetime.date.today())
-    #
-    # for order_id, customer, subscription, service in notifications:
-    #     await gls.bot.send_photo(
-    #         customer,
-    #         'https://i.postimg.cc/0NkBYtzb/INTRO-BANNER.jpg',
-    #         **template_.render('apps/notifications/templates/notification.html', {
-    #             'order_id': order_id,
-    #             'subscription': subscription,
-    #             'service': service
-    #         })
-    #     )
-
 
 async def command_start(message: aiogram.types.Message):
     services = queries.get_services_ordered_by_popularity()
