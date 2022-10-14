@@ -23,3 +23,29 @@ class Coupon(typing.NamedTuple):
             f'Getting coupon with code "{code}"',
             coupon_code=code
         )
+
+    @classmethod
+    def get_free(cls, code: str):
+        return database.single(
+            Coupon,
+            """
+                select * from "Coupon" C
+                where C.code = %(code)s and C.is_expired = false
+            """,
+            f'Getting unexpired coupon "{code}"',
+            code=code
+        )
+
+    @classmethod
+    def update_expired(cls, code: str):
+        database.execute(
+            """
+                update "Coupon" set
+                    is_expired = true
+                where
+                    max_usages is not null and (
+                        select count(*) from "Order" where coupon = %(code)s
+                    ) >= max_usages
+            """,
+            code=code
+        )

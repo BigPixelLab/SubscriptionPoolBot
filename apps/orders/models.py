@@ -1,4 +1,5 @@
 import datetime
+import decimal
 import typing
 from dataclasses import dataclass
 
@@ -7,7 +8,7 @@ from aiogram.filters import Command
 from apps.operator.models import Employee
 from apps.search.models import Subscription
 from utils import database
-Command
+
 
 @dataclass
 class Order:
@@ -114,6 +115,23 @@ class Order:
         )
 
     @classmethod
+    def get_position_in_queue(cls, _id: int):
+        return database.single_value(
+            """
+                select count(*) from "Order"
+                where
+                    processed_by is null and
+                    closed_at is null and
+                    created_at < (
+                        select created_at from "Order"
+                        where id = %(id)s
+                    )
+            """,
+            f'Getting position in queue for order #{_id}',
+            id=_id
+        )
+
+    @classmethod
     def close(cls, _id: int, operator_id: int):
         database.execute(
             """
@@ -126,4 +144,21 @@ class Order:
             processed_by=operator_id,
             closed_at=datetime.datetime.now(),
             id=_id
+        )
+
+    @classmethod
+    def place(cls, sub_id: int, total: decimal.Decimal, customer_id: int, coupon: str):
+        return database.single(
+            Order,
+            """
+                insert into "Order" (subscription, total, customer_id, coupon, created_at)
+                values (%(sub_id)s, %(total)s, %(customer_id)s, %(coupon)s, %(created_at)s)
+                returning *
+            """,
+            f'Placing new order on {sub_id=} by {customer_id} on total {total}₽',
+            sub_id=sub_id,
+            total=total,
+            customer_id=customer_id,
+            coupon=coupon,
+            created_at=datetime.datetime.now()
         )

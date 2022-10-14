@@ -4,6 +4,7 @@ from pathlib import Path
 from aiogram.types import Message
 
 from utils import template
+from ..purchase import models as purchase_models
 from . import queries
 from . import utils
 
@@ -20,7 +21,7 @@ async def search_handler(message: Message):
     # Перед получением списка подписок необходимо снять резервацию
     # с ключей для которых она истекла, иначе, если для заказа
     # подписки требуется свободный ключ, его может не оказаться
-    queries.update_reserved_activation_codes()
+    purchase_models.ActivationCode.update_reserved()
     sub_plans = queries.get_sub_plans(service.id)
 
     await template.render(TEMPLATES / 'suggestions.xml', {

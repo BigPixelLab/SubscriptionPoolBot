@@ -5,9 +5,10 @@ from aiogram.types import CallbackQuery, Message
 from aiogram.filters import CommandObject
 
 from utils import template
-from . import queries, callbacks
+from . import callbacks
 from ...orders import models as order_models
 from ...search import models as search_models
+from ...purchase import models as purchase_models
 
 TEMPLATES = Path('apps/operator/order/templates')
 
@@ -33,7 +34,7 @@ async def view_order_by_id(message: Message, command: CommandObject):
 
     activation_code = None
     if subscription.is_code_required:
-        activation_code = queries.get_activation_code(order_id)
+        activation_code = purchase_models.ActivationCode.get_linked(order.id)
 
     await template.render(TEMPLATES / 'details.xml', {
         'order': order,
@@ -73,7 +74,7 @@ async def take_order_by_id(message: Message, command: CommandObject):
 
     activation_code = None
     if subscription.is_code_required:
-        activation_code = queries.get_activation_code(order_id)
+        activation_code = purchase_models.ActivationCode.get_linked(order.id)
 
     await template.render(TEMPLATES / 'details.xml', {
         'order': order,
@@ -105,7 +106,7 @@ async def take_top_order_handler(query: CallbackQuery):
 
     activation_code = None
     if subscription.is_code_required:
-        activation_code = queries.get_activation_code(order.id)
+        activation_code = purchase_models.ActivationCode.get_linked(order.id)
 
     # TODO: Что если код активации не пришёл из базу
 

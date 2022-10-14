@@ -13,22 +13,6 @@ def get_services() -> list[models.Service]:
     )
 
 
-def update_reserved_activation_codes():
-    """Снимает резервацию с ключей для которых она истекла"""
-    # Time when AC should've been reserved to expire now. Adding minute for extra safety
-    time = datetime.datetime.now() - datetime.timedelta(seconds=settings.BILL_TIMEOUT_SEC + 60)
-    database.execute(
-        """
-            update "ActivationCodes" AC set
-                reserved_at = null,
-                reserved_by = null
-            where AC.reserved_at <= %(expired_time)s
-        """,
-        'Updating reserved activation codes',
-        expired_time=time
-    )
-
-
 def get_sub_plans(service_id: int) -> list[models.Subscription]:
     return database.fetch(
         models.Subscription,
@@ -42,7 +26,7 @@ def get_sub_plans(service_id: int) -> list[models.Subscription]:
                     -- Activation code is required
                     S.is_code_required and (
                         -- Is there available activation codes for this subscription
-                        select count(*) >= 1 from "ActivationCodes" AC
+                        select count(*) >= 1 from "ActivationCode" AC
                         where 
                             AC.subscription = S.id and 
                             AC.linked_order is null and 

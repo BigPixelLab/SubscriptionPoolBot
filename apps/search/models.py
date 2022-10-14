@@ -71,3 +71,23 @@ class Subscription(typing.NamedTuple):
             f'Getting subscription {_id}',
             id=_id
         )
+
+    @classmethod
+    def get_name(cls, _id: int) -> str:
+        return database.single_value(
+            """ select name from "Subscription" where id = %(id)s """,
+            f'Getting subscription name {_id}',
+            id=_id
+        )
+
+    @classmethod
+    def get_full_name_parts(cls, _id: int) -> tuple[str, str]:
+        return tuple(database.single_row(
+            """
+                select E.name, S.name from "Subscription" S
+                    join "Service" E on S.service = E.id
+                where S.id = %(id)s
+            """,
+            f'Getting full name parts for subscription {_id}',
+            id=_id
+        ))

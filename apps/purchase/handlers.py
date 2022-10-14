@@ -12,7 +12,9 @@ import settings
 from utils import template
 from utils.input_file_types import BufferedInputFile
 from ..search import models as search_models
-from . import callbacks, image_generation, queries
+from ..orders import models as order_models
+from ..coupons import models as coupon_models
+from . import callbacks, image_generation, models
 
 TEMPLATES = Path('apps/purchase/templates')
 logger = logging.getLogger(__name__)
@@ -21,14 +23,15 @@ logger = logging.getLogger(__name__)
 async def buy_handler(query: CallbackQuery, callback_data: callbacks.BuySubscriptionCallback, state: FSMContext):
     subscription = search_models.Subscription.get(callback_data.sub_id)
 
-    if subscription.is_code_required and queries.is_user_have_reserved_ac(query.from_user.id, callback_data.sub_id):
+    # queries.is_user_have_reserved_ac(query.from_user.id, callback_data.sub_id)
+    if subscription.is_code_required and models.ActivationCode.is_reserved(query.from_user.id, callback_data.sub_id):
         # PLAN: Продлевать резервацию
         await query.answer('Вы уже недавно пытались купить эту подписку, поищите счёт '
                            'или подождите пока он истечёт и попробуйте снова')
         return
 
     # Reserving activation code if needed, if reservation fails, body is executed
-    if subscription.is_code_required and not queries.reserve_ac(query.from_user.id, callback_data.sub_id):
+    if subscription.is_code_required and not models.ActivationCode.reserve(query.from_user.id, callback_data.sub_id):
         await query.answer('Кажется кто-то успел купить последнюю такую подписку пока вы выбирали, но ничего '
                            'другие варианты всё ещё могут быть доступны, а мы пока завезём побольше этих')
         return
@@ -39,7 +42,7 @@ async def buy_handler(query: CallbackQuery, callback_data: callbacks.BuySubscrip
     data = await state.get_data()
 
     if coupon_code := data.get('coupon'):
-        coupon = queries.get_valid_coupon(coupon_code)
+        coupon = coupon_models.Coupon.get_free(coupon_code)
         coupon_discount = round(total_price * decimal.Decimal(coupon.discount / 100), 2)
         total_price -= coupon_discount
     else:

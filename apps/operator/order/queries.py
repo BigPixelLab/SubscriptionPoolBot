@@ -15,14 +15,3 @@ def get_top_order_info() -> tuple[int, int] | None:
         """,
         'Getting next order in a queue'
     ))
-
-
-def get_activation_code(order_id: int) -> str | None:
-    return database.single_value(
-        """
-            select code from "ActivationCodes"
-            where linked_order = %(order_id)s
-        """,
-        f'Getting activation code for order #{order_id}',
-        order_id=order_id
-    )
