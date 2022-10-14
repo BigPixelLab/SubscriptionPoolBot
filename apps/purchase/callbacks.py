@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import typing
+
 from aiogram.filters.callback_data import CallbackData
 
 
@@ -12,7 +14,7 @@ class CheckBillCallback(CallbackData, prefix='check_bill'):
 
     # Passing service and subscription names to avoid unnecessary database queries
     sub_id: int
-    coupon: str | None
+    coupon: typing.Optional[str]
 
 
 class PosInQueueCallback(CallbackData, prefix='piq_update'):

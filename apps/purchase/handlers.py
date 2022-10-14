@@ -78,7 +78,7 @@ async def buy_handler(query: CallbackQuery, callback_data: callbacks.BuySubscrip
             bill_id=bill.id,
             sub_id=subscription.id,
             coupon=coupon
-        )},
+        ).pack()},
         'bill': bill,
         'subscription': subscription.name,
         'service': service.name,
@@ -115,15 +115,19 @@ async def check_bill_handler(query: CallbackQuery, callback_data: callbacks.Chec
 
     service_name, subscription_name = search_models.Subscription.get_full_name_parts(callback_data.sub_id)
     render = template.render(TEMPLATES / 'bill.xml', {
-        'buy_button': {'web_app': WebAppInfo(url=bill.pay_url)},
+        # Buttons are not matter here, cuz we remove keyboard later
+        'buy_button': {'callback_data': '...'},
+        'done_button': {'callback_data': '...'},
+
         'bill': bill,
         'subscription': subscription_name,
         'service': service_name,
         'waiting': bill.status.value == 'WAITING',
         'expired': bill.status.value == 'EXPIRED'
     }).first()
-    render.keyboard = None  # So keyboard stays the same
-    await render.edit(query.message.chat.id, query.message.message_id)
+    render.keyboard = query.message.reply_markup
+    await render.edit(query.message.chat.id, query.message.message_id, force_caption=True)
+    await query.answer()
 
 
 async def bill_paid_handler(query: CallbackQuery, callback_data: callbacks.CheckBillCallback, bill: Bill):
@@ -147,6 +151,7 @@ async def bill_paid_handler(query: CallbackQuery, callback_data: callbacks.Check
         'subscription': subscription,
         'position_in_queue': position_in_queue
     }).send(query.message.chat.id)
+    await query.answer()
 
 
 async def piq_update_handler(query: CallbackQuery, callback_data: callbacks.PosInQueueCallback):
@@ -159,3 +164,4 @@ async def piq_update_handler(query: CallbackQuery, callback_data: callbacks.PosI
         'subscription': subscription,
         'position_in_queue': position_in_queue
     }).first().edit(query.message.chat.id, query.message.message_id)
+    await query.answer()

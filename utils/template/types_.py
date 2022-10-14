@@ -35,16 +35,16 @@ class MessageRender:
 
         return result
 
-    async def send(self, chat_id: int, bot: aiogram.Bot = None):
+    async def send(self, chat_id: int, bot: aiogram.Bot = None, force_caption: bool = False):
         bot = bot or aiogram.Bot.get_current()
-        if self.photo:
+        if self.photo or force_caption:
             return await bot.send_photo(chat_id, **self.export_for_aiogram())
         return await bot.send_message(chat_id, **self.export_for_aiogram())
 
-    async def edit(self, chat_id: int, message_id: int, bot: aiogram.Bot = None):
+    async def edit(self, chat_id: int, message_id: int, bot: aiogram.Bot = None, force_caption: bool = False):
         bot = bot or aiogram.Bot.get_current()
         with suppress(TelegramBadRequest):
-            exported = self.export_for_aiogram()
+            exported = self.export_for_aiogram(force_photo_mode=force_caption)
             if 'photo' in exported:
                 exported.pop('photo')
                 await bot.edit_message_caption(
