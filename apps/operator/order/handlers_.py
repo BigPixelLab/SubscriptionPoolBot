@@ -101,7 +101,7 @@ def render_order_details(order: int):
         from "Order" as O
             join "Subscription" S on S.id = O.subscription
             join "Service" E on E.id = S.service
-            join "ActivationCodes" AC on AC.linked_order = O.id
+            join "ActivationCode" AC on AC.linked_order = O.id
         where O.id = %(order)s
     """, order=order)
 

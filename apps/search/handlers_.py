@@ -181,7 +181,7 @@ def get_subscriptions_in_stock(service_id: int) -> list[SubscriptionInfo]:
             join "Service" E on E.id = S.service
         where S.service = %(service_id)s and (
             -- Count of activation codes for current subscription
-            select count(*) from "ActivationCodes" as AC
+            select count(*) from "ActivationCode" as AC
             where AC.subscription = S.id and AC.linked_order is null
         ) >= 1
         order by S.duration
@@ -211,7 +211,7 @@ async def payment_verification_handler(query: PreCheckoutQuery):
 
 def is_subscription_in_stock(sub_id: int):
     return database.single_value("""
-        select count(*) from "ActivationCodes"
+        select count(*) from "ActivationCode"
         where subscription = %(sub_id)s and linked_order is null
     """, 'Getting the number of subscription in stock', sub_id=sub_id)
 
@@ -310,11 +310,11 @@ def get_order_queue_length(at_time: datetime.datetime):
 
 def claim_activation_code(order_id: int, sub_id: int):
     database.execute("""
-        update "ActivationCodes" set
+        update "ActivationCode" set
             linked_order = %(linked_order)s
         where id = (
             -- First unclaimed activation code for given subscription
-            select AC.id from "ActivationCodes" as AC
+            select AC.id from "ActivationCode" as AC
             where AC.linked_order is null and AC.subscription = %(sub_id)s
             order by AC.id limit 1
         )

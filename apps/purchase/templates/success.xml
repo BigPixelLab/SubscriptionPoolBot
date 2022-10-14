@@ -1,0 +1,19 @@
+<message>
+    <h1>ЗАКАЗ УСПЕШНО ОТКРЫТ</h1>
+    <br/>
+    <p>Номер заказа: #{order.id}</p>
+    <p>Заказ: <up>{service}</up> {subscription}</p>
+    <p>Порядок в очереди: {position_in_queue}</p>
+    <br/>
+    <p><i>
+        Ваш заказ поставлен в очередь, как только оператор будет готов
+        его обработать, вам придёт уведомление. Это может занять от
+        10 минут до 3 бизнес дней.
+    </i></p>
+
+    <inline-keyboard>
+        <button callback_data="piq_update:{order.id}">
+            Обновить
+        </button>
+    </inline-keyboard>
+</message>
