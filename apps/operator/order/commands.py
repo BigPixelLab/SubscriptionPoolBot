@@ -7,29 +7,23 @@ from . import callbacks, handlers
 
 router = aiogram.Router()
 
-# View order by id
+# Take/View order by id
 router.message(
-    Command(commands=['view']),
+    Command(commands=['order', 'view']),
     filters.is_employee
-)(handlers.view_order_by_id)
-
-# Take order by id
-router.message(
-    Command(commands=['order']),
-    filters.is_employee
-)(handlers.take_order_by_id)
+)(handlers.order_handler)
 
 # Take top order
 router.callback_query(
     F.data == 'order:take_top',
     filters.is_employee
-)(handlers.take_top_order_handler)
+)(handlers.order_handler)
 
 # Take specific order
 router.callback_query(
     callbacks.OrderCallback.filter(F.action == 'take'),
     filters.is_employee
-)(handlers.take_top_order_handler)
+)(handlers.order_handler)
 
 # Return order
 router.callback_query(
