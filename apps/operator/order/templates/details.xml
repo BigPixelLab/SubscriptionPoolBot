@@ -14,6 +14,10 @@
         <p><m>{activation_code}</m></p>
         <p>=============</p>
     </p>
+    <p if="is_activation_code_error">
+        <br/>
+        <p><u><i>ОШИБКА: Код активации не был привязан к заказу, хотя должен был.</i></u></p>
+    </p>
     <br/>
     <p>Открыт: {order.created_at:%X %x}</p>
     <p>Закрыт:
