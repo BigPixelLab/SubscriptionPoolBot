@@ -15,6 +15,7 @@ from utils.input_file_types import BufferedInputFile
 from ..search import models as search_models
 from ..orders import models as order_models
 from ..coupons import models as coupon_models
+from ..operator import models as operator_models
 from . import callbacks, image_generation, models
 
 TEMPLATES = Path('apps/purchase/templates')
@@ -151,6 +152,17 @@ async def bill_paid_handler(query: CallbackQuery, callback_data: callbacks.Check
         'subscription': subscription,
         'position_in_queue': position_in_queue
     }).send(query.message.chat.id)
+
+    render = template.render(TEMPLATES / 'notification.xml', {
+        'order': order,
+        'service': service,
+        'subscription': subscription,
+        'position_in_queue': position_in_queue
+    })
+    employees = operator_models.Employee.get_to_notify()
+    for employee in employees:
+        await render.send(employee)
+
     await query.answer()
 
 
