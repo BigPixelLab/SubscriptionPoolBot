@@ -11,13 +11,13 @@ router = aiogram.Router()
 router.message(
     Command(commands=['view']),
     filters.is_employee
-)(handlers.view_order_by_id)
+)(handlers.view_order_by_id_handler)
 
 # Take order by id
 router.message(
     Command(commands=['order']),
     filters.is_employee
-)(handlers.take_order_by_id)
+)(handlers.take_order_by_id_handler)
 
 # Take top order
 router.callback_query(
