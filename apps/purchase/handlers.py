@@ -51,7 +51,7 @@ async def buy_handler(query: CallbackQuery, callback_data: callbacks.BuySubscrip
         total_price -= coupon_discount
     else:
         coupon = None
-        coupon_discount = 0
+        coupon_discount = decimal.Decimal(0)
 
     # Taking into account qiwi commission.
     # >> init_price + init_price * commission = final_price
@@ -80,7 +80,7 @@ async def buy_handler(query: CallbackQuery, callback_data: callbacks.BuySubscrip
         'done_button': {'callback_data': callbacks.CheckBillCallback(
             bill_id=bill.id,
             sub_id=subscription.id,
-            coupon=coupon
+            coupon=coupon.code if coupon else None
         ).pack()},
         'bill': bill,
         'subscription': subscription.name,
@@ -92,7 +92,7 @@ async def buy_handler(query: CallbackQuery, callback_data: callbacks.BuySubscrip
     message = render.first()
     message.photo = BufferedInputFile(
         image_generation.render_bill(
-            total=total_price,
+            total=bill.amount.value,
             subscription=subscription,
             service=service,
             coupon=coupon,
