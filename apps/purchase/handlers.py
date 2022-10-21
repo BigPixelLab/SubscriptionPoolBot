@@ -112,7 +112,7 @@ async def check_bill_handler(query: CallbackQuery, callback_data: callbacks.Chec
         logger.error(error)
         return
 
-    if bill.status.value == 'PAID':
+    if bill.status.value == 'PAID' or settings.DEBUG:
         await bill_paid_handler(query, callback_data, bill)
         return
 
@@ -160,8 +160,8 @@ async def bill_paid_handler(query: CallbackQuery, callback_data: callbacks.Check
 
     render = template.render(TEMPLATES / 'notification.xml', {
         'order': order,
-        'service': service,
-        'subscription': subscription,
+        'service': service.name,
+        'subscription': subscription.name,
         'position_in_queue': position_in_queue
     })
     for employee in operator_models.Employee.get_to_notify():
