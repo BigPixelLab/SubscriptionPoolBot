@@ -8,7 +8,6 @@ from utils import template
 from . import callbacks
 from ...orders import models as order_models
 from ...search import models as search_models
-from ...purchase import models as purchase_models
 
 TEMPLATES = Path('apps/operator/order/templates')
 
@@ -91,16 +90,10 @@ async def order_handler(chat_id: int, user_id: int, order: order_models.Order, *
     subscription = order.get_subscription()
     service = search_models.Service.get_name(subscription.service)
 
-    activation_code = None
-    if subscription.is_code_required:
-        activation_code = purchase_models.ActivationCode.get_linked(order.id)
-
     render = template.render(TEMPLATES / 'details.xml', {
         'order': order,
         'sub': subscription,
-        'service': service,
-        'activation_code': activation_code,
-        'is_activation_code_error': subscription.is_code_required and not activation_code
+        'service': service
     }).first()
 
     if not take_order:
