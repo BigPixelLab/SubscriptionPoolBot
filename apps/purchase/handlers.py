@@ -1,8 +1,10 @@
 import datetime
 import decimal
 import logging
+from contextlib import suppress
 from pathlib import Path
 
+from aiogram.exceptions import TelegramBadRequest
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, WebAppInfo
 from glQiwiApi.qiwi.clients.p2p.types import Bill
@@ -159,7 +161,8 @@ async def bill_paid_handler(query: CallbackQuery, callback_data: callbacks.Check
         'position_in_queue': position_in_queue
     })
     for employee in operator_models.Employee.get_to_notify():
-        await render.send(employee)
+        with suppress(TelegramBadRequest):
+            await render.send(employee)
 
     if callback_data.coupon:
         coupon_models.Coupon.update_expired(callback_data.coupon)
