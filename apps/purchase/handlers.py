@@ -129,7 +129,7 @@ async def check_bill_handler(query: CallbackQuery, callback_data: callbacks.Chec
         'expired': bill.status.value == 'EXPIRED'
     }).first()
     render.keyboard = query.message.reply_markup
-    await render.edit(query.message.chat.id, query.message.message_id, force_caption=True)
+    await render.edit(query.message)
     await query.answer()
 
 
@@ -153,7 +153,7 @@ async def bill_paid_handler(query: CallbackQuery, callback_data: callbacks.Check
         'position_in_queue': position_in_queue
     }).first()
 
-    render.photo = service.bought
+    render.video = service.bought
     await render.send(query.message.chat.id)
 
     await query.answer()
@@ -181,5 +181,5 @@ async def piq_update_handler(query: CallbackQuery, callback_data: callbacks.PosI
         'service': service,
         'subscription': subscription,
         'position_in_queue': position_in_queue
-    }).first().edit(query.message.chat.id, query.message.message_id)
+    }).first().edit(query.message)
     await query.answer()

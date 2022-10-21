@@ -7,7 +7,7 @@ from aiogram.types import InlineKeyboardMarkup, ReplyKeyboardMarkup, InlineKeybo
 from .scopes import message_scope, element_scope, inline_keyboard_scope, inline_keyboard_row_scope, \
     reply_keyboard_scope, reply_keyboard_row_scope
 from .types_ import TextLayout, Context, MessageRender, InlineText, BlockText, PhotoUri, InlineKeyboardRow, \
-    ReplyKeyboardRow, Scope, MessageRenderList
+    ReplyKeyboardRow, Scope, MessageRenderList, VideoUri
 from .utils import show_element, duplicate_elements_contexts
 
 SPACING_PATTERN = re.compile(r'\s+')
@@ -84,9 +84,14 @@ def parse_message(root: minidom.Element, context: Context) -> MessageRender:
             layout.append_block(result)
 
         elif isinstance(result, PhotoUri):
-            if render.photo:
-                raise ValueError('Only one image can be specified per message')
+            if render.photo or render.video:
+                raise ValueError('Only one image or video can be specified per message')
             render.photo = result
+
+        elif isinstance(result, VideoUri):
+            if render.photo or render.video:
+                raise ValueError('Only one image or video can be specified per message')
+            render.video = result
 
         elif isinstance(result, (InlineKeyboardMarkup, ReplyKeyboardMarkup)):
             if render.keyboard:

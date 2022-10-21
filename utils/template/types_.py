@@ -6,7 +6,7 @@ from typing import Any
 
 import aiogram
 from aiogram.exceptions import TelegramBadRequest
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton, Message
 
 Context = dict[str, Any]
 
@@ -15,48 +15,60 @@ Context = dict[str, Any]
 class MessageRender:
     text: str
     photo: str | None = None
+    video: str | None = None
     keyboard: InlineKeyboardMarkup | ReplyKeyboardMarkup | None = None
 
-    def export_for_aiogram(self, force_photo_mode: bool = False, force_text_mode: bool = False) -> dict:
-        if force_photo_mode and force_text_mode:
-            raise ValueError('Only one mode can be forced at a time')
-
+    def export_for_aiogram(self, force_caption: bool = False, no_media: bool = False) -> dict:
         result = {}
 
-        if self.photo or force_photo_mode:
-            result['photo'] = self.photo
-            result['caption'] = self.text
+        if self.photo and self.video:
+            raise ValueError('Cant export render containing image and video at the same time')
 
-        elif not self.photo or force_text_mode:
+        if self.photo or self.video or force_caption:
+            result['caption'] = self.text
+        else:
             result['text'] = self.text
+
+        if self.photo and not no_media:
+            result['photo'] = self.photo
+
+        if self.video and not no_media:
+            result['animation'] = self.video
 
         if self.keyboard:
             result['reply_markup'] = self.keyboard
 
         return result
 
-    async def send(self, chat_id: int, bot: aiogram.Bot = None, force_caption: bool = False):
+    async def send(self, chat_id: int, bot: aiogram.Bot = None):
         bot = bot or aiogram.Bot.get_current()
-        if self.photo or force_caption:
+        if self.photo:
             return await bot.send_photo(chat_id, **self.export_for_aiogram())
+        if self.video:
+            return await bot.send_animation(chat_id, **self.export_for_aiogram())
         return await bot.send_message(chat_id, **self.export_for_aiogram())
 
-    async def edit(self, chat_id: int, message_id: int, bot: aiogram.Bot = None, force_caption: bool = False):
+    async def edit(self, message: Message, bot: aiogram.Bot = None):
         bot = bot or aiogram.Bot.get_current()
         with suppress(TelegramBadRequest):
-            exported = self.export_for_aiogram(force_photo_mode=force_caption)
-            if 'photo' in exported:
-                exported.pop('photo')
-                await bot.edit_message_caption(
-                    chat_id=chat_id,
-                    message_id=message_id,
-                    **exported
+            is_caption = bool(message.photo) or bool(message.animation)
+
+            config = self.export_for_aiogram(
+                force_caption=is_caption,
+                no_media=True
+            )
+
+            if is_caption:
+                return await bot.edit_message_caption(
+                    chat_id=message.chat.id,
+                    message_id=message.message_id,
+                    **config
                 )
-                return
-            await bot.edit_message_text(
-                chat_id=chat_id,
-                message_id=message_id,
-                **exported
+
+            return await bot.edit_message_text(
+                chat_id=message.chat.id,
+                message_id=message.message_id,
+                **config
             )
 
 
@@ -77,6 +89,10 @@ class MessageRenderList(list[MessageRender]):
 
 
 class PhotoUri(str):
+    pass
+
+
+class VideoUri(str):
     pass
 
 
