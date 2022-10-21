@@ -3,6 +3,7 @@ from pathlib import Path
 
 import aiogram.types
 
+import gls
 import settings
 from apps.pool_bot import queries
 from utils import database, template
@@ -18,11 +19,16 @@ async def on_startup():
     notify = database.fetch(
         order_models.Order,
         """
-            select * from "Order" O
-                join "Subscription" S on O.subscription = S.id
-            where
-                not O.is_cont_notified and 
-                O.closed_at + S.duration - %(interval)s <= %(now)s
+            update "Order" set
+                is_cont_notified = true
+            where id = (
+                select O.id from "Order" O
+                    join "Subscription" S on O.subscription = S.id
+                where
+                    not O.is_cont_notified and 
+                    O.closed_at + S.duration - %(interval)s <= %(now)s
+            )
+            returning *
         """,
         'Getting orders that need to be notified',
         interval=settings.NOTIFY_CUSTOMER_BEFORE_DAYS,
@@ -30,14 +36,14 @@ async def on_startup():
     )
 
     for order in notify:
-        subscription = search_models.Subscription.get(order.id)
-        service = search_models.Service.get(subscription.id)
+        subscription = search_models.Subscription.get(order.subscription)
+        service = search_models.Service.get(subscription.service)
 
-        await template.render(..., {
+        await template.render(TEMPLATES / 'notification.xml', {
             'order': order,
             'subscription': subscription,
             'service': service
-        }).send(order.customer_id)
+        }).send(order.customer_id, bot=gls.bot)
 
 
 async def command_start(message: aiogram.types.Message):

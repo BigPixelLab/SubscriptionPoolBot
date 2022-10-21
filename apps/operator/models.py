@@ -5,8 +5,11 @@ from utils import database
 
 class Employee(typing.NamedTuple):
     id: int
+    """ Employee ID """
     name: str
+    """ Name of the employee, how to call him """
     chat_id: int
+    """ Telegram user ID of the employee """
     notify_on_purchase: bool
     """ Is bot going to notify operator every time someone makes a purchase """
 
@@ -17,8 +20,8 @@ class Employee(typing.NamedTuple):
                 update "Employee" set
                     notify_on_purchase = %(status)s
                 where user = %(user_id)s
-            """
-            '...',
+            """,
+            f'Setting notify status for user {user_id} to ' + ('enable' if status else 'disable'),
             status=status,
             user_id=user_id
         )
@@ -29,5 +32,5 @@ class Employee(typing.NamedTuple):
             """
                 select chat_id from "Employee" where notify_on_purchase
             """,
-            '...',
+            'Getting list of employees to notify',
         )

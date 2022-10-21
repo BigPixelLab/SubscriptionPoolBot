@@ -159,8 +159,7 @@ async def bill_paid_handler(query: CallbackQuery, callback_data: callbacks.Check
         'subscription': subscription,
         'position_in_queue': position_in_queue
     })
-    employees = operator_models.Employee.get_to_notify()
-    for employee in employees:
+    for employee in operator_models.Employee.get_to_notify():
         await render.send(employee)
 
     await query.answer()
