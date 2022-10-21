@@ -92,7 +92,7 @@ async def buy_handler(query: CallbackQuery, callback_data: callbacks.BuySubscrip
     message = render.first()
     message.photo = BufferedInputFile(
         image_generation.render_bill(
-            total=bill.amount.value,
+            total=decimal.Decimal(bill.amount.value),
             subscription=subscription,
             service=service,
             coupon=coupon,
@@ -143,14 +143,18 @@ async def bill_paid_handler(query: CallbackQuery, callback_data: callbacks.Check
     # Links Activation Code to the order only if needed
     models.ActivationCode.link_order(order.id)
 
-    service, subscription = search_models.Subscription.get_full_name_parts(order.subscription)
+    subscription = search_models.Subscription.get(order.subscription)
+    service = search_models.Service.get(subscription.service)
     position_in_queue = order_models.Order.get_position_in_queue(order.id)
-    await template.render(TEMPLATES / 'success.xml', {
+    render = template.render(TEMPLATES / 'success.xml', {
         'order': order,
-        'service': service,
-        'subscription': subscription,
+        'service': service.name,
+        'subscription': subscription.name,
         'position_in_queue': position_in_queue
-    }).send(query.message.chat.id)
+    }).first()
+
+    render.photo = service.bought
+    await render.send(query.message.chat.id)
 
     await query.answer()
 
