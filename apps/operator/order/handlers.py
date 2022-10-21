@@ -95,13 +95,18 @@ async def order_handler(chat_id: int, user_id: int, order: order_models.Order, *
     if subscription.is_code_required:
         activation_code = purchase_models.ActivationCode.get_linked(order.id)
 
-    await template.render(TEMPLATES / 'details.xml', {
+    render = template.render(TEMPLATES / 'details.xml', {
         'order': order,
         'sub': subscription,
         'service': service,
         'activation_code': activation_code,
         'is_activation_code_error': subscription.is_code_required and not activation_code
-    }).send(chat_id)
+    }).first()
+
+    if not take_order:
+        render.keyboard = None
+
+    await render.send(chat_id)
 
 
 async def return_order_handler(query: CallbackQuery, callback_data: callbacks.OrderCallback):
