@@ -1,6 +1,6 @@
 <message>
     <h1>
-        Похоже твоя подписка <u>{service} {subscription}</u> Скоро закончится..
+        Похоже твоя подписка <u>{service.name} {subscription.name}</u> Скоро закончится..
     </h1>
     <br/>
     <p>
@@ -17,6 +17,6 @@
     </p>
 
     <inline-keyboard>
-        <button callback_data="...">Продлить</button>
+        <button callback_data="buy:{order.subscription}">Продлить</button>
     </inline-keyboard>
 </message>

@@ -12,7 +12,8 @@ DEBUG = True
 # PAYMENTS
 PAYMENTS_TOKEN = os.environ['PAYMENTS']
 BILL_TIMEOUT_SEC = 900  # 15 minutes in seconds
-QIWI_COMMISSION = decimal.Decimal(0.02)
+QIWI_COMMISSION = decimal.Decimal(0.0204)
+QIWI_PAY_METHODS = ['qw', 'card']
 
 # DATABASE
 DATABASE_URI = os.environ['DATABASE']

@@ -15,7 +15,7 @@ router.message(
 
 # Take order by id
 router.message(
-    Command(commands=['order']),
+    Command(commands=['take']),
     filters.is_employee
 )(handlers.take_order_by_id_handler)
 

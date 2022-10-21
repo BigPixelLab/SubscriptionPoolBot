@@ -1,8 +1,10 @@
 import datetime
 import decimal
 import logging
+from contextlib import suppress
 from pathlib import Path
 
+from aiogram.exceptions import TelegramBadRequest
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, WebAppInfo
 from glQiwiApi.qiwi.clients.p2p.types import Bill
@@ -15,6 +17,7 @@ from utils.input_file_types import BufferedInputFile
 from ..search import models as search_models
 from ..orders import models as order_models
 from ..coupons import models as coupon_models
+from ..operator import models as operator_models
 from . import callbacks, image_generation, models
 
 TEMPLATES = Path('apps/purchase/templates')
@@ -64,7 +67,7 @@ async def buy_handler(query: CallbackQuery, callback_data: callbacks.BuySubscrip
         try:
             bill = await gls.qiwi.create_p2p_bill(
                 amount=round(total_price, 2),
-                pay_source_filter=['qw', 'card'],
+                pay_source_filter=settings.QIWI_PAY_METHODS,
                 expire_at=expire_date
             )
         except QiwiAPIError as error:
@@ -133,15 +136,12 @@ async def check_bill_handler(query: CallbackQuery, callback_data: callbacks.Chec
 async def bill_paid_handler(query: CallbackQuery, callback_data: callbacks.CheckBillCallback, bill: Bill):
     order = order_models.Order.place(
         callback_data.sub_id,
-        decimal.Decimal(bill.amount.value),
+        decimal.Decimal(round(bill.amount.value, 2)),
         query.from_user.id,
         callback_data.coupon
     )
     # Links Activation Code to the order only if needed
     models.ActivationCode.link_order(order.id)
-
-    if callback_data.coupon:
-        coupon_models.Coupon.update_expired(callback_data.coupon)
 
     service, subscription = search_models.Subscription.get_full_name_parts(order.subscription)
     position_in_queue = order_models.Order.get_position_in_queue(order.id)
@@ -151,7 +151,21 @@ async def bill_paid_handler(query: CallbackQuery, callback_data: callbacks.Check
         'subscription': subscription,
         'position_in_queue': position_in_queue
     }).send(query.message.chat.id)
+
     await query.answer()
+
+    render = template.render(TEMPLATES / 'notification.xml', {
+        'order': order,
+        'service': service,
+        'subscription': subscription,
+        'position_in_queue': position_in_queue
+    })
+    for employee in operator_models.Employee.get_to_notify():
+        with suppress(TelegramBadRequest):
+            await render.send(employee)
+
+    if callback_data.coupon:
+        coupon_models.Coupon.update_expired(callback_data.coupon)
 
 
 async def piq_update_handler(query: CallbackQuery, callback_data: callbacks.PosInQueueCallback):
