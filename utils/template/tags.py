@@ -2,7 +2,7 @@ from aiogram.types import KeyboardButton, ReplyKeyboardMarkup, InlineKeyboardBut
 
 from .parsing import parse_element, parse_inline_keyboard_row, parse_inline_keyboard, parse_reply_keyboard, \
     parse_reply_keyboard_row
-from .types_ import Scope, ReplyKeyboardRow, InlineKeyboardRow, PhotoUri, InlineText, BlockText
+from .types_ import Scope, ReplyKeyboardRow, InlineKeyboardRow, PhotoUri, InlineText, BlockText, VideoUri
 from .utils import mp
 from .scopes import message_scope, element_scope, inline_keyboard_scope, inline_keyboard_row_scope, \
     reply_keyboard_scope, reply_keyboard_row_scope
@@ -142,6 +142,15 @@ def image_parser(element, context) -> PhotoUri:
     except KeyError:
         raise ValueError('Tag "img" must contain "src" attribute')
     return PhotoUri(src_attr.value.format_map(context))
+
+
+@Scope.register('video', message_scope)
+def image_parser(element, context) -> VideoUri:
+    try:
+        src_attr = element.attributes['src']
+    except KeyError:
+        raise ValueError('Tag "video" must contain "src" attribute')
+    return VideoUri(src_attr.value.format_map(context))
 
 
 @Scope.register('inline-keyboard', message_scope)

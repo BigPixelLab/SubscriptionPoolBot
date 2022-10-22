@@ -26,5 +26,5 @@ async def update_operator_panel_handler(query: CallbackQuery):
         'count': orders_count,
         'total_count': total_count,
         'orders': top_orders
-    }).first().edit(query.message.chat.id, query.message.message_id)
+    }).first().edit(query.message)
     await query.answer('Панель оператора обновлена')
