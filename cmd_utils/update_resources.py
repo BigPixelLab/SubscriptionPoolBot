@@ -2,6 +2,7 @@ import asyncio
 import logging
 
 import aiogram.types
+from aiogram.exceptions import TelegramBadRequest
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.types import FSInputFile
 
@@ -12,22 +13,41 @@ from utils import database
 logger = logging.getLogger(__name__)
 
 
+# Токен бота, который будет использован для загрузки
+# (не имеет особого значения, главное чтобы был действительным)
 BOT_TOKEN = settings.BOT_TOKEN
+
+# Чат в который будут отправлены файлы
+# (опять-таки не имеет особого значения, telegram так устроен, что нам
+# нужно отправить куда-то файл, чтобы получить его id)
 SPAM_CHAT = 1099569178
+
+# Ресурсы для загрузки, в формате: (путь, имя, запрос)
+# Путь - путь к файлу относительно директории проекта.
+# Имя - имя, которое будет передано telegram-у (таким именем будет обладать файл на сервере).
+# Запрос - запрос к базе данных, который будет выполнен после успешной загрузки файла,
+#       получает file_id в качестве аргумента
 RESOURCES = [
-    ('resources/NbuyVideo.mp4', 'NETFLIX.mp4', """ update "Service" set bought = %(file_id)s where name = 'netflix' """),
-    ('resources/SbuyVideo.mp4', 'SPOTIFY.mp4', """ update "Service" set bought = %(file_id)s where name = 'spotify' """)
+    ('resources/NbuyVideo.mp4', 'NETFLIX.mp4',
+     """ update "Service" set bought = %(file_id)s where name = 'netflix' """),
+    ('resources/SbuyVideo.mp4', 'SPOTIFY.mp4',
+     """ update "Service" set bought = %(file_id)s where name = 'spotify' """)
 ]
 
 
 async def on_startup():
     for i, (path, name, query) in enumerate(RESOURCES):
         await gls.bot.send_message(SPAM_CHAT, f'UPLOADING "{name}" ({i + 1}/{len(RESOURCES)})...')
-        file_id = (
-            await gls.bot.send_document(SPAM_CHAT, FSInputFile(path, name))
-        ).document.file_id
-        database.execute(query, f'File id: "{file_id}"', file_id=file_id)
-        await gls.bot.send_message(SPAM_CHAT, file_id)
+
+        try:
+            message = await gls.bot.send_document(SPAM_CHAT, FSInputFile(path, name))
+        except TelegramBadRequest:
+            await gls.bot.send_message(SPAM_CHAT, 'Failed to upload resource')
+            continue
+
+        file_id = message.document.file_id
+        database.execute(query, query % {'file_id': file_id}, file_id=file_id)
+        await gls.bot.send_message(SPAM_CHAT, f'<code>{file_id}</code>')
     await gls.bot.send_message(SPAM_CHAT, 'Done.')
 
 
