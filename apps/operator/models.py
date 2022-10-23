@@ -19,7 +19,7 @@ class Employee(typing.NamedTuple):
             """ 
                 update "Employee" set
                     notify_on_purchase = %(status)s
-                where user = %(user_id)s
+                where chat_id = %(user_id)s
             """,
             f'Setting notify status for user {user_id} to ' + ('enable' if status else 'disable'),
             status=status,
