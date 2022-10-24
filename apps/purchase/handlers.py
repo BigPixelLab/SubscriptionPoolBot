@@ -18,7 +18,7 @@ from ..search import models as search_models
 from ..orders import models as order_models
 from ..coupons import models as coupon_models
 from ..operator import models as operator_models
-from . import callbacks, image_generation, models
+from . import callbacks, image_generation
 
 TEMPLATES = Path('apps/purchase/templates')
 logger = logging.getLogger(__name__)
@@ -26,19 +26,6 @@ logger = logging.getLogger(__name__)
 
 async def buy_handler(query: CallbackQuery, callback_data: callbacks.BuySubscriptionCallback, state: FSMContext):
     subscription = search_models.Subscription.get(callback_data.sub_id)
-
-    # queries.is_user_have_reserved_ac(query.from_user.id, callback_data.sub_id)
-    if subscription.is_code_required and models.ActivationCode.is_reserved(query.from_user.id, callback_data.sub_id):
-        # PLAN: Продлевать резервацию
-        await query.answer('Вы уже недавно пытались купить эту подписку, поищите счёт '
-                           'или подождите пока он истечёт и попробуйте снова')
-        return
-
-    # Reserving activation code if needed, if reservation fails, body is executed
-    if subscription.is_code_required and not models.ActivationCode.reserve(query.from_user.id, callback_data.sub_id):
-        await query.answer('Кажется кто-то успел купить последнюю такую подписку пока вы выбирали, но ничего '
-                           'другие варианты всё ещё могут быть доступны, а мы пока завезём побольше этих')
-        return
 
     total_price = subscription.price
 
@@ -140,8 +127,6 @@ async def bill_paid_handler(query: CallbackQuery, callback_data: callbacks.Check
         query.from_user.id,
         callback_data.coupon
     )
-    # Links Activation Code to the order only if needed
-    models.ActivationCode.link_order(order.id)
 
     subscription = search_models.Subscription.get(order.subscription)
     service = search_models.Service.get(subscription.service)

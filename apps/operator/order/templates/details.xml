@@ -8,16 +8,6 @@
         <a if="processed" href="tg://user?id={order.processed_by}">ОПЕРАТОР</a>
         <x if-not="processed">не обрабатывается</x>
     </p>
-    <p if="activation_code">
-        <br/>
-        <p>Код активации:</p>
-        <p><m>{activation_code}</m></p>
-        <p>=============</p>
-    </p>
-    <p if="is_activation_code_error">
-        <br/>
-        <p><u><i>ОШИБКА: Код активации не был привязан к заказу, хотя должен был.</i></u></p>
-    </p>
     <br/>
     <p>Открыт: {order.created_at:%X %x}</p>
     <p>Закрыт:

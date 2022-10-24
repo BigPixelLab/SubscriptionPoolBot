@@ -9,8 +9,8 @@ from utils import template
 
 TEMPLATES = Path('apps/operator/templates')
 NOTIFICATION_STATUS_ANSWERS = (
-	'Бот теперь будет отправлять вам оповещения',
-	'Бот больше не будет отправлять вам оповещения'
+	'Бот больше не будет отправлять вам оповещения',
+	'Бот теперь будет отправлять вам оповещения'
 )
 
 

@@ -18,21 +18,7 @@ def get_sub_plans(service_id: int) -> list[models.Subscription]:
         models.Subscription,
         """
             select * from "Subscription" S
-            where
-                S.service = %(service_id)s and (
-                    -- No activation code is required
-                    not S.is_code_required or 
-                    
-                    -- Activation code is required
-                    S.is_code_required and (
-                        -- Is there available activation codes for this subscription
-                        select count(*) >= 1 from "ActivationCode" AC
-                        where 
-                            AC.subscription = S.id and 
-                            AC.linked_order is null and 
-                            AC.reserved_at is null
-                    )
-                )
+            where S.service = %(service_id)s
             order by S.type, S.duration
         """,
         f'Getting subscription plans for "{service_id=}"',
