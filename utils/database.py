@@ -39,9 +39,11 @@ class ConnectionManager:
     @classmethod
     def _reconnect(cls):
         while True:
-            with suppress(psycopg2.Error):
+            try:
                 cls._connection = psycopg2.connect(settings.DATABASE_URI)
                 return
+            except psycopg2.Error as error:
+                logger.error(error)
             logger.warning('Retrying to connect to the database..')
 
     @classmethod
