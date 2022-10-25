@@ -147,8 +147,8 @@ async def bill_paid_handler(query: CallbackQuery, callback_data: callbacks.Check
         'position_in_queue': position_in_queue
     }).first()
 
-    # render.video = service.bought
-    # await render.send(query.message.chat.id)
+    render.video = service.bought
+    await render.send(query.message.chat.id)
 
     await query.answer()
 
