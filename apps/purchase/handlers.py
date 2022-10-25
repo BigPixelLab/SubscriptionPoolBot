@@ -91,7 +91,7 @@ async def buy_handler(query: CallbackQuery, callback_data: callbacks.BuySubscrip
     await query.answer()
 
 
-async def check_bill_handler(query: CallbackQuery, callback_data: callbacks.CheckBillCallback):
+async def check_bill_handler(query: CallbackQuery, callback_data: callbacks.CheckBillCallback, state: FSMContext):
     try:
         bill = await gls.qiwi.get_bill_by_id(callback_data.bill_id)
     except QiwiAPIError as error:
@@ -100,7 +100,7 @@ async def check_bill_handler(query: CallbackQuery, callback_data: callbacks.Chec
         return
 
     if bill.status.value == 'PAID' or settings.DEBUG:
-        await bill_paid_handler(query, callback_data, bill)
+        await bill_paid_handler(query, callback_data, state, bill)
         return
 
     service_name, subscription_name = search_models.Subscription.get_full_name_parts(callback_data.sub_id)
@@ -120,7 +120,16 @@ async def check_bill_handler(query: CallbackQuery, callback_data: callbacks.Chec
     await query.answer()
 
 
-async def bill_paid_handler(query: CallbackQuery, callback_data: callbacks.CheckBillCallback, bill: Bill):
+async def bill_paid_handler(query: CallbackQuery, callback_data: callbacks.CheckBillCallback, state: FSMContext, bill: Bill):
+    data = await state.get_data()
+    data.setdefault('lock', [])
+
+    if callback_data.sub_id in data['lock']:
+        return
+
+    data['lock'].append(callback_data.sub_id)
+    await state.set_data(data)
+
     order = order_models.Order.place(
         callback_data.sub_id,
         decimal.Decimal(round(bill.amount.value, 2)),
@@ -155,6 +164,13 @@ async def bill_paid_handler(query: CallbackQuery, callback_data: callbacks.Check
 
     if callback_data.coupon:
         coupon_models.Coupon.update_expired(callback_data.coupon)
+
+    keyboard = query.message.reply_markup
+    keyboard.inline_keyboard[0].pop(1)
+    await gls.bot.edit_message_reply_markup(query.message.chat.id, query.message.message_id, reply_markup=keyboard)
+
+    data['lock'].remove(callback_data.sub_id)
+    await state.set_data(data)
 
 
 async def piq_update_handler(query: CallbackQuery, callback_data: callbacks.PosInQueueCallback):
