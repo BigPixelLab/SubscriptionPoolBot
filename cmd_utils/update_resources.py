@@ -31,19 +31,19 @@ SPAM_CHAT = 1099569178
 # Запрос - запрос к базе данных, который будет выполнен после успешной загрузки файла,
 #       получает file_id в качестве аргумента
 RESOURCES = [
-    # (DOCUMENT, 'resources/NETFLIX-BOUGHT.mp4', 'NETFLIX-BOUGHT.mp4',
-    #  """ update "Service" set bought = %(file_id)s where name = 'netflix' """),
+    (DOCUMENT, 'resources/NETFLIX-BOUGHT.mp4', 'NETFLIX-BOUGHT.mp4',
+     """ update "Service" set bought = %(file_id)s where name = 'netflix' """),
 
-    # (DOCUMENT, 'resources/SPOTIFY-BOUGHT.mp4', 'SPOTIFY-BOUGHT.mp4',
-    #  """ update "Service" set bought = %(file_id)s where name = 'spotify' """),
+    (DOCUMENT, 'resources/SPOTIFY-BOUGHT.mp4', 'SPOTIFY-BOUGHT.mp4',
+     """ update "Service" set bought = %(file_id)s where name = 'spotify' """),
 
-    # (PHOTO, 'resources/NETFLIX-BANNER.jpg', 'NETFLIX-BANNER.jpg',
-    #  """ update "Service" set banner = %(file_id)s where name = 'netflix' """),
-    #
-    # (PHOTO, 'resources/SPOTIFY-BANNER.jpg', 'SPOTIFY-BANNER.jpg',
-    #  """ update "Service" set banner = %(file_id)s where name = 'spotify' """),
-    #
-    # (PHOTO, 'resources/INTRO.jpg', 'INTRO.jpg', None),
+    (PHOTO, 'resources/NETFLIX-BANNER.jpg', 'NETFLIX-BANNER.jpg',
+     """ update "Service" set banner = %(file_id)s where name = 'netflix' """),
+
+    (PHOTO, 'resources/SPOTIFY-BANNER.jpg', 'SPOTIFY-BANNER.jpg',
+     """ update "Service" set banner = %(file_id)s where name = 'spotify' """),
+
+    (PHOTO, 'resources/INTRO.jpg', 'INTRO.jpg', None),
 ]
 
 
