@@ -27,25 +27,26 @@ logger = logging.getLogger(__name__)
 async def buy_handler(query: CallbackQuery, callback_data: callbacks.BuySubscriptionCallback, state: FSMContext):
     subscription = search_models.Subscription.get(callback_data.sub_id)
 
-    total_price = subscription.price
-
     # Coupon stuff
     data = await state.get_data()
 
+    coupon = None
+    coupon_discount = decimal.Decimal(0)
+
     if coupon_code := data.get('coupon'):
         coupon = coupon_models.Coupon.get_free(coupon_code)
-        coupon_discount = round(total_price * decimal.Decimal(coupon.discount / 100), 2)
-        total_price -= coupon_discount
-    else:
-        coupon = None
-        coupon_discount = decimal.Decimal(0)
+        coupon_discount = subscription.price * decimal.Decimal(coupon.discount / 100)
 
     # Taking into account qiwi commission.
     # >> init_price + init_price * commission = final_price
     # We want our final_price to be price of the subscription
     # plus coupon aka total_price. So, solving for init_price, we get:
     # >> init_price = final_price / (1 + commission)
-    total_price *= 1 / (1 + settings.QIWI_COMMISSION)
+
+    total = (subscription.price - coupon_discount) / (1 + decimal.Decimal(settings.QIWI_COMMISSION))
+
+    if total * decimal.Decimal(settings.QIWI_COMMISSION) < decimal.Decimal(settings.QIWI_MIN_COMMISSION):
+        total = subscription.price - coupon_discount - decimal.Decimal(settings.QIWI_MIN_COMMISSION)
 
     service = subscription.get_service()
 
@@ -53,7 +54,7 @@ async def buy_handler(query: CallbackQuery, callback_data: callbacks.BuySubscrip
     async with gls.qiwi:
         try:
             bill = await gls.qiwi.create_p2p_bill(
-                amount=round(total_price, 2),
+                amount=round(total, 2),
                 pay_source_filter=settings.QIWI_PAY_METHODS,
                 expire_at=expire_date
             )
