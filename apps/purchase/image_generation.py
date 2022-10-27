@@ -15,7 +15,7 @@ def price(p: Decimal | None) -> str:
         return ''
 
     value = abs(p)
-    sign = int(p / value)
+    sign = round(p / value)
 
     int_part = int(value) * sign
     dec_part = int((value - int(value)) * 100)
