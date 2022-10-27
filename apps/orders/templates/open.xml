@@ -1,9 +1,9 @@
 <message>
-    <h1>Заказ <u>#{order.id}</u> открыт</h1>
+    <h1> Заказ <u> #{order.id} </u> открыт </h1>
     <br/>
-    <p>{progressbar}</p>
-    <p>Место в очереди: <u>{queue_position}</u></p>
-    <p>Заказ: {order.service} {order.subscription}</p>
+    <p> {progressbar} </p>
+    <p> Место в очереди: <u> {queue_position} </u> </p>
+    <p> Заказ: {order.service} {order.subscription} </p>
     <br/>
     <p><i>
         Ваш заказ поставлен в очередь, как только оператор будет готов

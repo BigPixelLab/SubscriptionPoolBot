@@ -245,3 +245,36 @@ def reply_keyboard_button_parser(element, context) -> KeyboardButton:
         settings['text'] = parse_element(element, context)
 
     return KeyboardButton(**settings)
+
+
+# CUSTOM
+
+@Scope.register('subscription', message_scope, element_scope)
+def subscription_parser(_, context):
+    service = context.get('service')
+    if service and hasattr(service, 'name'):
+        service = service.name
+    if not service:
+        service = context.get('service_name')
+    assert service
+
+    subscription = context.get('subscription')
+    if subscription and hasattr(subscription, 'name'):
+        subscription = subscription.name
+    if not subscription:
+        subscription = context.get('subscription_name')
+    assert subscription
+
+    return InlineText(f'{service.upper()} {subscription}')
+
+
+@Scope.register('order', message_scope, element_scope)
+def order_parser(_, context):
+    order = context.get('order')
+    if order and hasattr(order, 'id'):
+        order = order.id
+    if not order:
+        order = context.get('order_id')
+    assert order
+
+    return InlineText(f'#{order}')
