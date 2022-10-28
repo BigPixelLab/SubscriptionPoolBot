@@ -1,5 +1,4 @@
 import aiogram
-from aiogram import F
 
 import settings
 from apps.operator.commands import router as operator_router
@@ -10,12 +9,6 @@ from apps.purchase.commands import router as purchase_router
 from apps.debug.commands import router as debug_router
 
 router = aiogram.Router()
-
-
-@router.callback_query(F.data == 'remove-message')
-async def remove_message(query):
-    await query.message.delete()
-
 
 routers: list[aiogram.Router] = [
     pool_bot_router,
@@ -28,5 +21,5 @@ routers: list[aiogram.Router] = [
 if settings.DEBUG:
     routers.append(debug_router)
 
-# Must be at the end, contains handler that takes all text messages
+# Must be at the end, contains handler which takes all the text messages
 routers.append(search_router)
