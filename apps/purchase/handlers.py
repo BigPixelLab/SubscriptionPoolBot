@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import datetime
 import decimal
 import logging
@@ -30,23 +32,19 @@ async def buy_handler(query: CallbackQuery, callback_data: callbacks.BuySubscrip
     # Coupon stuff
     data = await state.get_data()
 
-    coupon = None
+    coupon: coupon_models.Coupon | None = None
     coupon_discount = decimal.Decimal(0)
 
     if coupon_code := data.get('coupon'):
         coupon = coupon_models.Coupon.get_free(coupon_code)
         coupon_discount = subscription.price * decimal.Decimal(coupon.discount / 100)
 
-    # Taking into account qiwi commission.
-    # >> init_price + init_price * commission = final_price
-    # We want our final_price to be price of the subscription
-    # plus coupon aka total_price. So, solving for init_price, we get:
-    # >> init_price = final_price / (1 + commission)
+    commission = max(
+        decimal.Decimal(30),
+        (subscription.price - coupon_discount) * decimal.Decimal(settings.QIWI_COMMISSION)
+    )
 
-    total = (subscription.price - coupon_discount) / (1 + decimal.Decimal(settings.QIWI_COMMISSION))
-
-    if total * decimal.Decimal(settings.QIWI_COMMISSION) < decimal.Decimal(settings.QIWI_MIN_COMMISSION):
-        total = subscription.price - coupon_discount - decimal.Decimal(settings.QIWI_MIN_COMMISSION)
+    total = subscription.price - coupon_discount - commission
 
     service = subscription.get_service()
 
@@ -78,14 +76,14 @@ async def buy_handler(query: CallbackQuery, callback_data: callbacks.BuySubscrip
     })
 
     message = render.first()
+
+    bill_items = [(f'Подписка {service.name.upper()} {subscription.name}', subscription.price)]
+    if coupon is not None:
+        bill_items.append((f'Купон "{coupon.code}" на -{coupon.discount}%', -coupon_discount))
+    bill_items.append(('Компенсация комиссии qiwi', -commission))
+
     message.photo = BufferedInputFile(
-        image_generation.render_bill(
-            total=decimal.Decimal(bill.amount.value),
-            subscription=subscription,
-            service=service,
-            coupon=coupon,
-            coupon_discount=coupon_discount
-        ),
+        image_generation.render_bill(bill_items, total),
         'bill.png'
     )
     await message.send(query.message.chat.id)
