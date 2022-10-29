@@ -222,13 +222,22 @@ async def bill_paid_handler(query: CallbackQuery,
 async def piq_update_handler(query: CallbackQuery, callback_data: callbacks.PosInQueueCallback):
     order = order_models.Order.get(callback_data.order_id)
     service, subscription = search_models.Subscription.get_full_name_parts(order.subscription)
-    position_in_queue = order_models.Order.get_position_in_queue(order.id)
-    await template.render(TEMPLATES / 'success.xml', {
-        'order': order,
-        'service': service,
-        'subscription': subscription,
-        'position_in_queue': position_in_queue
-    }).first().edit(query.message)
-    await query.answer()
 
+    if order.closed_at is None:
+        position_in_queue = order_models.Order.get_position_in_queue(order.id)
+        await template.render(TEMPLATES / 'success.xml', {
+            'order': order,
+            'service': service,
+            'subscription': subscription,
+            'position_in_queue': position_in_queue
+        }).first().edit(query.message)
+
+    else:
+        await template.render(TEMPLATES / 'closed.xml', {
+            'order': order,
+            'service': service,
+            'subscription': subscription
+        }).first().edit(query.message)
+
+    await query.answer()
     await send_feedback('Позиция в очереди обновлена', query.message.chat.id)

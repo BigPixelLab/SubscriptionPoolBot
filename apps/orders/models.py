@@ -3,8 +3,6 @@ import decimal
 import typing
 from dataclasses import dataclass
 
-from aiogram.filters import Command
-
 from apps.operator.models import Employee
 from apps.search.models import Subscription
 from utils import database

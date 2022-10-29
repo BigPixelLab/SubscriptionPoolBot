@@ -1,4 +1,3 @@
-from . import models
 from utils import database
 
 
