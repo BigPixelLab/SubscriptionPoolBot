@@ -66,7 +66,7 @@ async def buy_handler(query: CallbackQuery, callback_data: callbacks.BuySubscrip
             await send_feedback('Ошибка QIWI API, пожалуйста, обратитесь в поддержку', query.message.chat.id)
             return
 
-    render = template.render(TEMPLATES / 'bill.xml', {
+    render_list = template.render(TEMPLATES / 'bill.xml', {
         'buy_button': {'web_app': WebAppInfo(url=bill.pay_url)},
         'done_button': {'callback_data': callbacks.CheckBillCallback(
             bill_id=bill.id,
@@ -80,20 +80,24 @@ async def buy_handler(query: CallbackQuery, callback_data: callbacks.BuySubscrip
         'expired': False
     })
 
-    message = render.first()
+    render = render_list.first()
 
     bill_items = [(f'Подписка {service.name.upper()} {subscription.name}', subscription.price)]
     if coupon is not None:
         bill_items.append((f'Купон "{coupon.code}" на -{coupon.discount}%', -coupon_discount))
     bill_items.append(('Компенсация комиссии qiwi', -commission))
 
-    message.photo = BufferedInputFile(
+    render.photo = BufferedInputFile(
         image_generation.render_bill(bill_items, total),
         'bill.png'
     )
 
     await wm.delete()
-    await message.send(query.message.chat.id)
+    message = await render.send(query.message.chat.id)
+    await gls.bot.pin_chat_message(
+        query.message.chat.id,
+        message.message_id
+    )
 
     await query.answer()
 
@@ -110,6 +114,16 @@ async def check_bill_handler(query: CallbackQuery, callback_data: callbacks.Chec
         await send_feedback(f'Ошибка QIWI API (bill_id: {callback_data.bill_id}), '
                             f'пожалуйста, обратитесь в поддержку',
                             query.message.chat.id)
+        return
+
+    if bill.status.value == 'EXPIRED':
+        await wm.delete()
+
+        await gls.bot.unpin_chat_message(query.message.chat.id, query.message.message_id)
+        await query.message.delete()
+
+        await query.answer()
+        await send_feedback('Срок действия счёта истёк', query.message.chat.id)
         return
 
     if bill.status.value == 'PAID' or settings.DEBUG:
@@ -162,6 +176,7 @@ async def bill_paid_handler(query: CallbackQuery,
 
     keyboard = query.message.reply_markup
     keyboard.inline_keyboard[0].pop(1)
+    keyboard.inline_keyboard[0][0].text = 'Об оплате'
     await gls.bot.edit_message_reply_markup(
         query.message.chat.id,
         query.message.message_id,
@@ -181,7 +196,11 @@ async def bill_paid_handler(query: CallbackQuery,
     render.video = service.bought
 
     await wm.delete()
-    await render.send(query.message.chat.id)
+    message = await render.send(query.message.chat.id)
+    await gls.bot.pin_chat_message(
+        query.message.chat.id,
+        message.message_id
+    )
 
     data['lock'].remove(callback_data.sub_id)
     await state.set_data(data)
