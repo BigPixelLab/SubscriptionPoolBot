@@ -8,13 +8,14 @@ from pathlib import Path
 
 from aiogram.exceptions import TelegramBadRequest
 from aiogram.fsm.context import FSMContext
-from aiogram.types import CallbackQuery, WebAppInfo
+from aiogram.types import CallbackQuery, WebAppInfo, Message
 from glQiwiApi.qiwi.clients.p2p.types import Bill
 from glQiwiApi.qiwi.exceptions import QiwiAPIError
 
 import gls
 import settings
 from utils import template
+from utils.feedback import send_feedback, send_waiting
 from utils.input_file_types import BufferedInputFile
 from ..search import models as search_models
 from ..orders import models as order_models
@@ -27,6 +28,8 @@ logger = logging.getLogger(__name__)
 
 
 async def buy_handler(query: CallbackQuery, callback_data: callbacks.BuySubscriptionCallback, state: FSMContext):
+    wm = await send_waiting('⏳ Генерируем счёт...', query.message.chat.id)
+
     subscription = search_models.Subscription.get(callback_data.sub_id)
 
     # Coupon stuff
@@ -57,8 +60,10 @@ async def buy_handler(query: CallbackQuery, callback_data: callbacks.BuySubscrip
                 expire_at=expire_date
             )
         except QiwiAPIError as error:
-            await query.answer('Что-то не так с qiwi api, пожалуйста, обратитесь в поддержку')
             logger.error(error)
+            await wm.delete()
+            await query.answer()
+            await send_feedback('Ошибка QIWI API, пожалуйста, обратитесь в поддержку', query.message.chat.id)
             return
 
     render = template.render(TEMPLATES / 'bill.xml', {
@@ -86,20 +91,29 @@ async def buy_handler(query: CallbackQuery, callback_data: callbacks.BuySubscrip
         image_generation.render_bill(bill_items, total),
         'bill.png'
     )
+
+    await wm.delete()
     await message.send(query.message.chat.id)
+
     await query.answer()
 
 
 async def check_bill_handler(query: CallbackQuery, callback_data: callbacks.CheckBillCallback, state: FSMContext):
+    wm = await send_waiting('⏳ Проверяем счёт...', query.message.chat.id)
+
     try:
         bill = await gls.qiwi.get_bill_by_id(callback_data.bill_id)
     except QiwiAPIError as error:
-        await query.answer(f'Bill_id: {callback_data.bill_id}. Что-то пошло не так, обратитесь в поддержку')
         logger.error(error)
+        await wm.delete()
+        await query.answer()
+        await send_feedback(f'Ошибка QIWI API (bill_id: {callback_data.bill_id}), '
+                            f'пожалуйста, обратитесь в поддержку',
+                            query.message.chat.id)
         return
 
     if bill.status.value == 'PAID' or settings.DEBUG:
-        await bill_paid_handler(query, callback_data, state, bill)
+        await bill_paid_handler(query, callback_data, state, bill, wm)
         return
 
     service_name, subscription_name = search_models.Subscription.get_full_name_parts(callback_data.sub_id)
@@ -115,11 +129,18 @@ async def check_bill_handler(query: CallbackQuery, callback_data: callbacks.Chec
         'expired': bill.status.value == 'EXPIRED'
     }).first()
     render.keyboard = query.message.reply_markup
+
+    await wm.delete()
     await render.edit(query.message)
+
     await query.answer()
 
 
-async def bill_paid_handler(query: CallbackQuery, callback_data: callbacks.CheckBillCallback, state: FSMContext, bill: Bill):
+async def bill_paid_handler(query: CallbackQuery,
+                            callback_data: callbacks.CheckBillCallback,
+                            state: FSMContext,
+                            bill: Bill,
+                            wm: Message):
     data = await state.get_data()
     data.setdefault('lock', [])
 
@@ -136,6 +157,17 @@ async def bill_paid_handler(query: CallbackQuery, callback_data: callbacks.Check
         callback_data.coupon
     )
 
+    if callback_data.coupon:
+        coupon_models.Coupon.update_expired(callback_data.coupon)
+
+    keyboard = query.message.reply_markup
+    keyboard.inline_keyboard[0].pop(1)
+    await gls.bot.edit_message_reply_markup(
+        query.message.chat.id,
+        query.message.message_id,
+        reply_markup=keyboard
+    )
+
     subscription = search_models.Subscription.get(order.subscription)
     service = search_models.Service.get(subscription.service)
     position_in_queue = order_models.Order.get_position_in_queue(order.id)
@@ -147,9 +179,15 @@ async def bill_paid_handler(query: CallbackQuery, callback_data: callbacks.Check
     }).first()
 
     render.video = service.bought
+
+    await wm.delete()
     await render.send(query.message.chat.id)
 
-    await query.answer()
+    data['lock'].remove(callback_data.sub_id)
+    await state.set_data(data)
+
+    with suppress(TelegramBadRequest):  # May throw an error if query is expired
+        await query.answer()
 
     render = template.render(TEMPLATES / 'notification.xml', {
         'order': order,
@@ -160,16 +198,6 @@ async def bill_paid_handler(query: CallbackQuery, callback_data: callbacks.Check
     for employee in operator_models.Employee.get_to_notify():
         with suppress(TelegramBadRequest):
             await render.send(employee)
-
-    if callback_data.coupon:
-        coupon_models.Coupon.update_expired(callback_data.coupon)
-
-    keyboard = query.message.reply_markup
-    keyboard.inline_keyboard[0].pop(1)
-    await gls.bot.edit_message_reply_markup(query.message.chat.id, query.message.message_id, reply_markup=keyboard)
-
-    data['lock'].remove(callback_data.sub_id)
-    await state.set_data(data)
 
 
 async def piq_update_handler(query: CallbackQuery, callback_data: callbacks.PosInQueueCallback):
@@ -183,3 +211,5 @@ async def piq_update_handler(query: CallbackQuery, callback_data: callbacks.PosI
         'position_in_queue': position_in_queue
     }).first().edit(query.message)
     await query.answer()
+
+    await send_feedback('Позиция в очереди обновлена', query.message.chat.id)
