@@ -66,7 +66,7 @@ async def buy_handler(query: CallbackQuery, callback_data: callbacks.BuySubscrip
             await send_feedback('Ошибка QIWI API, пожалуйста, обратитесь в поддержку', query.message.chat.id)
             return
 
-    render_list = template.render(TEMPLATES / 'bill.xml', {
+    render = template.render(TEMPLATES / 'bill.xml', {
         'buy_button': {'web_app': WebAppInfo(url=bill.pay_url)},
         'done_button': {'callback_data': callbacks.CheckBillCallback(
             bill_id=bill.id,
@@ -77,10 +77,9 @@ async def buy_handler(query: CallbackQuery, callback_data: callbacks.BuySubscrip
         'subscription': subscription.name,
         'service': service.name,
         'waiting': False,
-        'expired': False
-    })
 
-    render = render_list.first()
+        'minimized': False
+    }).first()
 
     bill_items = [(f'Подписка {service.name.upper()} {subscription.name}', subscription.price)]
     if coupon is not None:
@@ -140,7 +139,8 @@ async def check_bill_handler(query: CallbackQuery, callback_data: callbacks.Chec
         'subscription': subscription_name,
         'service': service_name,
         'waiting': bill.status.value == 'WAITING',
-        'expired': bill.status.value == 'EXPIRED'
+
+        'minimized': False
     }).first()
     render.keyboard = query.message.reply_markup
 
@@ -174,23 +174,26 @@ async def bill_paid_handler(query: CallbackQuery,
     if callback_data.coupon:
         coupon_models.Coupon.update_expired(callback_data.coupon)
 
-    keyboard = query.message.reply_markup
-    keyboard.inline_keyboard[0].pop(1)
-    keyboard.inline_keyboard[0][0].text = 'Об оплате'
-    await gls.bot.edit_message_reply_markup(
-        query.message.chat.id,
-        query.message.message_id,
-        reply_markup=keyboard
-    )
-
     subscription = search_models.Subscription.get(order.subscription)
     service = search_models.Service.get(subscription.service)
+
+    await template.render(TEMPLATES / 'bill.xml', {
+        'buy_button': {'web_app': WebAppInfo(url=bill.pay_url)},
+
+        'bill': bill,
+        'subscription': subscription,
+        'service': service,
+
+        'minimized': True
+    }).first().edit(query.message)
+
     position_in_queue = order_models.Order.get_position_in_queue(order.id)
     render = template.render(TEMPLATES / 'success.xml', {
         'order': order,
         'service': service.name,
         'subscription': subscription.name,
-        'position_in_queue': position_in_queue
+        'position_in_queue': position_in_queue,
+        'minimized': False
     }).first()
 
     render.video = service.bought
@@ -223,21 +226,17 @@ async def piq_update_handler(query: CallbackQuery, callback_data: callbacks.PosI
     order = order_models.Order.get(callback_data.order_id)
     service, subscription = search_models.Subscription.get_full_name_parts(order.subscription)
 
+    position_in_queue = None
     if order.closed_at is None:
         position_in_queue = order_models.Order.get_position_in_queue(order.id)
-        await template.render(TEMPLATES / 'success.xml', {
-            'order': order,
-            'service': service,
-            'subscription': subscription,
-            'position_in_queue': position_in_queue
-        }).first().edit(query.message)
 
-    else:
-        await template.render(TEMPLATES / 'closed.xml', {
-            'order': order,
-            'service': service,
-            'subscription': subscription
-        }).first().edit(query.message)
+    await template.render(TEMPLATES / 'success.xml', {
+        'order': order,
+        'service': service,
+        'subscription': subscription,
+        'position_in_queue': position_in_queue,
+        'minimized': order.closed_at is not None
+    }).first().edit(query.message)
 
     await query.answer()
     await send_feedback('Позиция в очереди обновлена', query.message.chat.id)

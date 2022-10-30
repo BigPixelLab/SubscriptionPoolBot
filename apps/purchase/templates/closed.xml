@@ -1,7 +1,0 @@
-<message>
-    <h1> ЗАКАЗ УСПЕШНО ОТКРЫТ </h1>
-    <br/>
-    <p> Номер заказа: #{order.id} </p>
-    <p> Заказ: <up>{service}</up> {subscription} </p>
-    <p><u> Заказ закрыт </u></p>
-</message>
