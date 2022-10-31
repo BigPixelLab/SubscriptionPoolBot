@@ -2,6 +2,8 @@ import datetime
 from pathlib import Path
 
 import aiogram.types
+from aiogram.exceptions import TelegramBadRequest
+from aiogram.types import FSInputFile
 
 import gls
 import settings
@@ -52,6 +54,33 @@ async def command_start(message: aiogram.types.Message):
         'services': services,
         'user': message.from_user
     }).send(message.chat.id)
+
+
+async def update_resources_handler(message: aiogram.types.Message):
+    chat = message.chat.id
+    methods = {
+        'document': (gls.bot.send_document, lambda m: m.document.file_id),
+        'photo': (gls.bot.send_photo, lambda m: m.photo[0].file_id)
+    }
+
+    for i, (_type, path, name, query) in enumerate(settings.UPDATE_RESOURCES):
+        await gls.bot.send_message(chat, f'UPLOADING "{name}" ({i + 1}/{len(settings.UPDATE_RESOURCES)})...')
+        send, extract = methods[_type]
+
+        try:
+            message = await send(chat, FSInputFile(path, name))
+        except TelegramBadRequest:
+            await gls.bot.send_message(chat, 'Failed to upload resource')
+            continue
+
+        file_id = extract(message)
+
+        if query:
+            database.execute(query, query % {'file_id': file_id}, file_id=file_id)
+
+        await gls.bot.send_message(chat, f'<code>{file_id}</code>')
+
+    await gls.bot.send_message(chat, 'Done.')
 
 
 async def support_handler(message: aiogram.types.Message):
