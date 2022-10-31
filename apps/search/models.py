@@ -16,10 +16,6 @@ class Service(typing.NamedTuple):
     """Banner to use in service card"""
     bought: str
     """Banner to show then subscription of this service is bought"""
-    logo: str
-    """Logo to use in the check"""
-    short: str
-    """Short description for check"""
 
     @classmethod
     def get(cls, _id: int) -> 'Service':
