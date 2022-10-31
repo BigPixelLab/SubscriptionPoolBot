@@ -16,7 +16,7 @@ QIWI_MIN_COMMISSION = 30  # rub
 QIWI_PAY_METHODS = ['qw', 'card']
 
 # DATABASE
-DATABASE_URI = os.environ['DATABASE']
+DATABASE_URI = os.environ['DATABASE_URL']
 
 # MISC
 FEEDBACK_TIME = 2  # sec
