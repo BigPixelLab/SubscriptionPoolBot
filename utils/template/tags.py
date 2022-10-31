@@ -1,4 +1,6 @@
-from aiogram.types import KeyboardButton, ReplyKeyboardMarkup, InlineKeyboardButton, InlineKeyboardMarkup
+from __future__ import annotations
+
+from aiogram.types import KeyboardButton, ReplyKeyboardMarkup, InlineKeyboardButton, InlineKeyboardMarkup, FSInputFile
 
 from .parsing import parse_element, parse_inline_keyboard_row, parse_inline_keyboard, parse_reply_keyboard, \
     parse_reply_keyboard_row
@@ -136,12 +138,12 @@ def set_cv_parser(element, context) -> None:
 # Aiogram specific stuff
 
 @Scope.register('img', message_scope)
-def image_parser(element, context) -> PhotoUri:
-    try:
-        src_attr = element.attributes['src']
-    except KeyError:
-        raise ValueError('Tag "img" must contain "src" attribute')
-    return PhotoUri(src_attr.value.format_map(context))
+def image_parser(element, context) -> PhotoUri | FSInputFile:
+    if file_attr := element.attributes.get('file'):
+        return PhotoUri(file_attr.value)
+    if src_attr := element.attributes.get('src'):
+        return FSInputFile(path=src_attr.value.format_map(context), filename='hello.jpg')
+    raise ValueError('Tag "img" must contain "src" attribute')
 
 
 @Scope.register('video', message_scope)

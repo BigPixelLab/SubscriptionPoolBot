@@ -2,7 +2,7 @@ import re
 from typing import Callable
 from xml.dom import minidom
 
-from aiogram.types import InlineKeyboardMarkup, ReplyKeyboardMarkup, InlineKeyboardButton, KeyboardButton
+from aiogram.types import InlineKeyboardMarkup, ReplyKeyboardMarkup, InlineKeyboardButton, KeyboardButton, FSInputFile
 
 from .scopes import message_scope, element_scope, inline_keyboard_scope, inline_keyboard_row_scope, \
     reply_keyboard_scope, reply_keyboard_row_scope
@@ -83,7 +83,7 @@ def parse_message(root: minidom.Element, context: Context) -> MessageRender:
         elif isinstance(result, BlockText):
             layout.append_block(result)
 
-        elif isinstance(result, PhotoUri):
+        elif isinstance(result, (PhotoUri, FSInputFile)):
             if render.photo or render.video:
                 raise ValueError('Only one image or video can be specified per message')
             render.photo = result
