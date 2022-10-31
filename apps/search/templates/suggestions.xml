@@ -1,6 +1,6 @@
 <message-set>
     <message if="show">
-        <img src="{service.banner}"/>
+        <img file="{service.banner}"/>
 
         <h1>{service.name}</h1>
         <br/>
