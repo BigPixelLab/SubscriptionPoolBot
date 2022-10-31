@@ -19,8 +19,15 @@ async def search_handler(message: Message):
     logger.info(f'Searching: {search}')
     sub_plans = queries.get_sub_plans(service.id)
 
-    await template.render(TEMPLATES / 'suggestions.xml', {
+    show = score > 0.01
+
+    render = template.render(TEMPLATES / 'suggestions.xml', {
         'sub_plans': sub_plans,
         'service': service,
-        'show': score > 0.01
-    }).send(message.chat.id)
+        'show': show
+    }).first()
+
+    if show:
+        render.photo = service.banner
+
+    await render.send(message.chat.id)
