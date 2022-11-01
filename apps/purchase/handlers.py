@@ -187,13 +187,14 @@ async def bill_paid_handler(query: CallbackQuery,
         'minimized': True
     }).first().edit(query.message)
 
-    position_in_queue = order_models.Order.get_position_in_queue(order.id)
+    position_in_queue = order_models.Order.get_position_in_queue(order.id, service.name)
     render = template.render(TEMPLATES / 'success.xml', {
         'order': order,
         'service': service.name,
         'subscription': subscription.name,
         'position_in_queue': position_in_queue,
-        'minimized': False
+        'minimized': False,
+        'queued': subscription.is_code_required
     }).first()
 
     render.video = service.bought
@@ -228,15 +229,20 @@ async def piq_update_handler(query: CallbackQuery, callback_data: callbacks.PosI
 
     position_in_queue = None
     if order.closed_at is None:
-        position_in_queue = order_models.Order.get_position_in_queue(order.id)
+        position_in_queue = order_models.Order.get_position_in_queue(order.id, service)
 
     await template.render(TEMPLATES / 'success.xml', {
         'order': order,
         'service': service,
         'subscription': subscription,
         'position_in_queue': position_in_queue,
-        'minimized': order.closed_at is not None
+        'minimized': order.closed_at is not None,
+        'queued': True
     }).first().edit(query.message)
 
-    await query.answer()
+    await query.answer(
+        f'Вы #{position_in_queue} в очереди'
+        if position_in_queue else
+        ''
+    )
     await send_feedback('Позиция в очереди обновлена', query.message.chat.id)

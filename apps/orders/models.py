@@ -113,11 +113,14 @@ class Order:
         )
 
     @classmethod
-    def get_position_in_queue(cls, _id: int):
+    def get_position_in_queue(cls, _id: int, service: str):
         return database.single_value(
             """
                 select count(*) from "Order"
+                    join "Subscription" S on subscription = S.id
+                    join "Service" E on S.service = E.id
                 where
+                    E.name = %(service)s and
                     processed_by is null and
                     closed_at is null and
                     created_at < (
@@ -126,7 +129,8 @@ class Order:
                     )
             """,
             f'Getting position in queue for order #{_id}',
-            id=_id
+            id=_id,
+            service=service
         )
 
     @classmethod
