@@ -26,7 +26,7 @@ def render_bill(bill: list[tuple[str, Decimal]], total: Decimal):
     # Date and time
     draw.text(
         (510, 855),
-        datetime.datetime.now().strftime('%X %x'),
+        datetime.datetime.now().strftime('%X MSK+00 %x'),
         fill=(45, 45, 45),
         anchor='ls',
         font=content_font
