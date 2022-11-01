@@ -6,7 +6,7 @@ from apps.search.settings import *
 
 # BOT
 BOT_TOKEN = os.environ['TOKEN']
-DEBUG = False
+DEBUG = 'DEBUG' in os.environ
 
 # PAYMENTS
 PAYMENTS_TOKEN = os.environ['PAYMENTS']
