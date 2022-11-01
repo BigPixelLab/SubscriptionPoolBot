@@ -42,10 +42,7 @@ async def buy_handler(query: CallbackQuery, callback_data: callbacks.BuySubscrip
         coupon = coupon_models.Coupon.get_free(coupon_code)
         coupon_discount = subscription.price * decimal.Decimal(coupon.discount / 100)
 
-    commission = max(
-        decimal.Decimal(30),
-        (subscription.price - coupon_discount) * decimal.Decimal(settings.QIWI_COMMISSION)
-    )
+    commission = (subscription.price - coupon_discount) * decimal.Decimal(settings.QIWI_COMMISSION)
 
     total = subscription.price - coupon_discount - commission
 
