@@ -1,5 +1,5 @@
 <message>
-    <h1> Заказ <u> #{order.id} </u> открыт </h1>
+    <h1> ЗАКАЗ <order/> ОТКРЫТ </h1>
     <br/>
     <p> {progressbar} </p>
     <p> Место в очереди: <u> {queue_position} </u> </p>

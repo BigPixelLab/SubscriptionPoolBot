@@ -1,6 +1,6 @@
 <message>
-    <h1>ПАНЕЛЬ ОПЕРАТОРА</h1>
-    <p>Последние заказы (<m>{count}</m> / <m>{total_count}</m>):</p>
+    <h1> ПАНЕЛЬ ОПЕРАТОРА </h1>
+    <p> Последние заказы (<m> {count} </m> / <m> {total_count} </m>): </p>
 
     <p for="id created_at taken_by service subscription price" in="orders">
         <p>

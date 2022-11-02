@@ -1,26 +1,26 @@
 <message>
-    <p>ЗАКАЗ <u>#{order.id}</u></p>
-    <p>на покупку <m><up>{service}</up> {sub.name}</m></p>
+    <p> ЗАКАЗ <order/> </p>
+    <p> на покупку <m><up> {service} </up> {sub.name} </m> </p>
     <br/>
-    <p>Подал: <a href="tg://user?id={order.customer_id}">ПОЛЬЗОВАТЕЛЬ</a></p>
-    <p>Оператор:
+    <p> Подал: <a href="tg://user?id={order.customer_id}"> ПОЛЬЗОВАТЕЛЬ </a> </p>
+    <p> Оператор:
         <set cv="processed" to="order.processed_by"/>
-        <a if="processed" href="tg://user?id={order.processed_by}">ОПЕРАТОР</a>
-        <x if-not="processed">не обрабатывается</x>
+        <a if="processed" href="tg://user?id={order.processed_by}"> ОПЕРАТОР </a>
+        <x if-not="processed"> не обрабатывается </x>
     </p>
     <br/>
-    <p>Открыт: {order.created_at:%X %x}</p>
-    <p>Закрыт:
+    <p> Открыт: {order.created_at:%X %x} </p>
+    <p> Закрыт:
         <set cv="closed" to="order.closed_at"/>
         <x if="closed">{order.closed_at:%X %x}</x>
         <x if-not="closed">не закрыт</x>
     </p>
     <br/>
-    <p>Сервис: <b><up>{service}</up></b></p>
-    <p>Подписка: {sub.name}</p>
-    <p>Длительность: <m>{sub.duration}</m></p>
-    <p>Цена: {sub.price}₽ </p>
-    <p>Оплачено: {order.total}₽ </p>
+    <p> Сервис: <b><up> {service} </up></b> </p>
+    <p> Подписка: {sub.name} </p>
+    <p> Длительность: <m> {sub.duration} </m> </p>
+    <p> Цена: {sub.price}₽ </p>
+    <p> Оплачено: {order.total}₽ </p>
 
     <inline-keyboard>
         <!-- Passing customer_id to indicate who will get notifications -->

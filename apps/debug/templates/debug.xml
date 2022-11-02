@@ -1,7 +1,7 @@
 <message>
-    <h1>Пользовательские данные</h1>
+    <h1> ПОЛЬЗОВАТЕЛЬСКИЕ ДАННЫЕ </h1>
     <p for="key value" in="data">
-        <m><aln-l width="12">{key}:</aln-l> {value} </m>
+        <m><aln-l width="12"> {key}: </aln-l> {value} </m>
     </p>
-    <p if-not="data">no data.</p>
+    <p if-not="data"> no data. </p>
 </message>

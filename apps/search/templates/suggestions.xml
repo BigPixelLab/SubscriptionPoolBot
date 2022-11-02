@@ -1,9 +1,8 @@
 <message-set>
     <message if="show">
-        <h1>{service.name}</h1>
+        <h1> {service.name} </h1>
         <br/>
-
-        <p>{service.description}</p>
+        <p> {service.description} </p>
 
         <inline-keyboard>
             <kr for="sub_plan" in="sub_plans">
@@ -13,6 +12,7 @@
             </kr>
         </inline-keyboard>
     </message>
+
     <message if-not="show">
         Мы пока не работаем с этим сервисом
     </message>
