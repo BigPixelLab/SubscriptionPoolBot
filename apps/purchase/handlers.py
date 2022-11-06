@@ -172,6 +172,15 @@ async def bill_paid_handler(query: CallbackQuery,
         coupon_models.Coupon.update_expired(callback_data.coupon)
 
     subscription = search_models.Subscription.get(order.subscription)
+
+    if subscription is None:
+        await wm.delete()
+        query.message.reply_markup.inline_keyboard[0].pop()
+        await query.message.edit_reply_markup(query.message.reply_markup)
+        await query.answer()
+        await gls.bot.send_message(query.message.chat.id, 'Этой подписки больше нет')
+        return
+
     service = search_models.Service.get(subscription.service)
 
     await template.render(TEMPLATES / 'bill.xml', {
