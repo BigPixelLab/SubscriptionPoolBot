@@ -4,16 +4,14 @@
     <br/>
     <p> Подал: <a href="tg://user?id={order.customer_id}"> ПОЛЬЗОВАТЕЛЬ </a> </p>
     <p> Оператор:
-        <set cv="processed" to="order.processed_by"/>
-        <a if="processed" href="tg://user?id={order.processed_by}"> ОПЕРАТОР </a>
-        <x if-not="processed"> не обрабатывается </x>
+        <a if="order.processed_by" href="tg://user?id={order.processed_by}"> ОПЕРАТОР </a>
+        <x if="not order.processed_by"> не обрабатывается </x>
     </p>
     <br/>
     <p> Открыт: {order.created_at:%X %x} </p>
     <p> Закрыт:
-        <set cv="closed" to="order.closed_at"/>
-        <x if="closed">{order.closed_at:%X %x}</x>
-        <x if-not="closed">не закрыт</x>
+        <x if="order.closed_at">{order.closed_at:%X %x}</x>
+        <x if="not order.closed_at">не закрыт</x>
     </p>
     <br/>
     <p> Сервис: <b><up> {service} </up></b> </p>

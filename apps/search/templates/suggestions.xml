@@ -13,7 +13,7 @@
         </inline-keyboard>
     </message>
 
-    <message if-not="show">
+    <message if="not show">
         Мы пока не работаем с этим сервисом
     </message>
 </message-set>

@@ -16,7 +16,7 @@
             </x>
         </p>
     </p>
-    <p if-not="orders"> Нет активных заказов </p>
+    <p if="not orders"> Нет активных заказов </p>
 
     <inline-keyboard>
         <button callback_data="cp:update"> Обновить </button>

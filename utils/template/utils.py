@@ -5,9 +5,7 @@ from .types_ import Context
 
 def show_element(element: minidom.Element, context: Context):
     if attr := element.attributes.get('if'):
-        return bool(context[attr.value])
-    elif attr := element.attributes.get('if-not'):
-        return not bool(context[attr.value])
+        return bool(eval(attr.value, {}, context))
     return True
 
 

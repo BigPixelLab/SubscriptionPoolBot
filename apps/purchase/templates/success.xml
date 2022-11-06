@@ -1,5 +1,5 @@
 <message-set>
-    <message if-not="minimized">
+    <message if="not minimized">
         <h1> ЗАКАЗ <order/> <subscription/> </h1>
         <br/>
         <p if="queued">

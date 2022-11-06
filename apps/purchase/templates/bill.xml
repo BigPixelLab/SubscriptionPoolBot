@@ -1,6 +1,6 @@
 <message-set>
     <!-- Сообщение пока счёт не оплачен -->
-    <message if-not="minimized">
+    <message if="not minimized">
         <h1> СЧЁТ ЗА <subscription/> </h1>
         <br/>
         <p> Чтобы продолжить, оплатите счёт по кнопке "Оплатить"
