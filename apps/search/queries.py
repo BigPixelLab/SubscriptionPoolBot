@@ -1,6 +1,3 @@
-import datetime
-
-import settings
 from utils import database
 from . import models
 
@@ -14,6 +11,10 @@ def get_services() -> list[models.Service]:
 
 
 def get_sub_plans(service_id: int) -> list[models.Subscription]:
+    """
+    Возвращает планы подписки для конкретного сервиса,
+    отсортированные по типу и длительности
+    """
     return database.fetch(
         models.Subscription,
         """

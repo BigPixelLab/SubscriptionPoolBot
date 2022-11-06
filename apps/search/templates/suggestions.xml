@@ -7,7 +7,8 @@
         <inline-keyboard>
             <kr for="sub_plan" in="sub_plans">
                 <button callback_data="buy:{sub_plan.id}">
-                    {sub_plan.name} - {sub_plan.price}₽
+                    {sub_plan.name} — {sub_plan.monthly_price}₽/мес
+                    <x if="sub_plan.discount is not None"> ( скидка {sub_plan.discount}% ) </x>
                 </button>
             </kr>
         </inline-keyboard>

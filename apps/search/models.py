@@ -1,6 +1,7 @@
 import datetime
 import decimal
 import typing
+from dataclasses import dataclass
 
 from utils import database
 
@@ -35,7 +36,8 @@ class Service(typing.NamedTuple):
         )
 
 
-class Subscription(typing.NamedTuple):
+@dataclass
+class Subscription:
     id: int
     """Subscription ID"""
     service: int
