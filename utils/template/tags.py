@@ -11,6 +11,8 @@ from .scopes import message_scope, element_scope, inline_keyboard_scope, inline_
 
 
 # Text arranging
+from .. import file
+
 
 @Scope.register('br', message_scope, element_scope)
 def break_parser(*_) -> BlockText:
@@ -141,6 +143,8 @@ def set_cv_parser(element, context) -> None:
 def image_parser(element, context) -> PhotoUri | FSInputFile:
     if file_attr := element.attributes.get('file'):
         return PhotoUri(file_attr.value)
+    if file_attr := element.attributes.get('index'):
+        return PhotoUri(file.get(file_attr.value))
     if src_attr := element.attributes.get('src'):
         return FSInputFile(path=src_attr.value.format_map(context), filename='hello.jpg')
     raise ValueError('Tag "img" must contain "src" attribute')

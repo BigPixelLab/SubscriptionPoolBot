@@ -14,7 +14,7 @@ from glQiwiApi.qiwi.exceptions import QiwiAPIError
 
 import gls
 import settings
-from utils import template
+from utils import template, file
 from utils.feedback import send_feedback, send_waiting
 from utils.input_file_types import BufferedInputFile
 from ..search import models as search_models
@@ -194,7 +194,7 @@ async def bill_paid_handler(query: CallbackQuery,
         'queued': subscription.is_code_required
     }).first()
 
-    render.video = service.bought
+    render.video = file.get(service.bought)
 
     await wm.delete()
     message = await render.send(query.message.chat.id)

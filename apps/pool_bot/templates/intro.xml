@@ -1,5 +1,5 @@
 <message>
-    <img src="apps/pool_bot/templates/image/INTRO.jpg"/>
+    <img index="intro_banner"/>
 
     <h1> БОТ-ПИСКА </h1>
     <br/>

@@ -3,7 +3,7 @@ from pathlib import Path
 
 from aiogram.types import Message
 
-from utils import template
+from utils import template, file
 from . import queries
 from . import utils
 
@@ -28,6 +28,6 @@ async def search_handler(message: Message):
     }).first()
 
     if show:
-        render.photo = service.banner
+        render.photo = file.get(service.banner)
 
     await render.send(message.chat.id)
