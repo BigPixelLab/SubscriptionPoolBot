@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import datetime
+import decimal
 from decimal import Decimal
 from io import BytesIO
 
@@ -8,6 +9,9 @@ from PIL import Image, ImageFont, ImageDraw
 
 
 def price(p: Decimal | None) -> str:
+    if p == decimal.Decimal(0):
+        return '0.00р'
+
     value = abs(p)
     sign = round(p / value)
 
