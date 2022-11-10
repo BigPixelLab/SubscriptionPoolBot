@@ -51,7 +51,7 @@ async def on_startup():
 
 
 async def command_start(message: Message):
-    user_models.User.add_user_last_interaction(message.chat.id, datetime.datetime.now())
+    user_models.User.set_user_last_interaction(message.chat.id, datetime.datetime.now())
     services = queries.get_services_ordered_by_popularity()
     await template.render(TEMPLATES / 'intro.xml', {
         'services': services,
