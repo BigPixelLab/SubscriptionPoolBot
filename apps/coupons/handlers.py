@@ -7,6 +7,7 @@ from aiogram.fsm.context import FSMContext
 
 from utils import manage_message, template
 from . import models
+from ..purchase import handlers as purchase_handlers, callbacks as purchase_callbacks
 
 TEMPLATES = Path('apps/coupons/templates')
 
@@ -18,10 +19,16 @@ async def coupon_handler(message: aiogram.types.Message, coupon_code: str, state
         await template.render(TEMPLATES / 'invalid.xml', {}).send(message.chat.id)
         return
 
+    models.Coupon.update_expired(coupon.code)
+
     if coupon.is_expired:
         await template.render(TEMPLATES / 'expired.xml', {
             'coupon': coupon
         }).send(message.chat.id)
+        return
+
+    if coupon.referer is not None and coupon.referer == message.from_user.id:
+        await template.render(TEMPLATES / 'used_by_referer.xml', {}).send(message.chat.id)
         return
 
     if models.Coupon.is_used(coupon_code, message.from_user.id):
@@ -45,3 +52,12 @@ async def coupon_handler(message: aiogram.types.Message, coupon_code: str, state
 
     await manage_message.delete_marked(state=state, group='search')
     await state.update_data({'coupon': coupon_code})
+
+    if coupon.subscription:
+        await purchase_handlers.buy_view(
+            message.chat.id,
+            purchase_callbacks.BuySubscriptionCallback(
+                sub_id=coupon.subscription
+            ),
+            state
+        )

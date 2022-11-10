@@ -21,6 +21,7 @@ from ..search import models as search_models
 from ..orders import models as order_models
 from ..coupons import models as coupon_models
 from ..operator import models as operator_models
+from ..event import models as event_models
 from . import callbacks, image_generation
 
 TEMPLATES = Path('apps/purchase/templates')
@@ -28,7 +29,12 @@ logger = logging.getLogger(__name__)
 
 
 async def buy_handler(query: CallbackQuery, callback_data: callbacks.BuySubscriptionCallback, state: FSMContext):
-    wm = await send_waiting('⏳ Генерируем счёт...', query.message.chat.id)
+    await buy_view(query.message.chat.id, callback_data, state)
+    await query.answer()
+
+
+async def buy_view(chat_id: int, callback_data: callbacks.BuySubscriptionCallback, state: FSMContext):
+    wm = await send_waiting('⏳ Генерируем счёт...', chat_id)
 
     subscription = search_models.Subscription.get(callback_data.sub_id)
 
@@ -41,6 +47,20 @@ async def buy_handler(query: CallbackQuery, callback_data: callbacks.BuySubscrip
     if coupon_code := data.get('coupon'):
         coupon = coupon_models.Coupon.get_free(coupon_code)
         coupon_discount = subscription.price * decimal.Decimal(coupon.discount / 100)
+
+    # Пользователь пытается купить подписку, на которую не даёт скидку его купон
+    if coupon and coupon.subscription and coupon.subscription != callback_data.sub_id:
+        coupon_discount = decimal.Decimal(0)
+        coupon = None
+
+    # Удаляем купон, если он одноразовый
+    if coupon and coupon.is_one_time:
+        coupon_models.Coupon.delete(coupon.code)
+
+    # Был купон активирован или не был, он должен удалиться из
+    # активированных после генерации чека
+    data['coupon'] = None
+    await state.set_data(data)
 
     commission = (subscription.price - coupon_discount) * decimal.Decimal(settings.QIWI_COMMISSION)
 
@@ -59,8 +79,7 @@ async def buy_handler(query: CallbackQuery, callback_data: callbacks.BuySubscrip
         except QiwiAPIError as error:
             logger.error(error)
             await wm.delete()
-            await query.answer()
-            await send_feedback('Ошибка QIWI API, пожалуйста, обратитесь в поддержку', query.message.chat.id)
+            await send_feedback('Ошибка QIWI API, пожалуйста, обратитесь в поддержку', chat_id)
             return
 
     render = template.render(TEMPLATES / 'bill.xml', {
@@ -89,13 +108,11 @@ async def buy_handler(query: CallbackQuery, callback_data: callbacks.BuySubscrip
     )
 
     await wm.delete()
-    message = await render.send(query.message.chat.id)
+    message = await render.send(chat_id)
     await gls.bot.pin_chat_message(
-        query.message.chat.id,
+        chat_id,
         message.message_id
     )
-
-    await query.answer()
 
 
 async def check_bill_handler(query: CallbackQuery, callback_data: callbacks.CheckBillCallback, state: FSMContext):
@@ -168,9 +185,6 @@ async def bill_paid_handler(query: CallbackQuery,
         callback_data.coupon
     )
 
-    if callback_data.coupon:
-        coupon_models.Coupon.update_expired(callback_data.coupon)
-
     subscription = search_models.Subscription.get(order.subscription)
     service = search_models.Service.get(subscription.service)
 
@@ -184,6 +198,12 @@ async def bill_paid_handler(query: CallbackQuery,
         'minimized': True
     }).first().edit(query.message)
 
+    # ONE PLUS ONE SPOTIFY EVENT CODE GENERATION
+    one_plus_one_spotify_coupon: str | None = None
+    if (not callback_data.coupon and service.name == 'spotify' and event_models.Event.is_going_now('one_plus_one_spotify')):
+        one_plus_one_spotify_coupon = coupon_models.Coupon.generate(
+            100, subscription.id, referer=query.from_user.id, is_one_time=True)
+
     position_in_queue = order_models.Order.get_position_in_queue(order.id, service.name)
     render = template.render(TEMPLATES / 'success.xml', {
         'order': order,
@@ -191,7 +211,8 @@ async def bill_paid_handler(query: CallbackQuery,
         'subscription': subscription.name,
         'position_in_queue': position_in_queue,
         'minimized': False,
-        'queued': subscription.is_code_required
+        'queued': subscription.is_code_required,
+        'one_plus_one_spotify_coupon': one_plus_one_spotify_coupon
     }).first()
 
     render.video = file.get(service.bought)
@@ -234,7 +255,8 @@ async def piq_update_handler(query: CallbackQuery, callback_data: callbacks.PosI
         'subscription': subscription,
         'position_in_queue': position_in_queue,
         'minimized': order.closed_at is not None,
-        'queued': True
+        'queued': True,
+        'one_plus_one_spotify_coupon': None
     }).first().edit(query.message)
 
     await query.answer(

@@ -19,6 +19,7 @@
     <p> Длительность: <m> {sub.duration} </m> </p>
     <p> Цена: {sub.price}₽ </p>
     <p> Оплачено: {order.total}₽ </p>
+    <p if="order.coupon">Купон: {order.coupon}</p>
 
     <inline-keyboard>
         <!-- Passing customer_id to indicate who will get notifications -->
