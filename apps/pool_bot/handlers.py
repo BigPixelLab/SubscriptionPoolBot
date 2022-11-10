@@ -12,6 +12,7 @@ from apps.pool_bot import queries
 from utils import database, template, file
 from ..orders import models as order_models
 from ..search import models as search_models
+from ..user_account import models as user_models
 
 TEMPLATES = Path('apps/pool_bot/templates')
 
@@ -50,6 +51,7 @@ async def on_startup():
 
 
 async def command_start(message: Message):
+    user_models.User.set_user_last_interaction(message.chat.id, datetime.datetime.now())
     services = queries.get_services_ordered_by_popularity()
     await template.render(TEMPLATES / 'intro.xml', {
         'services': services,
