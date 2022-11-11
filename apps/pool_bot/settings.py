@@ -18,4 +18,5 @@ UPDATE_RESOURCES = [
     Resource('photo', 'netflix_service_banner', 'resources/NETFLIX-BANNER.jpg', 'NETFLIX-BANNER.jpg'),
     Resource('photo', 'spotify_service_banner', 'resources/SPOTIFY-BANNER.jpg', 'SPOTIFY-BANNER.jpg'),
     Resource('photo', 'intro_banner', 'resources/INTRO.jpg', 'INTRO.jpg'),
+    Resource('photo', 'one_plus_one_spotify_banner', 'resources/ONE_PLUS_ONE_SPOTIFY_BANNER.png', 'ONE_PLUS_ONE_SPOTIFY_BANNER.png')
 ]

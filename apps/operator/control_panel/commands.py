@@ -18,3 +18,8 @@ router.callback_query(
     F.data == 'cp:update',
     filters.is_employee
 )(handlers.update_operator_panel_handler)
+
+router.message(
+    Command(commands=['post']),
+    filters.is_employee
+)(handlers.send_mailing)

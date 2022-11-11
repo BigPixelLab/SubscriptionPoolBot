@@ -1,10 +1,17 @@
 from pathlib import Path
 
 from aiogram.types import Message, CallbackQuery
+from aiogram.filters import CommandObject
+
+from contextlib import suppress
+from aiogram.exceptions import TelegramBadRequest
+
+from ...user_account import models as user_models
 
 import settings
 from apps.operator.control_panel import queries
 from utils import template
+from utils.feedback import send_feedback
 
 TEMPLATES = Path('apps/operator/control_panel/templates')
 
@@ -26,5 +33,18 @@ async def update_operator_panel_handler(query: CallbackQuery):
         'count': orders_count,
         'total_count': total_count,
         'orders': top_orders
-    }).first().edit(query.message)
+}).first().edit(query.message)
     await query.answer('Панель оператора обновлена')
+
+
+async def send_mailing(message: Message, command: CommandObject):
+    post_template = settings.POST_TEMPLATES.get(command.args)
+    if post_template is None:
+        await send_feedback('Введено неверное название события. Попробуйте ещё раз', message.chat.id)
+        return
+
+    render = template.render(post_template, {}).first()
+    users = user_models.User.get_users()
+    for user in users:
+        with suppress(TelegramBadRequest):
+            await render.send(user)
