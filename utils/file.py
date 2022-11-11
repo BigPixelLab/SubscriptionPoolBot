@@ -21,6 +21,7 @@ class FileIndex(SnakeCaseStrEnum):
     NETFLIX_BOUGHT_VIDEO = auto()
     SPOTIFY_SERVICE_BANNER = auto()
     SPOTIFY_BOUGHT_VIDEO = auto()
+    ONE_PLUS_ONE_SPOTIFY_BANNER = auto()
 
 
 # Format: {bot_id: {file_index: file_id}}

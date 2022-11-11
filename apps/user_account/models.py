@@ -22,3 +22,12 @@ class User(typing.NamedTuple):
             user_id=user_id,
             last_interaction=time
         )
+
+    @classmethod
+    def get_users(cls) -> list[int]:
+        return database.fetch_values(
+            """
+                select user_id from "User"
+            """,
+            'Getting list of users to send mailing'
+        )
