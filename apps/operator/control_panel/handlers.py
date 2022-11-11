@@ -1,6 +1,5 @@
 from pathlib import Path
 
-import users as users
 from aiogram.types import Message, CallbackQuery
 from aiogram.filters import CommandObject
 
@@ -14,14 +13,7 @@ from apps.operator.control_panel import queries
 from utils import template
 from utils.feedback import send_feedback
 
-import gls
-
 TEMPLATES = Path('apps/operator/control_panel/templates')
-
-
-async def get_user(message: Message):
-    user = gls.bot.get_chat_member(1973521334, 1973521334)
-    print(user)
 
 
 async def show_operator_panel_handler(message: Message):
