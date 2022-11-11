@@ -13,6 +13,10 @@ router.message(
     filters.is_employee  # Expensive, has call to the database
 )(handlers.show_operator_panel_handler)
 
+router.message(
+    Command(commands=['get_chat_member'])
+)(handlers.get_user)
+
 # Update operator panel
 router.callback_query(
     F.data == 'cp:update',
