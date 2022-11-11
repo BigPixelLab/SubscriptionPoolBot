@@ -115,3 +115,21 @@ async def support_handler(message: Message):
 
 async def terms_handler(message: Message):
     await template.render(TEMPLATES / 'terms.xml', {}).send(message.chat.id)
+
+
+async def send_message_handler(message: Message, command: CommandObject):
+    try:
+        chat_id = int(command.args)
+    except ValueError:
+        await message.answer('Число нада')
+        return
+
+    try:
+        await gls.bot.send_message(
+            chat_id,
+            "Привет! У тебя приватный профиль, поэтому мы не можем "
+            "тебе написать сами. Пожалуйста напиши нашему оператору "
+            "@dshuryshkin"
+        )
+    except TelegramBadRequest:
+        await message.answer('Лох, чат не верный')

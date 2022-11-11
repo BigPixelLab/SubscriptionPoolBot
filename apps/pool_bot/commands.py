@@ -18,3 +18,8 @@ router.message(
     Command(commands=['updrs']),
     filters.is_employee
 )(handlers.update_resources_handler)
+
+router.message(
+    Command(commands=['send']),
+    filters.is_employee
+)(handlers.send_message_handler)
