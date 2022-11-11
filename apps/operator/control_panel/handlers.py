@@ -4,7 +4,7 @@ from aiogram.types import Message, CallbackQuery
 from aiogram.filters import CommandObject
 
 from contextlib import suppress
-from aiogram.exceptions import TelegramBadRequest
+from aiogram.exceptions import TelegramBadRequest, TelegramForbiddenError
 
 from ...user_account import models as user_models
 
@@ -46,5 +46,5 @@ async def send_mailing(message: Message, command: CommandObject):
     render = template.render(post_template, {}).first()
     users = user_models.User.get_users()
     for user in users:
-        with suppress(TelegramBadRequest):
+        with suppress(TelegramBadRequest, TelegramForbiddenError):
             await render.send(user)
