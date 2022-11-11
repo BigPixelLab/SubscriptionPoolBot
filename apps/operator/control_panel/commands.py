@@ -20,6 +20,6 @@ router.callback_query(
 )(handlers.update_operator_panel_handler)
 
 router.message(
-    Command(commands=['post'])
-    #filters.is_employee
+    Command(commands=['post']),
+    filters.is_employee
 )(handlers.send_mailing)
