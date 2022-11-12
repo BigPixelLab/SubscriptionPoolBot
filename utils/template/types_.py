@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from typing import Any
 
 import aiogram
-from aiogram.exceptions import TelegramBadRequest
+from aiogram.exceptions import TelegramBadRequest, TelegramForbiddenError
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton, Message
 
 Context = dict[str, Any]
@@ -40,7 +40,7 @@ class MessageRender:
 
         return result
 
-    async def send(self, chat_id: int, bot: aiogram.Bot = None):
+    async def _send(self, chat_id: int, bot: aiogram.Bot = None):
         bot = bot or aiogram.Bot.get_current()
         if self.photo:
             return await bot.send_photo(chat_id, **self.export_for_aiogram())
@@ -48,28 +48,35 @@ class MessageRender:
             return await bot.send_animation(chat_id, **self.export_for_aiogram())
         return await bot.send_message(chat_id, **self.export_for_aiogram())
 
-    async def edit(self, message: Message, bot: aiogram.Bot = None):
+    async def send(self, chat_id: int, bot: aiogram.Bot = None):
+        with suppress(TelegramBadRequest, TelegramForbiddenError):
+            await self._send(chat_id, bot)
+
+    async def _edit(self, message: Message, bot: aiogram.Bot = None):
         bot = bot or aiogram.Bot.get_current()
-        with suppress(TelegramBadRequest):
-            is_caption = bool(message.photo) or bool(message.animation)
+        is_caption = bool(message.photo) or bool(message.animation)
 
-            config = self.export_for_aiogram(
-                force_caption=is_caption,
-                no_media=True
-            )
+        config = self.export_for_aiogram(
+            force_caption=is_caption,
+            no_media=True
+        )
 
-            if is_caption:
-                return await bot.edit_message_caption(
-                    chat_id=message.chat.id,
-                    message_id=message.message_id,
-                    **config
-                )
-
-            return await bot.edit_message_text(
+        if is_caption:
+            return await bot.edit_message_caption(
                 chat_id=message.chat.id,
                 message_id=message.message_id,
                 **config
             )
+
+        return await bot.edit_message_text(
+            chat_id=message.chat.id,
+            message_id=message.message_id,
+            **config
+        )
+
+    async def edit(self, message: Message, bot: aiogram.Bot = None):
+        with suppress(TelegramBadRequest, TelegramForbiddenError):
+            await self._edit(message, bot)
 
 
 class MessageRenderList(list[MessageRender]):
