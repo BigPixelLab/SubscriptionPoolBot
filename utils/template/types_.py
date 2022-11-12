@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from contextlib import suppress
+import logging
 from dataclasses import dataclass
 from typing import Any
 
@@ -9,6 +9,7 @@ from aiogram.exceptions import TelegramBadRequest, TelegramForbiddenError
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton, Message
 
 Context = dict[str, Any]
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -48,9 +49,13 @@ class MessageRender:
             return await bot.send_animation(chat_id, **self.export_for_aiogram())
         return await bot.send_message(chat_id, **self.export_for_aiogram())
 
-    async def send(self, chat_id: int, bot: aiogram.Bot = None):
-        with suppress(TelegramBadRequest, TelegramForbiddenError):
-            await self._send(chat_id, bot)
+    async def send(self, chat_id: int, bot: aiogram.Bot = None, silence_errors: bool = True):
+        try:
+            return await self._send(chat_id, bot)
+        except (TelegramBadRequest, TelegramForbiddenError) as error:
+            if not silence_errors:
+                raise error
+            logger.error(repr(error))
 
     async def _edit(self, message: Message, bot: aiogram.Bot = None):
         bot = bot or aiogram.Bot.get_current()
@@ -74,9 +79,13 @@ class MessageRender:
             **config
         )
 
-    async def edit(self, message: Message, bot: aiogram.Bot = None):
-        with suppress(TelegramBadRequest, TelegramForbiddenError):
-            await self._edit(message, bot)
+    async def edit(self, message: Message, bot: aiogram.Bot = None, silence_errors: bool = True):
+        try:
+            return await self._edit(message, bot)
+        except (TelegramBadRequest, TelegramForbiddenError) as error:
+            if not silence_errors:
+                raise error
+            logger.error(repr(error))
 
 
 class MessageRenderList(list[MessageRender]):
