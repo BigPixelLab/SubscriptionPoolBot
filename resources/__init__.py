@@ -22,7 +22,7 @@ RESOURCES = [
     # MAIN
     Resource(
         index='intro_banner',
-        path='resources/INTRO.jpg',
+        path='resources/botpiska/INTRO.jpg',
         name='INTRO.jpg',
         type=ResourceType.PHOTO
     ),
@@ -30,25 +30,25 @@ RESOURCES = [
     # SERVICES
     Resource(
         index='netflix_bought_video',
-        path='resources/NETFLIX-BOUGHT.mp4',
+        path='resources/services/netflix/NETFLIX-BOUGHT.mp4',
         name='NETFLIX-BOUGHT.mp4',
         type=ResourceType.DOCUMENT
     ),
     Resource(
         index='netflix_service_banner',
-        path='resources/NETFLIX-BANNER.jpg',
+        path='resources/services/netflix/NETFLIX-BANNER.jpg',
         name='NETFLIX-BANNER.jpg',
         type=ResourceType.PHOTO
     ),
     Resource(
         index='spotify_bought_video',
-        path='resources/SPOTIFY-BOUGHT.mp4',
+        path='resources/services/spotify/SPOTIFY-BOUGHT.mp4',
         name='SPOTIFY-BOUGHT.mp4',
         type=ResourceType.DOCUMENT
     ),
     Resource(
         index='spotify_service_banner',
-        path='resources/SPOTIFY-BANNER.jpg',
+        path='resources/services/spotify/SPOTIFY-BANNER.jpg',
         name='SPOTIFY-BANNER.jpg',
         type=ResourceType.PHOTO
     ),
@@ -56,7 +56,7 @@ RESOURCES = [
     # EVENTS
     Resource(
         index='one_plus_one_spotify_banner',
-        path='resources/ONE_PLUS_ONE_SPOTIFY_BANNER.png',
+        path='resources/events/one_plus_one_spotify/ONE_PLUS_ONE_SPOTIFY_BANNER.png',
         name='ONE_PLUS_ONE_SPOTIFY_BANNER.png',
         type=ResourceType.PHOTO
     ),
