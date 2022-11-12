@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+from contextlib import suppress
 from dataclasses import dataclass
 from typing import Any
 
@@ -49,13 +50,14 @@ class MessageRender:
             return await bot.send_animation(chat_id, **self.export_for_aiogram())
         return await bot.send_message(chat_id, **self.export_for_aiogram())
 
-    async def send(self, chat_id: int, bot: aiogram.Bot = None, silence_errors: bool = True):
-        try:
+    async def _send_silent(self, chat_id: int, bot: aiogram.Bot = None):
+        with suppress(TelegramBadRequest, TelegramForbiddenError):
             return await self._send(chat_id, bot)
-        except (TelegramBadRequest, TelegramForbiddenError) as error:
-            if not silence_errors:
-                raise error
-            logger.error(repr(error))
+
+    async def send(self, chat_id: int, bot: aiogram.Bot = None, silence_errors: bool = True):
+        if silence_errors:
+            return await self._send_silent(chat_id, bot)
+        return await self._send(chat_id, bot)
 
     async def _edit(self, message: Message, bot: aiogram.Bot = None):
         bot = bot or aiogram.Bot.get_current()
@@ -79,13 +81,14 @@ class MessageRender:
             **config
         )
 
-    async def edit(self, message: Message, bot: aiogram.Bot = None, silence_errors: bool = True):
-        try:
+    async def _edit_silent(self, message: Message, bot: aiogram.Bot = None):
+        with suppress(TelegramBadRequest, TelegramForbiddenError):
             return await self._edit(message, bot)
-        except (TelegramBadRequest, TelegramForbiddenError) as error:
-            if not silence_errors:
-                raise error
-            logger.error(repr(error))
+
+    async def edit(self, message: Message, bot: aiogram.Bot = None, silence_errors: bool = True):
+        if silence_errors:
+            return await self._edit_silent(message, bot)
+        return await self._edit(message, bot)
 
 
 class MessageRenderList(list[MessageRender]):
