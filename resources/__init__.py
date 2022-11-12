@@ -18,6 +18,7 @@ class Resource(typing.NamedTuple):
 
 
 # Files that will be updated by /updrs command
+# and uploaded to telegram
 RESOURCES = [
     # MAIN
     Resource(
@@ -55,9 +56,15 @@ RESOURCES = [
 
     # EVENTS
     Resource(
-        index='one_plus_one_spotify_banner',
-        path='resources/events/one_plus_one_spotify/ONE_PLUS_ONE_SPOTIFY_BANNER.png',
-        name='ONE_PLUS_ONE_SPOTIFY_BANNER.png',
+        index='one_plus_one_spotify_3h_banner',
+        path='resources/events/one_plus_one_spotify/ONE_PLUS_ONE_SPOTIFY_3H_BANNER.png',
+        name='ONE_PLUS_ONE_SPOTIFY_3H_BANNER.png',
+        type=ResourceType.PHOTO
+    ),
+    Resource(
+        index='one_plus_one_spotify_10h_banner',
+        path='resources/events/one_plus_one_spotify/ONE_PLUS_ONE_SPOTIFY_10H_BANNER.png',
+        name='ONE_PLUS_ONE_SPOTIFY_10H_BANNER.png',
         type=ResourceType.PHOTO
     ),
 ]

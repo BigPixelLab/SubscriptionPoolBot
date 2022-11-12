@@ -2,11 +2,12 @@ import datetime
 from pathlib import Path
 
 from aiogram import Bot
-from aiogram.exceptions import TelegramBadRequest
+from aiogram.exceptions import TelegramBadRequest, TelegramForbiddenError
 from aiogram.filters import CommandObject
 from aiogram.types import FSInputFile, Message
 
 import gls
+import posts
 import resources
 import settings
 from apps.pool_bot import queries
@@ -61,6 +62,27 @@ async def command_start(message: Message):
     }).send(message.chat.id)
 
 
+async def post_handler(message: Message, command: CommandObject):
+    post: posts.Post = posts.POSTS_INDEX_MAP.get(command.args)
+
+    if post is None:
+        await message.answer('❌ Введено неверное название события. '
+                             'Попробуйте ещё раз')
+        return
+
+    render = template.render(post.path, {}).first()
+    users = user_models.User.get_all()
+    skipped_total = 0
+    for user in users:
+        try:
+            await render.send(user, silence_errors=False)
+        except (TelegramBadRequest, TelegramForbiddenError):
+            skipped_total += 1
+    else:
+        await message.answer(f'✔ Пост отправлен успешно, получателей: '
+                             f'{len(users) - skipped_total}/{len(users)}')
+
+
 async def update_resources_handler(message: Message, command: CommandObject):
     chat = message.chat.id
     bot = Bot.get_current()
@@ -90,7 +112,7 @@ async def update_resources_handler(message: Message, command: CommandObject):
 
         try:
             message = await send(chat, FSInputFile(res.path, res.name))
-        except TelegramBadRequest:
+        except (TelegramBadRequest, TelegramForbiddenError):
             await gls.bot.send_message(chat, 'Failed to upload resource')
             continue
 

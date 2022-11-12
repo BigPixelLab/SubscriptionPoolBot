@@ -15,6 +15,11 @@ router.message(F.text == 'Поддержка')(handlers.support_handler)
 router.message(F.text == 'Соглашение')(handlers.terms_handler)
 
 router.message(
+    Command(commands=['post']),
+    filters.is_employee
+)(handlers.post_handler)
+
+router.message(
     Command(commands=['updrs']),
     filters.is_employee
 )(handlers.update_resources_handler)

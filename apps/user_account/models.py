@@ -24,7 +24,7 @@ class User(typing.NamedTuple):
         )
 
     @classmethod
-    def get_users(cls) -> list[int]:
+    def get_all(cls) -> list[int]:
         return database.fetch_values(
             """
                 select user_id from "User"
