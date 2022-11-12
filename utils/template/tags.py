@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from aiogram.types import KeyboardButton, ReplyKeyboardMarkup, InlineKeyboardButton, InlineKeyboardMarkup, FSInputFile
 
+import resources
 from .parsing import parse_element, parse_inline_keyboard_row, parse_inline_keyboard, parse_reply_keyboard, \
     parse_reply_keyboard_row
 from .types_ import Scope, ReplyKeyboardRow, InlineKeyboardRow, PhotoUri, InlineText, BlockText, VideoUri
@@ -11,9 +12,6 @@ from .scopes import message_scope, element_scope, inline_keyboard_scope, inline_
 
 
 # Text arranging
-from .. import file
-
-
 @Scope.register('br', message_scope, element_scope)
 def break_parser(*_) -> BlockText:
     return BlockText('')
@@ -144,7 +142,8 @@ def image_parser(element, context) -> PhotoUri | FSInputFile:
     if file_attr := element.attributes.get('file'):
         return PhotoUri(file_attr.value)
     if file_attr := element.attributes.get('index'):
-        return PhotoUri(file.get(file_attr.value))
+        from aiogram import Bot
+        return PhotoUri(resources.get(file_attr.value, key=Bot.get_current().id))
     if src_attr := element.attributes.get('src'):
         return FSInputFile(path=src_attr.value.format_map(context), filename='hello.jpg')
     raise ValueError('Tag "img" must contain "src" attribute')

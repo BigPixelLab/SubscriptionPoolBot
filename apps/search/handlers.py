@@ -2,9 +2,11 @@ import itertools
 import logging
 from pathlib import Path
 
+from aiogram import Bot
 from aiogram.types import Message
 
-from utils import template, file
+import resources
+from utils import template
 from . import queries
 from . import utils
 
@@ -45,6 +47,6 @@ async def search_handler(message: Message):
     }).first()
 
     if show:
-        render.photo = file.get(service.banner)
+        render.photo = resources.get(service.banner, key=Bot.get_current().id)
 
     await render.send(message.chat.id)

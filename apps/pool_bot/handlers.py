@@ -7,9 +7,11 @@ from aiogram.filters import CommandObject
 from aiogram.types import FSInputFile, Message
 
 import gls
+import resources
 import settings
 from apps.pool_bot import queries
-from utils import database, template, file
+from utils import database, template
+import utils.misc
 from ..orders import models as order_models
 from ..search import models as search_models
 from ..user_account import models as user_models
@@ -63,44 +65,37 @@ async def update_resources_handler(message: Message, command: CommandObject):
     chat = message.chat.id
     bot = Bot.get_current()
     methods = {
-        'document': (gls.bot.send_document, lambda m: m.document.file_id),
-        'photo': (gls.bot.send_photo, lambda m: m.photo[0].file_id)
+        # ResourceType: (send_file_method, extract_file_id_method)
+        resources.ResourceType.DOCUMENT: (
+            gls.bot.send_document,
+            lambda m: m.document.file_id
+        ),
+        resources.ResourceType.PHOTO: (
+            gls.bot.send_photo,
+            lambda m: m.photo[0].file_id
+        )
     }
 
-    try:
-        assert command.args is not None
-        resources = [next(res for res in settings.UPDATE_RESOURCES if res.index == command.args)]
-    except AssertionError:
-        resources = settings.UPDATE_RESOURCES
-    except StopIteration:
+    if command.args is None:
+        _resources = resources.RESOURCES
+    elif res := utils.misc.find(command.args, resources.RESOURCES, key=lambda x: x.index):
+        _resources = [res]
+    else:
         await message.answer('No such resource.')
         return
 
-    for i, resource in enumerate(resources):
-        await gls.bot.send_message(chat, f'UPLOADING "{resource.name}" ({i + 1}/{len(resources)})...')
-        send, extract = methods[resource.type]
+    for i, res in enumerate(_resources):
+        await gls.bot.send_message(chat, f'UPLOADING "{res.name}" ({i + 1}/{len(_resources)})...')
+        send, extract = methods[res.type]
 
         try:
-            message = await send(chat, FSInputFile(resource.path, resource.name))
+            message = await send(chat, FSInputFile(res.path, res.name))
         except TelegramBadRequest:
             await gls.bot.send_message(chat, 'Failed to upload resource')
             continue
 
         file_id = extract(message)
-        database.execute(
-            f"""
-                insert into "File" (bot_id, {resource.index})
-                values (%(bot_id)s, %(file_id)s)
-                on conflict (bot_id) do update set
-                    {resource.index} = excluded.{resource.index}
-            """,
-            f'Updating {resource.index=} to {file_id=}',
-            file_id=file_id,
-            bot_id=bot.id
-        )
-
-        # Cache needs to be cleared for changes to be visible
-        file.clear_cache(file_index=resource.index)
+        resources.update(res.index, file_id, key=bot.id)
 
         await gls.bot.send_message(chat, f'file_id=<code>{file_id}</code>')
 

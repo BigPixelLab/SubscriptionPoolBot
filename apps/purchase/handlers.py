@@ -13,8 +13,9 @@ from glQiwiApi.qiwi.clients.p2p.types import Bill
 from glQiwiApi.qiwi.exceptions import QiwiAPIError
 
 import gls
+import resources
 import settings
-from utils import template, file
+from utils import template
 from utils.feedback import send_feedback, send_waiting
 from utils.input_file_types import BufferedInputFile
 from ..search import models as search_models
@@ -200,7 +201,7 @@ async def bill_paid_handler(query: CallbackQuery,
 
     # ONE PLUS ONE SPOTIFY EVENT CODE GENERATION
     one_plus_one_spotify_coupon: str | None = None
-    if (not callback_data.coupon and service.name == 'spotify' and event_models.Event.is_going_now('one_plus_one_spotify')):
+    if not callback_data.coupon and service.name == 'spotify' and event_models.Event.is_going_now('one_plus_one_spotify'):
         one_plus_one_spotify_coupon = coupon_models.Coupon.generate(
             100, subscription.id, referer=query.from_user.id, is_one_time=True)
 
@@ -215,7 +216,7 @@ async def bill_paid_handler(query: CallbackQuery,
         'one_plus_one_spotify_coupon': one_plus_one_spotify_coupon
     }).first()
 
-    render.video = file.get(service.bought)
+    render.video = resources.get(service.bought, key=query.message.via_bot.id)
 
     await wm.delete()
     message = await render.send(query.message.chat.id)
