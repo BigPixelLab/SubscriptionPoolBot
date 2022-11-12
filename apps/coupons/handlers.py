@@ -5,7 +5,7 @@ from pathlib import Path
 import aiogram.types
 from aiogram.fsm.context import FSMContext
 
-from utils import manage_message, template
+from utils import template
 from . import models
 from ..purchase import handlers as purchase_handlers, callbacks as purchase_callbacks
 
@@ -50,7 +50,6 @@ async def coupon_handler(message: aiogram.types.Message, coupon_code: str, state
             'coupon': coupon
         }).send(message.chat.id)
 
-    await manage_message.delete_marked(state=state, group='search')
     await state.update_data({'coupon': coupon_code})
 
     if coupon.subscription:
