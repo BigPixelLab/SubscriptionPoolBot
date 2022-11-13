@@ -100,8 +100,8 @@ async def update_resources_handler(message: Message, command: CommandObject):
     }
 
     if command.args is None:
-        _resources = resources.RESOURCES
-    elif res := utils.misc.find(command.args, resources.RESOURCES, key=lambda x: x.index):
+        _resources = resources.UPLOADED_RESOURCES
+    elif res := utils.misc.find(command.args, resources.UPLOADED_RESOURCES, key=lambda x: x.index):
         _resources = [res]
     else:
         await message.answer('No such resource.')

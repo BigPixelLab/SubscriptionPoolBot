@@ -97,6 +97,7 @@ RESOURCES = [
 # Format: {bot_id: {file_index: file_id}}
 _cached: dict[int, dict[str, str]] = {}
 
+UPLOADED_RESOURCES = [res for res in RESOURCES if isinstance(res, UploadedResource)]
 RESOURCE_INDEX_MAP = {res.index: res for res in RESOURCES if isinstance(res, Resource)}
 
 # Structure to quick-test valid file indexes
