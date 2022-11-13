@@ -6,6 +6,7 @@ import logging
 from contextlib import suppress
 from pathlib import Path
 
+from aiogram import Bot
 from aiogram.exceptions import TelegramBadRequest
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, WebAppInfo, Message
@@ -216,7 +217,7 @@ async def bill_paid_handler(query: CallbackQuery,
         'one_plus_one_spotify_coupon': one_plus_one_spotify_coupon
     }).first()
 
-    render.video = resources.get(service.bought, key=query.message.via_bot.id)
+    render.video = resources.get(service.bought, key=Bot.get_current().id)
 
     await wm.delete()
     message = await render.send(query.message.chat.id)

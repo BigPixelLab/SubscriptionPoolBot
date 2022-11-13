@@ -1,5 +1,5 @@
 import enum
-import typing
+from dataclasses import dataclass
 
 from utils import database
 
@@ -10,44 +10,62 @@ class ResourceType(enum.Enum):
     PHOTO = enum.auto()
 
 
-class Resource(typing.NamedTuple):
-    type: ResourceType
+@dataclass
+class Resource:
     index: str
     path: str
+
+
+@dataclass
+class UploadedResource(Resource):
     name: str
+    type: ResourceType
+
+
+@dataclass
+class LocalResource(Resource):
+    pass
 
 
 # Files that will be updated by /updrs command
 # and uploaded to telegram
 RESOURCES = [
     # MAIN
-    Resource(
+    UploadedResource(
         index='intro_banner',
         path='resources/botpiska/INTRO.jpg',
         name='INTRO.jpg',
         type=ResourceType.PHOTO
     ),
+    LocalResource(
+        index='bill',
+        path='resources/botpiska/BILL.png',
+    ),
+    LocalResource(
+        index='bill_font',
+        path='resources/botpiska/shtrixfr57.ttf'
+    ),
 
     # SERVICES
-    Resource(
+    UploadedResource(
         index='netflix_bought_video',
         path='resources/services/netflix/NETFLIX-BOUGHT.mp4',
         name='NETFLIX-BOUGHT.mp4',
         type=ResourceType.DOCUMENT
     ),
-    Resource(
+    UploadedResource(
         index='netflix_service_banner',
         path='resources/services/netflix/NETFLIX-BANNER.jpg',
         name='NETFLIX-BANNER.jpg',
         type=ResourceType.PHOTO
     ),
-    Resource(
+    UploadedResource(
         index='spotify_bought_video',
         path='resources/services/spotify/SPOTIFY-BOUGHT.mp4',
         name='SPOTIFY-BOUGHT.mp4',
         type=ResourceType.DOCUMENT
     ),
-    Resource(
+    UploadedResource(
         index='spotify_service_banner',
         path='resources/services/spotify/SPOTIFY-BANNER.jpg',
         name='SPOTIFY-BANNER.jpg',
@@ -55,13 +73,13 @@ RESOURCES = [
     ),
 
     # EVENTS
-    Resource(
+    UploadedResource(
         index='one_plus_one_spotify_3h_banner',
         path='resources/events/one_plus_one_spotify/ONE_PLUS_ONE_SPOTIFY_3H_BANNER.png',
         name='ONE_PLUS_ONE_SPOTIFY_3H_BANNER.png',
         type=ResourceType.PHOTO
     ),
-    Resource(
+    UploadedResource(
         index='one_plus_one_spotify_10h_banner',
         path='resources/events/one_plus_one_spotify/ONE_PLUS_ONE_SPOTIFY_10H_BANNER.png',
         name='ONE_PLUS_ONE_SPOTIFY_10H_BANNER.png',
@@ -73,32 +91,40 @@ RESOURCES = [
 # Format: {bot_id: {file_index: file_id}}
 _cached: dict[int, dict[str, str]] = {}
 
+RESOURCE_INDEX_MAP = {res.index: res for res in RESOURCES if isinstance(res, Resource)}
+
 # Structure to quick-test valid file indexes
-VALID_FILE_INDEXES = set(res.index for res in RESOURCES)
+UPLOADED_RESOURCE_INDEXES = set(
+    res.index
+    for res in RESOURCE_INDEX_MAP.values()
+    if isinstance(res, UploadedResource)
+)
+RESOURCE_INDEXES = set(RESOURCE_INDEX_MAP.keys())
 
 
 def get(index: str, *, key: int, use_cache: bool = True) -> str:
-    """ Возвращает file_id ресурса """
+    """ Возвращает file_id для UploadedResource по индексу """
+    assert index in UPLOADED_RESOURCE_INDEXES
+
     _cached.setdefault(key, {})
     cache = _cached.get(key)
 
-    file_index = str(index)
-    assert file_index in VALID_FILE_INDEXES
-
-    if use_cache and (file_id := cache.get(file_index)):
+    if use_cache and (file_id := cache.get(index)):
         return file_id
 
     file_id = database.single_value(
-        f""" select {file_index} from "File" where bot_id = %(bot_id)s """,
-        f'Caching file with index "{file_index}"',
+        f""" select {index} from "File" where bot_id = %(bot_id)s """,
+        f'Caching file with index "{index}"',
         bot_id=key
     )
 
-    cache[file_index] = file_id
+    cache[index] = file_id
     return file_id
 
 
 def update(index: str, file_id: str, /, key: int):
+    """ Обновляет file_id по индексу, только для UploadedResource """
+    assert index in UPLOADED_RESOURCE_INDEXES
     database.execute(
         f"""
             insert into "File" (bot_id, {index})
@@ -111,6 +137,12 @@ def update(index: str, file_id: str, /, key: int):
         bot_id=key
     )
     clear_cache(file_index=index, key=key)
+
+
+def resolve(index: str) -> Resource:
+    """ Возвращает объект ресурса по его индексу """
+    assert index in RESOURCE_INDEXES
+    return RESOURCE_INDEX_MAP[index]
 
 
 def clear_cache(*, key: int, file_index: str = None):

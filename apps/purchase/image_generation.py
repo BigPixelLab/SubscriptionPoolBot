@@ -7,6 +7,8 @@ from io import BytesIO
 
 from PIL import Image, ImageFont, ImageDraw
 
+import resources
+
 
 def price(p: Decimal | None) -> str:
     if p == decimal.Decimal(0):
@@ -21,10 +23,11 @@ def price(p: Decimal | None) -> str:
 
 
 def render_bill(bill: list[tuple[str, Decimal]], total: Decimal):
-    template = Image.open("apps/purchase/templates/image/bill2.png")
+    template = Image.open(resources.resolve('bill').path)
 
-    content_font = ImageFont.truetype("apps/purchase/fonts/shtrixfr57.ttf", size=80)
-    total_font = ImageFont.truetype("apps/purchase/fonts/shtrixfr57.ttf", size=120)
+    font_path = resources.resolve('bill_font').path
+    content_font = ImageFont.truetype(font_path, size=80)
+    total_font = ImageFont.truetype(font_path, size=120)
     draw = ImageDraw.Draw(template)
 
     # Date and time
