@@ -85,6 +85,12 @@ RESOURCES = [
         name='ONE_PLUS_ONE_SPOTIFY_10H_BANNER.png',
         type=ResourceType.PHOTO
     ),
+    UploadedResource(
+        index='promo_for_fastest_30',
+        path='resources/events/daily_posts/PROMO-FOR-FASTEST-30.jpg',
+        name='PROMO-FOR-FASTEST-30.jpg',
+        type=ResourceType.PHOTO
+    )
 ]
 
 

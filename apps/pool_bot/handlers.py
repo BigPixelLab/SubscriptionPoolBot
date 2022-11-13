@@ -70,7 +70,8 @@ async def post_handler(message: Message, command: CommandObject):
                              'Попробуйте ещё раз')
         return
 
-    render = template.render(post.path, {}).first()
+    context = post.context if isinstance(post.context, dict) else post.context()
+    render = template.render(post.path, context).first()
     users = user_models.User.get_all()
     skipped_total = 0
     for user in users:
