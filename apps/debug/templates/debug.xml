@@ -1,5 +1,6 @@
 <message>
     <h1> ПОЛЬЗОВАТЕЛЬСКИЕ ДАННЫЕ </h1>
+    <p><aln-l width="12"> user: </aln-l> {user_id} </p>
     <p for="key value" in="data">
         <m><aln-l width="12"> {key}: </aln-l> {value} </m>
     </p>

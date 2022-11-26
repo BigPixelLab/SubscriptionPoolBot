@@ -11,6 +11,7 @@ TEMPLATES = Path('apps/debug/templates')
 async def command_debug(message: Message, state: FSMContext):
     data = await state.get_data()
     await template.render(TEMPLATES / 'debug.xml', {
+        'user_id': message.from_user.id,
         'data': data.items()
     }).send(message.chat.id)
 

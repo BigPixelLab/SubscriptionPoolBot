@@ -95,10 +95,10 @@ class MessageRenderList(list[MessageRender]):
     def __init__(self, *args, **kwargs):
         super(MessageRenderList, self).__init__(*args, **kwargs)
 
-    async def send(self, chat_id: int, bot: aiogram.Bot = None):
+    async def send(self, chat_id: int, bot: aiogram.Bot = None, silence_errors: bool = True):
         sent_messages = []
         for message in self:
-            sent_messages.append(await message.send(chat_id, bot=bot))
+            sent_messages.append(await message.send(chat_id, bot=bot, silence_errors=silence_errors))
         return sent_messages
 
     def first(self) -> MessageRender | None:
