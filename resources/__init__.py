@@ -71,6 +71,14 @@ RESOURCES = [
         name='SPOTIFY-BANNER.jpg',
         type=ResourceType.PHOTO
     ),
+    LocalResource(
+        index='spotify_service_term',
+        path='resources/services/spotify/spotify_terms.xml'
+    ),
+    LocalResource(
+        index='netflix_service_term',
+        path='resources/services/netflix/netflix_terms.xml'
+    ),
 
     # EVENTS
     UploadedResource(
