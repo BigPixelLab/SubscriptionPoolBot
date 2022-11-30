@@ -39,17 +39,6 @@ async def purchase_handler(
     )
 
 
-async def service_terms_handler(query: CallbackQuery, callback_data: callbacks.TermsCallback):
-    await template.render(resources.resolve(callback_data.service_term).path, {
-        'terms': callback_data.service_term
-    }).send(query.message.chat.id, silence_errors=False)
-    await query.answer()
-
-
-async def delete_term_message_handler(query: CallbackQuery):
-    await query.message.delete()
-
-
 async def send_bill_message(
         chat_id: int,
         user_id: int,
@@ -166,7 +155,7 @@ async def send_bill_message(
     )
 
     terms_callback = callbacks.TermsCallback(
-        service_term=service.term
+        terms=service.terms
     )
 
     render = template.render(TEMPLATES / 'bill.xml', {

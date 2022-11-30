@@ -17,7 +17,7 @@ class Service(typing.NamedTuple):
     """Banner to use in service card"""
     bought: str
     """Banner to show then subscription of this service is bought"""
-    term: str
+    terms: str
     """Terms"""
 
     @classmethod

@@ -10,7 +10,7 @@ class BuySubscriptionCallback(CallbackData, prefix='buy'):
 
 
 class TermsCallback(CallbackData, prefix='terms'):
-    service_term: str
+    terms: str
 
 
 class CheckBillCallback(CallbackData, prefix='check_bill'):

@@ -9,14 +9,6 @@ router.callback_query(
 )(handlers.purchase_handler)
 
 router.callback_query(
-    callbacks.TermsCallback.filter()
-)(handlers.service_terms_handler)
-
-router.callback_query(
-    F.data == 'delete'
-)(handlers.delete_term_message_handler)
-
-router.callback_query(
     callbacks.CheckBillCallback.filter()
 )(handlers.done_button_handler)
 

@@ -5,6 +5,6 @@
         для собственного спокойствия можете поменять пароль после выполнения заказа.
     </i>
     <inline-keyboard>
-        <button callback_data="delete">Ок</button>
+        <button callback_data="delete_this_message">Ок</button>
     </inline-keyboard>
 </message>
