@@ -38,6 +38,12 @@ async def purchase_handler(
         state
     )
 
+async def service_terms_handler(query: CallbackQuery, callback_data: callbacks.TermsCallback):
+    await template.render(resources.resolve(callback_data.terms).path, {
+        'terms': callback_data.terms
+    }).send(query.message.chat.id, silence_errors=False)
+    await query.answer()
+
 
 async def send_bill_message(
         chat_id: int,

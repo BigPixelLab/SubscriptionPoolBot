@@ -29,19 +29,9 @@ if settings.DEBUG:
 routers.append(search_router)
 
 
-async def service_terms_handler(query: CallbackQuery, callback_data: callbacks.TermsCallback):
-    await template.render(resources.resolve(callback_data.terms).path, {
-        'terms': callback_data.terms
-    }).send(query.message.chat.id, silence_errors=False)
-    await query.answer()
-
-
 async def delete_this_message_handler(query: CallbackQuery):
     await query.message.delete()
 
-router.callback_query(
-    callbacks.TermsCallback.filter()
-)(service_terms_handler)
 
 router.callback_query(
     aiogram.F.data == 'delete_this_message'
