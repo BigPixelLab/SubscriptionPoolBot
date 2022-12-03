@@ -18,8 +18,13 @@
         </p>
 
         <inline-keyboard>
-            <button id="buy_button">
-                Оплатить
+            <kr>
+                <button id="buy_button">
+                    Оплатить
+                </button>
+            </kr>
+            <button id="terms_button">
+                Условия
             </button>
             <button id="done_button">
                 Готово

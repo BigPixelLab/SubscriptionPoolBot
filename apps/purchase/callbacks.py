@@ -9,6 +9,10 @@ class BuySubscriptionCallback(CallbackData, prefix='buy'):
     sub_id: int
 
 
+class TermsCallback(CallbackData, prefix='terms'):
+    terms: str
+
+
 class CheckBillCallback(CallbackData, prefix='check_bill'):
     bill_id: str
 

@@ -12,6 +12,7 @@ from glQiwiApi.qiwi.exceptions import QiwiAPIError
 
 import gls
 import settings
+import resources
 from utils import template
 from utils.feedback import send_feedback, send_waiting
 from apps.user_account import models as user_models
@@ -36,6 +37,12 @@ async def purchase_handler(
         callback_data.sub_id,
         state
     )
+
+async def service_terms_handler(query: CallbackQuery, callback_data: callbacks.TermsCallback):
+    await template.render(resources.resolve(callback_data.terms).path, {
+        'terms': callback_data.terms
+    }).send(query.message.chat.id, silence_errors=False)
+    await query.answer()
 
 
 async def send_bill_message(
@@ -153,6 +160,10 @@ async def send_bill_message(
         bill_id=bill.id
     )
 
+    terms_callback = callbacks.TermsCallback(
+        terms=service.terms
+    )
+
     render = template.render(TEMPLATES / 'bill.xml', {
         'subscription': subscription.name,
         'service': service.name,
@@ -162,6 +173,7 @@ async def send_bill_message(
         'minimized': False,  # True после оплаты
 
         'buy_button': {'web_app': WebAppInfo(url=bill.pay_url)},
+        'terms_button': {'callback_data': terms_callback.pack()},
         'done_button': {'callback_data': check_callback.pack()}
     }).first()
 
