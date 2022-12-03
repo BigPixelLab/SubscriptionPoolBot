@@ -1,16 +1,15 @@
 import aiogram
+from aiogram import F
 from aiogram.types import CallbackQuery
 
-import resources
+import posts
 import settings
 from apps.operator.commands import router as operator_router
 from apps.pool_bot.commands import router as pool_bot_router
-from apps.purchase import callbacks
 from apps.search.commands import router as search_router
 from apps.coupons.commands import router as coupon_router
 from apps.purchase.commands import router as purchase_router
 from apps.debug.commands import router as debug_router
-from utils import template
 
 router = aiogram.Router()
 
@@ -21,6 +20,12 @@ routers: list[aiogram.Router] = [
     purchase_router,
     router
 ]
+
+# Register posts handlers
+posts_router = aiogram.Router()
+for register_func in posts.HANDLER_REGISTER_FUNCTIONS:
+    register_func(posts_router)
+routers.append(posts_router)
 
 if settings.DEBUG:
     routers.append(debug_router)
@@ -34,5 +39,5 @@ async def delete_this_message_handler(query: CallbackQuery):
 
 
 router.callback_query(
-    aiogram.F.data == 'delete_this_message'
+    F.data == 'delete_this_message'
 )(delete_this_message_handler)
