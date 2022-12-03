@@ -18,7 +18,7 @@ class Service(typing.NamedTuple):
     bought: str
     """Banner to show then subscription of this service is bought"""
     terms: str
-    """Terms"""
+    """Index of the service terms template"""
 
     @classmethod
     def get(cls, _id: int) -> 'Service':
@@ -54,6 +54,8 @@ class Subscription:
     """Category name, like "4k". Used just for sorting"""
     is_code_required: bool
     """If set, will not be shown if no activation code is available"""
+    is_special_offer: bool
+    """Subscriptions with this attribute set, will be shown differently"""
 
     def get_service(self) -> Service:
         return database.single(
