@@ -63,24 +63,27 @@ async def command_start(message: Message):
 
 
 async def post_handler(message: Message, command: CommandObject):
-    post: posts.Post = posts.POSTS_INDEX_MAP.get(command.args)
+    """ /post <index>[ chat1 chat2 ...] """
+    post_index, *chats = command.args.split()
+    post: posts.Post = posts.POSTS_INDEX_MAP.get(post_index)
 
     if post is None:
         await message.answer('❌ Введено неверное название события. '
                              'Попробуйте ещё раз')
         return
 
-    render = template.render(post.path, post.get_context()).first()
-    users = user_models.User.get_all()
-    skipped_total = 0
-    for user in users:
+    chats = list(map(int, chats)) if chats else user_models.User.get_all()
+
+    successes = 0
+    for chat, render in post.prepared(chats):  # type: int, template.MessageRenderList
         try:
-            await render.send(user, silence_errors=False)
-        except (TelegramBadRequest, TelegramForbiddenError):
-            skipped_total += 1
+            await render.send(chat, silence_errors=False)
+            successes += 1
+        except (TelegramBadRequest, TelegramForbiddenError) as error:
+            print(error)
     else:
         await message.answer(f'✔ Пост отправлен успешно, получателей: '
-                             f'{len(users) - skipped_total}/{len(users)}')
+                             f'{successes}/{len(chats)}')
 
 
 async def update_resources_handler(message: Message, command: CommandObject):
