@@ -143,7 +143,7 @@ def image_parser(element, context) -> PhotoUri | FSInputFile:
         return PhotoUri(file_attr.value)
     if file_attr := element.attributes.get('index'):
         from aiogram import Bot
-        return PhotoUri(resources.get(file_attr.value, key=Bot.get_current().id))
+        return PhotoUri(resources.get(file_attr.value.format_map(context), key=Bot.get_current().id))
     if src_attr := element.attributes.get('src'):
         return FSInputFile(path=src_attr.value.format_map(context), filename='hello.jpg')
     raise ValueError('Tag "img" must contain "src" attribute')
