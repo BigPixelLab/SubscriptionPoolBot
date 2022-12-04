@@ -20,7 +20,7 @@ def get_sub_plans(service_id: int) -> list[models.Subscription]:
         """
             select * from "Subscription" S
             where S.service = %(service_id)s
-            order by S.type, S.duration
+            order by S.type, -S.duration
         """,
         f'Getting subscription plans for "{service_id=}"',
         service_id=service_id
