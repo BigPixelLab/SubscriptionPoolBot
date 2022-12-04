@@ -1,0 +1,11 @@
+<message>
+    <img index="lottery_box_banner"/>
+    <p> Это лотерея, открой коробку и получи что-нибудь </p>
+    <br/>
+    <p> ПРИЗЫ: </p>
+    <p for="prize" in="prizes"> - {prize.title} </p>
+
+    <inline-keyboard>
+        <button callback_data="lottery:{coupon}:{banner_index}"> Открыть </button>
+    </inline-keyboard>
+</message>

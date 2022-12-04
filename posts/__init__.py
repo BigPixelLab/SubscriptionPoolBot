@@ -6,8 +6,8 @@ import typing
 from aiogram import Router
 
 from apps.coupons import models as coupon_models
-from posts.daily import lottery_box
 from utils import template as template_
+from posts.daily import lottery_box
 
 Context = Data = dict[str, typing.Any]
 TelegramChat = int
@@ -83,6 +83,18 @@ POSTS = [
                 ) for _ in range(data['coupons'])
             ]
         }
+    ),
+
+    # LOTTERY BOX
+    Post(
+        index='lottery',
+        template='posts/daily/lottery_box/lottery_box.xml',
+        context={},
+
+        data=lottery_box.SHARED_DATA,
+        before_posting=lottery_box.before_posting,
+        before_sending=lottery_box.before_sending,
+        handlers='posts/daily/lottery_box/handlers.py',
     )
 ]
 

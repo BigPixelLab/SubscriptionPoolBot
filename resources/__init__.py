@@ -98,6 +98,54 @@ RESOURCES = [
         path='resources/events/daily_posts/PROMO-FOR-FASTEST-30.jpg',
         name='PROMO-FOR-FASTEST-30.jpg',
         type=ResourceType.PHOTO
+    ),
+    UploadedResource(
+        index='lottery_box_banner',
+        path='resources/events/daily_posts/lottery_box/lottery_box_banner.png',
+        name='lottery_box_banner.png',
+        type=ResourceType.PHOTO
+    ),
+    UploadedResource(
+        index='lottery_box_10',
+        path='resources/events/daily_posts/lottery_box/lottery_box_10.png',
+        name='lottery_box_10.png',
+        type=ResourceType.PHOTO
+    ),
+    UploadedResource(
+        index='lottery_box_15',
+        path='resources/events/daily_posts/lottery_box/lottery_box_15.png',
+        name='lottery_box_15.png',
+        type=ResourceType.PHOTO
+    ),
+    UploadedResource(
+        index='lottery_box_20',
+        path='resources/events/daily_posts/lottery_box/lottery_box_20.png',
+        name='lottery_box_20.png',
+        type=ResourceType.PHOTO
+    ),
+    UploadedResource(
+        index='lottery_box_25',
+        path='resources/events/daily_posts/lottery_box/lottery_box_25.png',
+        name='lottery_box_25.png',
+        type=ResourceType.PHOTO
+    ),
+    UploadedResource(
+        index='lottery_box_30',
+        path='resources/events/daily_posts/lottery_box/lottery_box_30.png',
+        name='lottery_box_30.png',
+        type=ResourceType.PHOTO
+    ),
+    UploadedResource(
+        index='lottery_box_50',
+        path='resources/events/daily_posts/lottery_box/lottery_box_50.png',
+        name='lottery_box_50.png',
+        type=ResourceType.PHOTO
+    ),
+    UploadedResource(
+        index='lottery_box_100',
+        path='resources/events/daily_posts/lottery_box/lottery_box_100.png',
+        name='lottery_box_100.png',
+        type=ResourceType.PHOTO
     )
 ]
 
