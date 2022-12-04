@@ -6,7 +6,6 @@ import typing
 from aiogram import Router
 
 from apps.coupons import models as coupon_models
-from posts.daily import lottery_box
 from utils import template as template_
 
 Context = Data = dict[str, typing.Any]
