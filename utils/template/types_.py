@@ -1,16 +1,25 @@
 from __future__ import annotations
 
 import logging
+import typing
 from contextlib import suppress
 from dataclasses import dataclass
 from typing import Any
 
 import aiogram
 from aiogram.exceptions import TelegramBadRequest, TelegramForbiddenError
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton, Message
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton, Message, \
+    InputMediaPhoto, InputMediaAnimation
 
 Context = dict[str, Any]
 logger = logging.getLogger(__name__)
+
+
+async def silence_telegram(function: typing.Awaitable, silence: bool = True):
+    if not silence:
+        return await function
+    with suppress(TelegramBadRequest, TelegramForbiddenError, ValueError):
+        return await function
 
 
 @dataclass
@@ -44,51 +53,84 @@ class MessageRender:
 
     async def _send(self, chat_id: int, bot: aiogram.Bot = None):
         bot = bot or aiogram.Bot.get_current()
+
+        config = {}
+
+        if self.keyboard:
+            config['reply_markup'] = self.keyboard
+
         if self.photo:
-            return await bot.send_photo(chat_id, **self.export_for_aiogram())
-        if self.video:
-            return await bot.send_animation(chat_id, **self.export_for_aiogram())
-        return await bot.send_message(chat_id, **self.export_for_aiogram())
-
-    async def _send_silent(self, chat_id: int, bot: aiogram.Bot = None):
-        with suppress(TelegramBadRequest, TelegramForbiddenError):
-            return await self._send(chat_id, bot)
-
-    async def send(self, chat_id: int, bot: aiogram.Bot = None, silence_errors: bool = True):
-        if silence_errors:
-            return await self._send_silent(chat_id, bot)
-        return await self._send(chat_id, bot)
-
-    async def _edit(self, message: Message, bot: aiogram.Bot = None):
-        bot = bot or aiogram.Bot.get_current()
-        is_caption = bool(message.photo) or bool(message.animation)
-
-        config = self.export_for_aiogram(
-            force_caption=is_caption,
-            no_media=True
-        )
-
-        if is_caption:
-            return await bot.edit_message_caption(
-                chat_id=message.chat.id,
-                message_id=message.message_id,
+            return await bot.send_photo(
+                chat_id,
+                photo=self.photo,
+                caption=self.text,
                 **config
             )
 
-        return await bot.edit_message_text(
-            chat_id=message.chat.id,
-            message_id=message.message_id,
+        if self.video:
+            return await bot.send_animation(
+                chat_id,
+                animation=self.video,
+                caption=self.text,
+                **config
+            )
+
+        return await bot.send_message(
+            chat_id,
+            text=self.text,
             **config
         )
 
-    async def _edit_silent(self, message: Message, bot: aiogram.Bot = None):
-        with suppress(TelegramBadRequest, TelegramForbiddenError):
-            return await self._edit(message, bot)
+    async def send(self, chat_id: int, bot: aiogram.Bot = None, silence_errors: bool = True):
+        return await silence_telegram(self._send(chat_id, bot), silence_errors)
+
+    async def _edit(self, message: Message, bot: aiogram.Bot = None):
+        bot = bot or aiogram.Bot.get_current()
+
+        config = {}
+
+        if self.keyboard:
+            config['reply_markup'] = self.keyboard
+
+        if not message.photo and not message.animation:
+            return await bot.edit_message_text(
+                chat_id=message.chat.id,
+                message_id=message.message_id,
+                text=self.text,
+                **config
+            )
+
+        media = None
+        if self.photo and message.photo:
+            media = InputMediaPhoto(
+                media=self.photo,
+                caption=self.text
+            )
+        elif self.video and message.animation:
+            media = InputMediaAnimation(
+                media=self.video,
+                caption=self.text
+            )
+        elif self.photo or self.video:
+            raise ValueError('Render must have the same media type as a message')
+
+        if media:
+            return await bot.edit_message_media(
+                chat_id=message.chat.id,
+                message_id=message.message_id,
+                media=media,
+                **config
+            )
+
+        return await bot.edit_message_caption(
+            chat_id=message.chat.id,
+            message_id=message.message_id,
+            caption=self.text,
+            **config
+        )
 
     async def edit(self, message: Message, bot: aiogram.Bot = None, silence_errors: bool = True):
-        if silence_errors:
-            return await self._edit_silent(message, bot)
-        return await self._edit(message, bot)
+        return await silence_telegram(self._edit(message, bot), silence_errors)
 
 
 class MessageRenderList(list[MessageRender]):
