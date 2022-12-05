@@ -72,7 +72,12 @@ async def post_handler(message: Message, command: CommandObject):
                              'Попробуйте ещё раз')
         return
 
-    chats = list(map(int, chats)) if chats else user_models.User.get_all()
+    if chats:
+        chats = list(map(int, chats))
+    elif chats == ['me']:
+        chats = [message.from_user.id]
+    else:
+        chats = user_models.User.get_all()
 
     successes = 0
     for chat, render in post.prepared(chats):  # type: int, template.MessageRenderList
