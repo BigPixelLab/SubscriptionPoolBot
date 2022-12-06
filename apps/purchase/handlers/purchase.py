@@ -38,6 +38,7 @@ async def purchase_handler(
         state
     )
 
+
 async def service_terms_handler(query: CallbackQuery, callback_data: callbacks.TermsCallback):
     await template.render(resources.resolve(callback_data.terms).path, {
         'terms': callback_data.terms
@@ -67,22 +68,19 @@ async def send_bill_message(
     if (bill_info := user_models.User.get_last_bill_info(user_id)) and bill_info[0] is not None:
         bill_id, bill_message_id = bill_info
 
-        try:
-            bill = await gls.qiwi.get_bill_by_id(bill_id)
-        except QiwiAPIError:
-            await waiting_message.delete()
-            await qiwi_api_error_feedback(chat_id, bill_id)
-            return
+        # noinspection PyUnusedLocal
+        bill = None
 
-        if bill.status.value == 'PAID':
+        with suppress(QiwiAPIError):
+            bill = await gls.qiwi.get_bill_by_id(bill_id)
+
+        if bill and bill.status.value == 'PAID':
             await waiting_message.delete()
             await must_complete_purchase_feedback(chat_id)
             return
 
-        try:
+        with suppress(QiwiAPIError):
             await gls.qiwi.reject_p2p_bill(bill_id)
-        except QiwiAPIError:
-            await waiting_message.delete()
 
         # Не убираем резервацию купона здесь, потому что
         # при генерации счёта, если купон активирован -
