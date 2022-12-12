@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+from contextlib import suppress
 from pathlib import Path
 
+from aiogram.exceptions import TelegramBadRequest
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, WebAppInfo, Message
 from glQiwiApi.qiwi.exceptions import QiwiAPIError
@@ -51,7 +53,8 @@ async def check_if_bill_is_paid(
         return
 
     if bill.status.value == 'EXPIRED':
-        await gls.bot.delete_message(chat_id, message.message_id)
+        with suppress(TelegramBadRequest):
+            await gls.bot.delete_message(chat_id, message.message_id)
         await bill_expired_error_feedback(chat_id)
         return
 
