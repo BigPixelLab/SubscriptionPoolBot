@@ -10,7 +10,7 @@ from glQiwiApi.qiwi.exceptions import QiwiAPIError
 
 import gls
 import settings
-from utils import template
+from utils import template, database
 from utils.feedback import send_feedback
 from apps.search import models as search_models
 from .paid import bill_is_paid_handler
@@ -71,10 +71,14 @@ async def check_if_bill_is_paid(
         return
 
     service, subscription = search_models.Subscription.get_full_name_parts(subscription_id)
+    terms = database.single_value(""" select terms from "Service" where name = %(name)s """, name=service)  # TODO: Это было быстрое исправление, эту хрень нужно удалить нахрен, её тут быть не должно вообще
     check_callback = callbacks.CheckBillCallback(
         sub_id=subscription_id,
         bill_id=bill_id,
         coupon=coupon
+    )
+    terms_callback = callbacks.TermsCallback(
+        terms=terms
     )
 
     render = template.render(TEMPLATES / 'bill.xml', {
@@ -86,6 +90,7 @@ async def check_if_bill_is_paid(
         'minimized': False,  # True после оплаты
 
         'buy_button': {'web_app': WebAppInfo(url=bill.pay_url)},
+        'terms_button': {'callback_data': terms_callback.pack()},
         'done_button': {'callback_data': check_callback.pack()}
     }).first()
 
