@@ -129,7 +129,7 @@ async def send_bill_message(
         ))
 
     commission = -(total_price * Decimal(settings.QIWI_COMMISSION))
-    total_price -= commission
+    total_price += commission
     bill_items.append((
         'Компенсация комиссии qiwi',
         commission
