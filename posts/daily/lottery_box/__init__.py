@@ -77,7 +77,7 @@ SHARED_DATA = {
             template='lottery_box_prize_netflix_4k_month_20',
             coupon_settings=CouponSettings(
                 discount=20,
-                subscription=4,
+                subscription=5,
                 count=4
             ),
             weight=15
@@ -86,7 +86,11 @@ SHARED_DATA = {
             # 15% на любую подписку
             template='lottery_box_prize_any_15',
             coupons=[
-                Coupon('KAIF10', is_reusable=True)
+                Coupon('M28SJ9', is_reusable=True),
+                Coupon('CMKFU6', is_reusable=True),
+                Coupon('EUVUS9', is_reusable=True),
+                Coupon('-JYSWG', is_reusable=True),
+                Coupon('DAQLGA', is_reusable=True),
             ],
             weight=40
         ),
@@ -94,7 +98,11 @@ SHARED_DATA = {
             # 10% на любую подписку
             template='lottery_box_prize_any_10',
             coupons=[
-                Coupon('KAIF10', is_reusable=True)
+                Coupon('VK72NG', is_reusable=True),
+                Coupon('A8P8GU', is_reusable=True),
+                Coupon('AH-MGF', is_reusable=True),
+                Coupon('RLJH8C', is_reusable=True),
+                Coupon('Y8-N7Q', is_reusable=True),
             ],
             weight=29
         )
