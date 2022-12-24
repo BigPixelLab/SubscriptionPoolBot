@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import random
 import typing
 
 from aiogram import Router
@@ -29,16 +30,22 @@ class Post(typing.NamedTuple):
     """ Function to call before sending post to user. Should return context. Can edit data """
     handlers: str | None = None
     """ Path to the handlers file """
+    shuffle_users: bool = False
+    """ Is post requires to send it to users in a random order """
 
     def prepared(self, chats: typing.Sequence[int]) \
             -> typing.Generator[None, tuple[TelegramChat, template_.MessageRenderList], None]:
         """ Prepares posts contexts for sending """
         data = copy.deepcopy(self.data) if self.data else {}
         context = copy.deepcopy(self.context)
+        chats = list(chats)
 
         if self.before_posting:
             _ctx = self.before_posting(data)
             context.update(copy.deepcopy(_ctx) if _ctx else {})
+
+        if self.shuffle_users:
+            random.shuffle(chats)
 
         for chat in chats:
             local_context = copy.deepcopy(context)

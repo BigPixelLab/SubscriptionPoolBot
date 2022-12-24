@@ -4,8 +4,8 @@ import random
 import typing
 from dataclasses import dataclass, field
 
-import resources
 from apps.coupons import models as coupon_models
+from . import callbacks
 
 Context = dict[str, typing.Any]
 
@@ -34,12 +34,8 @@ class Coupon(typing.NamedTuple):
 
 @dataclass
 class Prize:
-    title: str
-    """ Name of the prize to display """
-    photo: str
-    """ Resource index of banner for this prize """
-    is_special: bool
-    """ Is prize should be highlighted """
+    template: str
+    """ Resource index of template for the answer """
     coupon_settings: CouponSettings | None = None
     """ If set, required number of coupons will be generated """
     coupons: list[Coupon] = field(default_factory=list)
@@ -50,30 +46,57 @@ class Prize:
     def __post_init__(self):
         self.validate()
 
-    def validate(self, *, final: bool = False):
-        assert not final or self.photo in resources.UPLOADED_RESOURCE_INDEXES
+    def validate(self):
         assert self.weight > 0
 
 
 SHARED_DATA = {
     'prizes': [
         Prize(
-            title='Крутой купон',
-            photo='lottery_box_50',
-            is_special=True,
+            # Месяц SPOTIFY PREMIUM бесплатно
+            template='lottery_box_prize_spotify_pr_month_free',
             coupon_settings=CouponSettings(
-                discount=50,
-                subscription=7,
-                count=1
-            )
+                discount=100,
+                subscription=3,
+                count=2
+            ),
+            weight=1
         ),
         Prize(
-            title='Тупой купон',
-            photo='lottery_box_10',
-            is_special=False,
+            # 25% SPOTIFY PREMIUM на год
+            template='lottery_box_prize_spotify_pr_year_25',
+            coupon_settings=CouponSettings(
+                discount=25,
+                subscription=4,
+                count=4
+            ),
+            weight=15
+        ),
+        Prize(
+            # 20% NETFLIX 4K
+            template='lottery_box_prize_netflix_4k_month_20',
+            coupon_settings=CouponSettings(
+                discount=20,
+                subscription=4,
+                count=4
+            ),
+            weight=15
+        ),
+        Prize(
+            # 15% на любую подписку
+            template='lottery_box_prize_any_15',
             coupons=[
                 Coupon('KAIF10', is_reusable=True)
-            ]
+            ],
+            weight=40
+        ),
+        Prize(
+            # 10% на любую подписку
+            template='lottery_box_prize_any_10',
+            coupons=[
+                Coupon('KAIF10', is_reusable=True)
+            ],
+            weight=29
         )
     ]
 }
@@ -87,8 +110,6 @@ def before_posting(data: Context) -> Context:
     # При запуске бота некоторые ресурсы могут
     # быть ещё не загружены, но при отправке всё
     # обязательно должно быть на месте
-    for prize in prizes:
-        prize.validate(final=True)
 
     for prize in prizes:  # type: Prize
         settings = prize.coupon_settings
@@ -107,9 +128,7 @@ def before_posting(data: Context) -> Context:
                 Coupon(coupon_code, is_reusable=False)
             )
 
-    return {
-        'prizes': prizes
-    }
+    return {}
 
 
 def before_sending(_, data: Context) -> Context:
@@ -127,7 +146,11 @@ def before_sending(_, data: Context) -> Context:
     if not coupon.is_reusable:
         prize.coupons.remove(coupon)
 
+    open_btn_callback = callbacks.OpenButtonCallback(
+        coupon=coupon.code,
+        result_template=prize.template
+    )
+
     return {
-        'banner_index': prize.photo,
-        'coupon': coupon.code
+        'open_button': {'callback_data': open_btn_callback.pack()}
     }

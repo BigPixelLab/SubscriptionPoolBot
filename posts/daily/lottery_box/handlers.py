@@ -1,16 +1,17 @@
 from aiogram import Router
 from aiogram.types import CallbackQuery
 
+import resources
+from apps.coupons.models import Coupon
 from utils import template
 from posts.daily.lottery_box import callbacks
 
-OPEN_TEMPLATE_PATH = 'posts/daily/lottery_box/lottery_box_open.xml'
-
 
 async def open_button_handler(query: CallbackQuery, callback_data: callbacks.OpenButtonCallback):
-    await template.render(OPEN_TEMPLATE_PATH, {
-        'banner_index': callback_data.banner_index,
-        'coupon': callback_data.coupon
+    tmpl = resources.resolve(callback_data.result_template).path
+    coupon = Coupon.get(callback_data.coupon)
+    await template.render(tmpl, {
+        'coupon': coupon
     }).first().edit(query.message)
 
 
