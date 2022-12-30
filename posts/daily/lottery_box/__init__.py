@@ -58,53 +58,53 @@ SHARED_DATA = {
             coupon_settings=CouponSettings(
                 discount=100,
                 subscription=3,
-                count=2
+                count=10
             ),
-            weight=1
+            weight=5
         ),
         Prize(
-            # 25% SPOTIFY PREMIUM на год
-            template='lottery_box_prize_spotify_pr_year_25',
+            # 30% SPOTIFY PREMIUM на год
+            template='lottery_box_prize_spotify_pr_year_30',
             coupon_settings=CouponSettings(
-                discount=25,
+                discount=30,
                 subscription=4,
-                count=4
+                count=10
             ),
             weight=15
         ),
         Prize(
-            # 20% NETFLIX 4K
-            template='lottery_box_prize_netflix_4k_month_20',
+            # 30% NETFLIX 4K
+            template='lottery_box_prize_netflix_4k_month_30',
             coupon_settings=CouponSettings(
-                discount=20,
+                discount=30,
                 subscription=5,
-                count=4
+                count=10
             ),
             weight=15
         ),
         Prize(
-            # 15% на любую подписку
-            template='lottery_box_prize_any_15',
+            # 25% на любую подписку
+            template='lottery_box_prize_any_25',
             coupons=[
-                Coupon('M28SJ9', is_reusable=True),
-                Coupon('CMKFU6', is_reusable=True),
-                Coupon('EUVUS9', is_reusable=True),
-                Coupon('-JYSWG', is_reusable=True),
-                Coupon('DAQLGA', is_reusable=True),
+                Coupon('A87LS3', is_reusable=True),
+                Coupon('UMU8Z4', is_reusable=True),
+                Coupon('3H22BE', is_reusable=True),
+                Coupon('455VI0', is_reusable=True),
+                Coupon('G60G58', is_reusable=True),
             ],
-            weight=40
+            weight=35
         ),
         Prize(
-            # 10% на любую подписку
-            template='lottery_box_prize_any_10',
+            # 20% на любую подписку
+            template='lottery_box_prize_any_20',
             coupons=[
-                Coupon('VK72NG', is_reusable=True),
-                Coupon('A8P8GU', is_reusable=True),
-                Coupon('AH-MGF', is_reusable=True),
-                Coupon('RLJH8C', is_reusable=True),
-                Coupon('Y8-N7Q', is_reusable=True),
+                Coupon('I4ZULV', is_reusable=True),
+                Coupon('TZYJ99', is_reusable=True),
+                Coupon('BP-HZ0', is_reusable=True),
+                Coupon('H4IX4U', is_reusable=True),
+                Coupon('91PL3W', is_reusable=True),
             ],
-            weight=29
+            weight=30
         )
     ]
 }

@@ -166,20 +166,20 @@ RESOURCES = [
         path='resources/events/daily_posts/lottery_box/templates/prize_spotify_pr_month_free.xml'
     ),
     LocalResource(
-        index='lottery_box_prize_spotify_pr_year_25',
-        path='resources/events/daily_posts/lottery_box/templates/prize_spotify_pr_year_25.xml'
+        index='lottery_box_prize_spotify_pr_year_30',
+        path='resources/events/daily_posts/lottery_box/templates/prize_spotify_pr_year_30.xml'
     ),
     LocalResource(
-        index='lottery_box_prize_netflix_4k_month_20',
-        path='resources/events/daily_posts/lottery_box/templates/prize_netflix_4k_month_20.xml'
+        index='lottery_box_prize_netflix_4k_month_30',
+        path='resources/events/daily_posts/lottery_box/templates/prize_netflix_4k_month_30.xml'
     ),
     LocalResource(
-        index='lottery_box_prize_any_15',
-        path='resources/events/daily_posts/lottery_box/templates/prize_any_15.xml'
+        index='lottery_box_prize_any_25',
+        path='resources/events/daily_posts/lottery_box/templates/prize_any_25.xml'
     ),
     LocalResource(
-        index='lottery_box_prize_any_10',
-        path='resources/events/daily_posts/lottery_box/templates/prize_any_10.xml'
+        index='lottery_box_prize_any_20',
+        path='resources/events/daily_posts/lottery_box/templates/prize_any_20.xml'
     ),
 ]
 
