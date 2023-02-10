@@ -181,6 +181,12 @@ RESOURCES = [
         index='lottery_box_prize_any_20',
         path='resources/events/daily_posts/lottery_box/templates/prize_any_20.xml'
     ),
+UploadedResource(
+        index='bad_news',
+        path='resources/events/res.png',
+        name='bad_news.png',
+        type=ResourceType.PHOTO
+    ),
 ]
 
 

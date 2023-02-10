@@ -72,6 +72,13 @@ POSTS = [
         context={}
     ),
 
+    # BAD NEWS
+    Post(
+        index='bad_news_post',
+        template='posts/manual/news.xml',
+        context={}
+    ),
+
     # PROMO FOR FASTEST
     Post(
         index='promo_ff',
