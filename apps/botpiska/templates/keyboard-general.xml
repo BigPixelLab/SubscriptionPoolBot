@@ -1,0 +1,9 @@
+<template>
+    <reply-keyboard input_field_placeholder="Название сервиса" resize_keyboard="True">
+        <row> <button> СПИСОК ТОВАРОВ </button> </row>
+        <row>
+            <button> ПОДДЕРЖКА </button>
+            <button> СЕЗОН </button>
+        </row>
+    </reply-keyboard>
+</template>

@@ -1,0 +1,10 @@
+<message requires="order">
+
+    <heading> 🎉 НОВЫЙ ЗАКАЗ </heading>
+    <template src="apps/order_processing/templates/template-order.xml" order.cv="order"/>
+
+    <inline-keyboard>
+        <button callback_data="order:view:{order.id}"> Просмотр </button>
+        <button callback_data="order:take:{order.id}"> Взять </button>
+    </inline-keyboard>
+</message>

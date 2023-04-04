@@ -1,7 +1,9 @@
 aiogram==3.0.0b4
-glqiwiapi==2.16
-Pillow==9.3.0
+glqiwiapi==2.18.3
+Pillow==9.4.0
 psycopg2==2.9.5
 snakeviz==2.1.1
-Levenshtein~=0.20.5
-StrEnum==0.4.8
+Levenshtein==0.20.9
+peewee~=3.15.4
+qrcode~=7.4.2
+aiohttp~=3.8.3

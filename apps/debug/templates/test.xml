@@ -1,0 +1,3 @@
+<template requires="firstname,surname">
+    <p> TEMPLATE TEST {firstname}, {surname}! </p>
+</template>

@@ -1,0 +1,7 @@
+<template requires="order">
+    <span>
+        <span if="order.processing_employee_id"> 🔹 </span>
+        <span if="not order.processing_employee_id"> 🔸 </span>
+        #{order.id} <chat user.py="order.client_id"/> {order.subscription.title}
+    </span>
+</template>

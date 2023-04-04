@@ -1,0 +1,19 @@
+<messages>
+
+    <!-- Сообщение для отправки другому пользователю -->
+    <message requires="gift-card-image,subscription,coupon">
+        <img src.cv="gift-card-image"/>
+
+        <heading> ПОДАРОК "{subscription.title}" </heading>
+        <br/>
+        <p> Забирай по ссылке: </p>
+        <p> t.me/botpiska_bot?start={coupon.code} </p>
+
+    </message>
+
+    <!-- Сообщение с инструкцией для купившего пользователя -->
+    <message>
+        [..Тут написано что делать..]
+    </message>
+
+</messages>

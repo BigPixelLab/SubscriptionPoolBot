@@ -114,3 +114,4 @@ out/
 
 # idea folder, uncomment if you don't need it
 .idea
+/_*/

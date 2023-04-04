@@ -1,0 +1,13 @@
+<message>
+    <heading> Запрос информации о погоде </heading>
+    <br/>
+    <p> Здравствуйте! Можете сообщить мне текущую погоду
+        в вашем городе? Хотелось бы знать температуру и
+        прогноз на ближайшие дни. Спасибо! </p>
+
+    <template src="{TDIR}/test.xml" firstname="Hello" surname="world"/>
+
+    <inline-keyboard>
+        <button callback_data="..."> Ok </button>
+    </inline-keyboard>
+</message>

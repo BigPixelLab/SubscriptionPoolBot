@@ -1,0 +1,11 @@
+<message requires="">
+    <img src="..."/>
+
+    <heading>Title</heading>
+    <br/>
+    <p></p>
+
+    <inline-keyboard>
+        <button callback_data="...">Ok</button>
+    </inline-keyboard>
+</message>

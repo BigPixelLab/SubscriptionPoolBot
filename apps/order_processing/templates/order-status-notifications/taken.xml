@@ -1,0 +1,7 @@
+<message requires="order,operator">
+
+    <heading> ЗАКАЗ #{order.id} ВЗЯТ НА ОБРАБОТКУ </heading>
+    <p> Оператор в скором времени
+        должен будет вам написать </p>
+
+</message>

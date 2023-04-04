@@ -1,0 +1,17 @@
+<message requires="subscription_plans">
+    <img src.res="/resources/SPOTIFY-BANNER.jpg"/>
+
+    <heading> SPOTIFY INDIVIDUAL </heading>
+    <br/>
+    <p> Слушай любимую музыку в любом месте в любое время с
+        индивидуальной подпиской spotify premium. </p>
+    <br/>
+    <p> <b> Ты получаешь: </b> </p>
+    <p> - Анимированные обложки </p>
+    <p> - Сохранение медиатеки </p>
+    <p> - Полное отсутствие VPN </p>
+
+    <template src="{TDIR.parent}/keyboard-showcase-default.xml"
+              plans.cv="subscription_plans"/>
+</message>
+

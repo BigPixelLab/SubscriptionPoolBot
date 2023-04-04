@@ -1,0 +1,3 @@
+
+class TemplateTelegramError(Exception):
+    pass

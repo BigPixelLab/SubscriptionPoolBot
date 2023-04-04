@@ -1,0 +1,11 @@
+<message>
+    <img src.res="/resources/STEAM-BANNER.jpg"/>
+
+    <heading> STEAM </heading>
+    <br/>
+    <p> [.. Описание ..] </p>
+
+    <inline-keyboard>
+        <button url="tg://user?id={support}"> Купить игру </button>
+    </inline-keyboard>
+</message>

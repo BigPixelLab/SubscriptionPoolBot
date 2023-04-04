@@ -1,0 +1,6 @@
+<message requires="order">
+
+    <heading> ЗАКАЗ #{order.id} ВЕРНУТ В ОЧЕРЕДЬ </heading>
+    <p> Ваш заказ будет обработан другим оператором. </p>
+
+</message>

@@ -1,211 +1,181 @@
-from __future__ import annotations
+"""
+Модели::
 
+    SubscriptionGroup
+    - id: varchar(INDEX_MAX_LENGTH) primary key
+
+    SubscriptionGroupToSubscription
+    - subscription_group: SubscriptionGroup foreign primary key
+    - subscription: Subscription foreign primary key
+
+    Coupon
+    - code: varchar(COUPON_MAX_LENGTH) primary key
+    - subscription_group: SubscriptionGroup foreign key
+    - discount: numeric
+    - sets_referral: Client? foreign key
+    - max_usages: integer?
+    - expires_after: timestamp?
+    - is_gifts_allowed: boolean = true
+    - note: text
+
+"""
 import datetime
+import decimal
 import random
-import string
-import typing
 
+import peewee
+
+import gls
 import settings
-from utils import database
+from ..botpiska.models import Client, Subscription
 
 
-class Coupon(typing.NamedTuple):
-    id: int
-    """ Coupon ID """
-    code: str
-    """ Six character unique code, containing only upper letters, digits and '-' """
-    discount: int
-    """ Discount in percents """
-    subscription: int | None = None
-    """ If set, coupon can be activated only for given subscription """
-    referer: int | None = None
-    """ User who generated coupon. Usually coupons are not allowed to be used by ones who generated them """
+class SubscriptionGroup(gls.BaseModel):
+    """ ... """
 
-    is_expired: bool = False
-    """ Is coupon expired. Usually set automatically then used by more than specified in max_usages """
-    expire_after: datetime.datetime | None = None
-    """ If set, after this date coupon is going to be set as expired """
-    max_usages: int | None = None
-    """ How many people can use this coupon"""
-    is_one_time: bool = False
-    """ If true, coupon will be deleted after first usage """
+    id = peewee.CharField(max_length=settings.INDEX_MAX_LENGTH, primary_key=True)
 
-    @classmethod
-    def _update_expired(cls):
-        database.execute(
-            """
-                update "Coupon" as C set
-                    is_expired = (
-                        -- Expire because of time (if set)
-                        expire_after is not null and
-                        %(now)s > expire_after or
-                    
-                        -- Expire because exceeded max number of usages (if set)
-                        max_usages is not null and (
-                            -- Count of usages
-                            select count(*) from "Order"
-                            where coupon = C.code
-                        ) + (
-                            -- Count of reservations
-                            select count(*) from "User"
-                            where reserved_coupon = C.code and
-                                %(now)s <= last_bill_expire_after
-                        ) >= max_usages
-                    )
-                where true
-            """,
-            now=datetime.datetime.now()
-        )
+    # noinspection PyMissingOrEmptyDocstring
+    class Meta:
+        table_name = 'SubscriptionGroup'
 
-    @classmethod
-    def get(cls, code: str) -> Coupon | None:
-        cls._update_expired()
-        return database.single(
-            Coupon,
-            """ select * from "Coupon" where code = %(code)s """,
-            f'Getting coupon with code "{code}"',
-            code=code
-        )
 
-    @classmethod
-    def get_not_expired(cls, code: str, user_id: int) -> Coupon | None:
-        now = datetime.datetime.now()
-        database.execute(
-            """
-                -- All of this "insert" stuff is to be sure that user is in the table
-                insert into "User" (
-                    user_id,
-                    last_interaction,
-                    reserved_coupon,
-                    last_bill_expire_after
-                ) values (
-                    %(user_id)s,
-                    %(now)s,
-                    (  -- Get unexpired coupon, null will be returned if not found
-                        select code from "Coupon" C
-                        where C.code = %(code)s and not (
-                            -- All that expiration stuff
-                        
-                            -- Expire because of time (if set)
-                            expire_after is not null and
-                            %(now)s > expire_after or
-                            
-                            -- Expire because exceeded max number of usages (if set)
-                            max_usages is not null and (
-                                -- Count of usages
-                                select count(*) from "Order"
-                                where coupon = C.code
-                            ) + (
-                                -- Count of reservations
-                                select count(*) from "User" U
-                                where
-                                    U.reserved_coupon = C.code and
-                                    %(now)s <= U.last_bill_expire_after and
-                                    U.user_id != %(user_id)s
-                            ) >= max_usages
-                        )
-                    ),
-                    %(expire_after)s
-                )
-                on conflict (user_id) do update set
-                    last_interaction = excluded.last_interaction,
-                    reserved_coupon = excluded.reserved_coupon,
-                    last_bill_expire_after = excluded.last_bill_expire_after
-            """,
-            f'Getting unexpired coupon "{code}"',
-            expire_after=now + datetime.timedelta(seconds=settings.BILL_TIMEOUT_SEC),
-            now=now,
-            user_id=user_id,
-            code=code
-        )
+class SubscriptionGroupToSubscription(gls.BaseModel):
+    """ ... """
 
-        return database.single(
-            Coupon,
-            """
-                select * from "Coupon"
-                where code = %(code)s
-            """,
-            code=code
-        )
+    subscription_group = peewee.ForeignKeyField(SubscriptionGroup, on_delete='CASCADE')
+    subscription = peewee.ForeignKeyField(Subscription, on_delete='CASCADE')
+
+    # noinspection PyMissingOrEmptyDocstring
+    class Meta:
+        primary_key = peewee.CompositeKey('subscription_group', 'subscription')
+        table_name = 'SubscriptionGroupToSubscription'
+
+
+class Coupon(gls.BaseModel):
+    """ ... """
+
+    code = peewee.CharField(max_length=settings.COUPON_MAX_LENGTH, primary_key=True)
+    """ Код купона """
+    subscription_group = peewee.ForeignKeyField(SubscriptionGroup, on_delete='NO ACTION')
+    """ Группа подписок, на которую действует купон """
+    discount = peewee.DecimalField(max_digits=1000, decimal_places=2)
+    """ Скидка, которую предоставляет купон """
+    sets_referral = peewee.ForeignKeyField(Client, on_delete='NO ACTION', null=True)
+    """ Клиент, к которому необходимо привязать любого воспользовавшегося
+        купоном пользователя. Также данный клиент не может воспользоваться 
+        собственным купоном """
+    max_usages = peewee.IntegerField(null=True)
+    """ Если указано, купон может быть использован данное число раз, в 
+        заказе или сгенерированном счёте """
+    expires_after = peewee.DateTimeField(null=True)
+    """ Если указано, купон не может быть использован после данных даты и времени """
+    is_gifts_allowed = peewee.BooleanField(default=True)
+    """ Возможно ли покупать в подарок, после активации этого купона. Например,
+        при активации подарочного купона, покупать в подарок не имеет смысла """
+    note = peewee.TextField()
+    """ Текстовая заметка о ток как был создан купон. Необходимо в основном для
+        статистики и ручного удаления, в случае чего """
+
+    # noinspection PyMissingOrEmptyDocstring
+    class Meta:
+        table_name = 'Coupon'
+
+    @property
+    def discount_value(self) -> decimal.Decimal:
+        """ Возвращает discount в виде значения от 0 до 1 """
+        return decimal.Decimal(self.discount / 100)
+
+    def _select_allowed_subscriptions(self, *query, where=True):
+        """ Возвращает query выделяющий подписки на которые действует купон """
+
+        return Subscription\
+            .select(*query)\
+            .join(SubscriptionGroupToSubscription)\
+            .join(SubscriptionGroup)\
+            .join(Coupon)\
+            .where((Coupon.code == self.code) & where)
+
+    def is_allowed_for_subscription(self, subscription_id: str) -> bool:
+        """ Возвращает True, если купон может использоваться
+            для покупки подписки с указанным ID """
+
+        return self._select_allowed_subscriptions(
+            where=(Subscription.id == subscription_id)
+        ).count() > 0
+
+    def get_allowed_subscription_ids(self) -> set[str]:
+        """ Возвращает множество ID подписок, на которые действует купон """
+        return set(self._select_allowed_subscriptions(Subscription.id))
+
+    def get_total_uses(self) -> int:
+        """ Возвращает фактическое общее число использований купона """
+
+        query = """
+            select (select count(*) from "Order" O where O.coupon_id = %(coupon)s)
+                + (select count(*) from "Bill" B where B.coupon_id = %(coupon)s)
+        """
+        args = {'coupon': self.code}
+
+        cursor = gls.db.execute_sql(query, args)
+        value, = cursor.fetchone()
+        return value
+
+    def is_already_used_by(self, user_id: int) -> bool:
+        """ Возвращает True, если купон уже был ранее использован
+            указанным пользователем """
+
+        query = """ select count(*) > 0 from "Order" O where O.client_id = %(client)s and O.coupon_id = %(coupon)s """
+        args = {'client': user_id, 'coupon': self.code}
+
+        cursor = gls.db.execute_sql(query, args)
+        value, = cursor.fetchone()
+        return value
 
     @classmethod
-    def free_reservation(cls, user_id: int):
-        database.execute(
-            """
-                insert into "User" (
-                    user_id,
-                    last_interaction,
-                    reserved_coupon,
-                    last_bill_expire_after
-                ) values (
-                    %(user_id)s,
-                    %(last_inter)s,
-                    null,
-                    null
-                )
-                on conflict (user_id) do update set
-                    last_interaction = excluded.last_interaction,
-                    reserved_coupon = excluded.reserved_coupon,
-                    last_bill_expire_after = excluded.last_bill_expire_after
-            """,
-            f'Freeing reservation for user {user_id}',
-            last_inter=datetime.datetime.now(),
-            user_id=user_id
-        )
+    def get_random_code(cls):
+        """ Возвращает случайный код купона. Уникальность не гарантируется """
+        return ''.join(random.choices(
+            settings.COUPON_ALLOWED_SYMBOLS,
+            k=settings.COUPON_MAX_LENGTH
+        ))
 
     @classmethod
-    def is_used_by(cls, code: str, user_id: int):
-        return database.single_value(
-            """
-                -- If there is at least one order from customer with given coupon, coupon considered as used
-                select count(*) > 0 from "Order" O
-                where
-                    O.coupon = %(code)s and
-                    O.customer_id = %(user_id)s
-            """,
-            f'Getting information about whether the coupon "{code}" was used by the user {user_id}',
-            code=code,
-            user_id=user_id
-        )
+    def generate(cls, **kwargs):
+        """ Генерирует купон с указанными параметрами (код выбирается случайно)
+            и добавляет его в базу """
+
+        while True:
+            code = cls.get_random_code()
+            coupon = Coupon(code=code, **kwargs)
+            try:
+                coupon.save(force_insert=True)
+            except peewee.IntegrityError:
+                continue
+            break
+        return coupon
 
     @classmethod
-    def add(cls, code: str, discount: int, subscription: int = None, max_usages: int = 1, referer: int = None,
-            is_one_time: bool = False):
-        result = database.single_value(
-            """
-                insert into "Coupon" (code, discount, max_usages, subscription, referer, is_one_time)
-                values (%(code)s, %(discount)s, %(max_usages)s, %(subscription)s, %(referer)s, %(is_one_time)s)
-                on conflict (code) do nothing returning code
-            """,
-            f'Adding new coupon {code}',
-            code=code,
-            discount=discount,
-            max_usages=max_usages,
-            subscription=subscription,
-            referer=referer,
-            is_one_time=is_one_time
-        )
-        return result is not None
+    def generate_gift(
+            cls,
+            subscription_id: str,
+            gift_from_user_id: int,
+            now: datetime.datetime = None,
+            note: str = None
+    ):
+        """ Генерирует подарочный купон """
 
-    @classmethod
-    def _generate(cls):
-        return ''.join(
-            random.choice(string.digits + string.ascii_uppercase + '-')
-            for _ in range(6)
-        )
+        now = now or datetime.datetime.now()
+        expires_after = now + settings.GIFT_COUPON_VALID_INTERVAL
 
-    @classmethod
-    def generate(cls, discount: int, subscription: int = None, max_usages: int = 1, referer: int = None,
-                 is_one_time: bool = True):
-        code = cls._generate()
-        while not cls.add(code, discount, subscription, max_usages, referer, is_one_time):
-            code = cls._generate()
-        return code
-
-    @classmethod
-    def delete(cls, code: str):
-        database.execute(
-            """ delete from "Coupon" where code = %(code)s """,
-            f'Deleting coupon {code}',
-            code=code
+        # Предполагается, что в базе есть SubscriptionGroup для
+        # каждой подписки с соответствующими ID
+        return cls.generate(
+            subscription_group=subscription_id,
+            discount=100,
+            max_usages=1,
+            expires_after=expires_after,
+            is_gifts_allowed=False,
+            sets_referral=gift_from_user_id,
+            note=note,
         )

@@ -1,3 +1,0 @@
-<message>
-    <p>Заказ #{order.id} <up>{service}</up> {subscription} добавлен в очередь {position_in_queue}</p>
-</message>

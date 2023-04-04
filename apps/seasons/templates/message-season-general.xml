@@ -1,0 +1,19 @@
+<message requires="points-current,points-total,monthly-prize">
+
+    <heading> ВЕСЕННИЙ СЕЗОН </heading>
+    <br/>
+    <p> <b> Приз месяца: </b> </p>
+    <p> {monthly-prize} </p>
+    <br/>
+    <p> Твой прогресс: </p>
+    <progressbar steps.cv="points-current" of.cv="points-total"/>
+    <p> <i> {points-current}/{points-total} </i> </p>
+    <br/>
+    <p> 👬 Приглашай друзей, ведь с ними покорять сезоны намного
+        интереснее (и получай очки за их покупки тоже 👀) </p>
+
+    <inline-keyboard>
+        <row> <button callback_data="season:help"> Что такое сезон? </button> </row>
+        <row> <button callback_data="season:referral-link"> Пригласить друга </button> </row>
+    </inline-keyboard>
+</message>
