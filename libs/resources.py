@@ -30,6 +30,7 @@ def resource(path: str) -> typing.Union[aiogram.types.InputFile, str]:
 
         return res.file_id
 
+    # Returns resource from file system
     return aiogram.types.FSInputFile(path)
 
 

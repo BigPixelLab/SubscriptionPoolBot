@@ -13,7 +13,7 @@ import settings
 import gls
 import template
 import userdata
-from template.syntax.telegram import TELEGRAM
+from template_for_aiogram import aiogram_syntax
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +38,7 @@ async def main():
     logging.basicConfig(level=settings.LOGGING_LEVEL, format=settings.LOGGING_FORMAT)
     logger.info("Starting bot")
 
-    template.set_default_syntax(TELEGRAM)
+    template.set_default_syntax(aiogram_syntax)
 
     # noinspection PyUnresolvedReferences
     import template_extensions

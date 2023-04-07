@@ -8,9 +8,9 @@ import aiogram.types
 import progressbar
 import resources
 import settings
-from template.types import *
-from template.syntax.telegram.types import *
-from template.syntax.telegram.parsers import *
+from template.dev import *
+from template_for_aiogram.types import *
+from template_for_aiogram.scopes import *
 from template import set_global_context
 
 if typing.TYPE_CHECKING:
@@ -27,26 +27,13 @@ set_global_context({
 
 # SPECIFIERS --------------------------------------------------------
 
-def res_extract_func(value: str, context: dict, _: typing.Type) -> aiogram.types.InputFile | str:
+def res_extract_func(value, context, _) -> aiogram.types.InputFile | str:
     """ Воспринимает переданное значение в качестве индекса файла.
         Производит поиск cache->database->filesystem """
-
-    tdir = context.get('TDIR')
-    is_relative_path = value.startswith('/')
-
-    if is_relative_path and tdir is not None:
-        value = tdir / value[1:]
-
-    elif is_relative_path:
-        raise KeyError('Cannot resolve relative path as no '
-                       'TDIR provided in context')
-
-    return resources.resource(value)
+    return resources.resource(value.format_map(context))
 
 
-specifiers.update(
-    res=res_extract_func
-)
+specifiers.update(rs=res_extract_func)
 
 
 # TAGS --------------------------------------------------------------
@@ -59,7 +46,7 @@ def _progressbar(_, *, steps: int, of: int, width: int = None) -> str:
 
 
 @register([MESSAGE, ELEMENT])
-def chat(_, *, user: int = None, display: str = 'Пользователь') -> InlineText:
+def chat(_, *, user: int = None, display: str = 'Пользователь') -> Text:
     """ Ссылка на чат с пользователем, оформленная как его имя """
 
     if user is not None:
@@ -68,7 +55,7 @@ def chat(_, *, user: int = None, display: str = 'Пользователь') -> I
 
 
 @register([MESSAGE, ELEMENT], name='chat-current')
-def chat_current(_) -> InlineText:
+def chat_current(_) -> Text:
     """ Ссылка на чат с текущим пользователем, оформленная как его имя """
 
     if user := typing.cast(typing.Optional[aiogram.types.User], aiogram.types.User.get_current()):

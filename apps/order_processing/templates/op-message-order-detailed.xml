@@ -6,27 +6,24 @@
         <span if="order.is_processed"> (ВЗЯТ) </span>
         <span if="order.is_closed"> (ЗАКРЫТ) </span>
     </heading>
-    <p>
-        <br/>
+
+    <section>
         <p> Польз.: <chat user.py="order.client_id"/> </p>
         <p> ID: <code> {order.client_id} </code> </p>
-    </p>
-    <p if="order.processing_employee_id">
-        <br/>
+    </section>
+    <section if="order.processing_employee_id">
         <p> Опер.: <chat user.py="order.processing_employee_id" display="Оператор"/> </p>
         <p> ID: <code> {order.processing_employee_id} </code> </p>
-    </p>
-    <p>
-        <br/>
+    </section>
+    <section>
         <p> План: {order.subscription.title} </p>
         <p> Оплачено: {order.paid_amount:.2f}₽ </p>
         <p> Цена: {order.subscription.price:.2f}₽ </p>
-    </p>
-    <p if="order.coupon_id">
-        <br/>
+    </section>
+    <section if="order.coupon_id">
         <p> Купон: {order.coupon.code} {order.coupon.discount:.0f}% </p>
         <p> {order.coupon.note} </p>
-    </p>
+    </section>
 
     <inline-keyboard if="order.is_free">
         <button callback_data="delete-this"> Скрыть </button>

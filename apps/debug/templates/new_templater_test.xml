@@ -5,7 +5,7 @@
         в вашем городе? Хотелось бы знать температуру и
         прогноз на ближайшие дни. Спасибо! </p>
 
-    <template src="{TDIR}/test.xml" firstname="Hello" surname="world"/>
+    <template src="{__dir__}/test.xml" firstname="Hello" surname="world"/>
 
     <inline-keyboard>
         <button callback_data="..."> Ok </button>
