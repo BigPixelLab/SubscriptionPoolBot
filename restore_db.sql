@@ -10,7 +10,7 @@ CREATE TABLE "Client" (
     chat_id bigint not null
         PRIMARY KEY,
     referral_id bigint
-        REFERENCES "Client",
+        REFERENCES "Client" (chat_id),
     season_points bigint not null
         DEFAULT 0,
     terms_message_id bigint
@@ -23,7 +23,7 @@ CREATE INDEX Client_referral_id ON "Client" (referral_id);
 CREATE TABLE "Employee" (
     chat_id bigint not null
         PRIMARY KEY
-        REFERENCES "Client"
+        REFERENCES "Client" (chat_id)
 );
 
 CREATE INDEX Employee_pk ON "Employee" (chat_id);
@@ -47,9 +47,9 @@ CREATE TABLE "Coupon" (
     code varchar not null
         PRIMARY KEY,
     type_id varchar not null
-        REFERENCES "CouponType",
+        REFERENCES "CouponType" (id),
     sets_referral_id bigint
-        REFERENCES "Client",
+        REFERENCES "Client" (chat_id),
     created_at timestamp not null
 );
 
@@ -62,7 +62,7 @@ CREATE TABLE "Subscription" (
     id varchar not null
         PRIMARY KEY,
     gift_coupon_type_id varchar
-        REFERENCES "CouponType",
+        REFERENCES "CouponType" (id),
     service_id varchar not null,
     short_title varchar not null,
     title varchar not null,
@@ -79,9 +79,9 @@ CREATE TABLE "SubscriptionGroup" (
     id varchar not null
         PRIMARY KEY,
     parent_id varchar
-        REFERENCES "SubscriptionGroup",
+        REFERENCES "SubscriptionGroup" (id),
     subscription_id varchar
-        REFERENCES "Subscription"
+        REFERENCES "Subscription" (id)
 );
 
 -- Adding constraint that cannot been added due to circular references
@@ -97,13 +97,13 @@ CREATE TABLE "Order" (
     id serial not null
         PRIMARY KEY,
     client_id bigint not null
-        REFERENCES "Client",
+        REFERENCES "Client" (chat_id),
     subscription_id varchar not null
-        REFERENCES "Subscription",
+        REFERENCES "Subscription" (id),
     coupon_id varchar
-        REFERENCES "Coupon",
+        REFERENCES "Coupon" (code),
     processing_employee_id bigint
-        REFERENCES "Employee",
+        REFERENCES "Employee" (chat_id),
     paid_amount numeric(1000, 2) not null,
     created_at timestamp not null,
     closed_at timestamp,
@@ -148,10 +148,14 @@ CREATE INDEX ResourceCache_pk ON "ResourceCache" (id, bot_id);
 CREATE TABLE "Message" (
     id varchar not null
         PRIMARY KEY,
-    banner_id varchar
-        REFERENCES "ResourceCache",
+    banner_id varchar,
+    banner_bot_id bigint not null,
     title varchar,
-    content varchar
+    content varchar,
+
+    CONSTRAINT fk_ResourceCache
+        FOREIGN KEY (banner_id, banner_bot_id)
+        REFERENCES "ResourceCache" (id, bot_id)
 );
 
 CREATE INDEX Message_pk ON "Message" (id);
@@ -162,7 +166,7 @@ CREATE TABLE "Season" (
     id serial not null
         PRIMARY KEY,
     message_id varchar not null
-        REFERENCES "Message"
+        REFERENCES "Message" (id)
 );
 
 CREATE INDEX Season_pk ON "Season" (id);
@@ -173,9 +177,9 @@ CREATE TABLE "SeasonPrize" (
     id serial not null
         PRIMARY KEY,
     coupon_type_id varchar not null
-        REFERENCES "CouponType",
+        REFERENCES "CouponType" (id),
     message_id varchar not null
-        REFERENCES "Message",
+        REFERENCES "Message" (id),
     cost bigint not null
 );
 
@@ -188,7 +192,7 @@ CREATE TABLE "Lottery" (
     id varchar not null
         PRIMARY KEY,
     message_id varchar not null
-        REFERENCES "Message"
+        REFERENCES "Message" (id)
 );
 
 CREATE INDEX Lottery_pk ON "Lottery" (id);
@@ -199,9 +203,9 @@ CREATE TABLE "LotteryPrize" (
     id varchar not null
         PRIMARY KEY,
     coupon_type_id varchar not null
-        REFERENCES "CouponType",
+        REFERENCES "CouponType" (id),
     message_id varchar not null
-        REFERENCES "Message"
+        REFERENCES "Message" (id)
 );
 
 CREATE INDEX LotteryPrize_pk ON "LotteryPrize" (id);
