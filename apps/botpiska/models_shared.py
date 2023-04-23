@@ -5,17 +5,15 @@
 Модели::
 
     Subscription
-    - id: varchar(INDEX_MAX_LENGTH) primary key
-    - service_id: varchar(INDEX_MAX_LENGTH)
-    - title: varchar(255)
-    - short_title: varchar(255)
+    - id: varchar primary key
+    - service_id: varchar
+    - gift_coupon_type: CouponType? foreign key
+    - title: varchar
+    - short_title: varchar
     - order_template: text
     - duration: interval
     - price: numeric
-    - is_queuing_required: boolean = false  # TODO: Избавиться
-    - is_special_offer: boolean = false  # TODO: Избавиться
-    - group: varchar(INDEX_MAX_LENGTH) = ''
-    - display: boolean = true
+    - group: varchar = ''
 
     Client
     - chat_id: bigint primary key
@@ -31,17 +29,19 @@ import peewee
 from playhouse.postgres_ext import IntervalField
 
 import gls
-import settings
 from apps.botpiska.services import SERVICE_MAP, Service
+from apps.coupons.models_shared import CouponType
 
 
 class Subscription(gls.BaseModel):
     """ ... """
 
-    id = peewee.CharField(max_length=settings.INDEX_MAX_LENGTH, primary_key=True)
+    id = peewee.CharField(primary_key=True)
     """ Текстовый ID подписки """
-    service_id = peewee.CharField(max_length=settings.INDEX_MAX_LENGTH)
+    service_id = peewee.CharField()
     """ Индекс сервиса, которому принадлежит подписка. Модель сервиса не определена в базе """
+    gift_coupon_type = peewee.ForeignKeyField(CouponType, on_delete='SET NULL', null=True)
+    """ Тип купона, который будет использован при покупке подарка """
     title = peewee.CharField()
     """ Полное наименование подписки, с названием сервиса, типом и длительностью """
     short_title = peewee.CharField()
@@ -52,17 +52,9 @@ class Subscription(gls.BaseModel):
     """ Продолжительность подписки """
     price = peewee.DecimalField(max_digits=1000, decimal_places=2)
     """ Цена подписки """
-    is_queuing_required = peewee.BooleanField(default=False)
-    """ Есть ли необходимость ставить пользователя в очередь после покупки.
-        Полезно для подписок, требующих времени для покупки ключа и активации """
-    is_special_offer = peewee.BooleanField(default=False)
-    """ Выделять ли подписку особым образом в списке """
-    group = peewee.CharField(max_length=settings.INDEX_MAX_LENGTH, default='')
+    group = peewee.CharField(default='')
     """ Группа подписки, используется для сортировки и расчёта скидки (скидка считается в пределах группы) """
-    display = peewee.BooleanField(default=True)
-    """ Показывать ли подписку в списке подписок """
 
-    # noinspection PyMissingOrEmptyDocstring
     class Meta:
         table_name = 'Subscription'
 
@@ -82,7 +74,7 @@ class Subscription(gls.BaseModel):
         """ Возвращает список подписок указанного сервиса,
             отсортированный по группе и длительности """
         return cls.select()\
-            .where(cls.service_id == service_id, cls.display)\
+            .where(cls.service_id == service_id)\
             .order_by(cls.group, cls.duration.desc())
 
 
@@ -98,7 +90,6 @@ class Client(gls.BaseModel):
     terms_message_id = peewee.IntegerField(null=True, default=None)
     """ Телеграм ID сообщения, содержащего условия """
 
-    # noinspection PyMissingOrEmptyDocstring
     class Meta:
         table_name = 'Client'
 
@@ -117,3 +108,9 @@ class Client(gls.BaseModel):
             client.save()
 
         return client
+
+
+class Message(gls.BaseModel):
+    banner = peewee.CharField()
+    title = peewee.CharField()
+    content = peewee.TextField()
