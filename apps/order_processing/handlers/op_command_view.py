@@ -3,8 +3,7 @@ import peewee
 
 import response_system as rs
 import template
-from apps.botpiska.models import Order, Subscription
-from apps.coupons.models import Coupon, CouponType
+from apps.botpiska.models import Order
 
 
 async def view_command_handler(_, command: aiogram.filters.CommandObject):
