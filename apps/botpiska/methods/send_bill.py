@@ -56,11 +56,7 @@ async def send_bill(
             'предыдущий заказ'
         )
 
-    # Если подписка, которую пытаются купить уже недоступна
-    if not subscription.display:
-        return rs.feedback('Эта подписка в данный момент недоступна')
-
-    # Получаем активированный купон
+    # Получаем активированный купон (сразу с CouponType)
     result, coupon = await coupons_methods.get_suggested_coupon(user.id, subscription.id)
     coupon_feedback = None
 
@@ -89,7 +85,7 @@ async def send_bill(
             coupon=coupon,
             qiwi_id=qiwi_bill.id,
             message_id=message.message_id,
-            expires_after=expires_after
+            expires_at=expires_after
         ).execute()
 
     # noinspection PyTypeChecker
@@ -98,7 +94,7 @@ async def send_bill(
         filename='BILL.png'
     )
 
-    is_gifts_allowed = coupon is None or coupon.is_gifts_allowed
+    is_gifts_allowed = coupon is None or coupon.type.allows_gifts
 
     return rs.message(
         template.render('apps/botpiska/templates/message-bill.xml', {

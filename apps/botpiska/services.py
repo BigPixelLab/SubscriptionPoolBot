@@ -20,8 +20,12 @@ class Service(typing.NamedTuple):
         """ ... """
         return {service.search_title: service for service in SERVICES}
 
+    @classmethod
+    def get_by_id(cls, id_: str) -> typing.Optional['Service']:
+        return SERVICE_MAP.get(id_)
 
-SERVICES = {
+
+SERVICES: set[Service] = {
     Service(
         id='netflix',
         search_title='NETFLIX',
@@ -41,4 +45,4 @@ SERVICES = {
     )
 }
 
-SERVICE_MAP = {service.id: service for service in SERVICES}
+SERVICE_MAP: dict[str, Service] = {service.id: service for service in SERVICES}

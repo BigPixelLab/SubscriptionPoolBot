@@ -11,7 +11,6 @@ import settings
 from template.dev import *
 from template_for_aiogram.types import *
 from template_for_aiogram.scopes import *
-from template import set_global_context
 
 if typing.TYPE_CHECKING:
     from apps.botpiska.models import Subscription
@@ -45,8 +44,10 @@ def _progressbar(_, *, steps: int, of: int, width: int = None) -> str:
     return progressbar.progressbar(steps / of, width)
 
 
-@register([MESSAGE, ELEMENT])
-def chat(_, *, user: int = None, display: str = 'Пользователь') -> Text:
+# Python sometimes messes up annotations and turns them into strings,
+# fixed by providing annotations explicitly
+@register([MESSAGE, ELEMENT], annotations={'user': int, 'display': str})
+def chat(_, *, user=None, display='Пользователь') -> Text:
     """ Ссылка на чат с пользователем, оформленная как его имя """
 
     if user is not None:

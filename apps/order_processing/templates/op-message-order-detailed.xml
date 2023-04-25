@@ -22,7 +22,7 @@
     </section>
     <section if="order.coupon_id">
         <p> Купон: {order.coupon.code} {order.coupon.discount:.0f}% </p>
-        <p> {order.coupon.note} </p>
+        <p> {order.coupon.type.id} </p>
     </section>
 
     <inline-keyboard if="order.is_free">

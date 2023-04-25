@@ -5,6 +5,7 @@ import response_system as rs
 import template
 from apps.botpiska.models import Order, Subscription
 from apps.coupons.models import Coupon
+from apps.coupons.models_shared import CouponType
 from apps.order_processing import callbacks
 
 
@@ -12,10 +13,11 @@ async def return_order_handler(_, callback_data: callbacks.OrderActionCallback):
     """ ... """
 
     try:
-        order = Order.select().where(Order.id == callback_data.order_id) \
+        order = Order.select_by_id(callback_data.order_id) \
             .join(Subscription) \
             .switch(Order) \
-            .join(Coupon, peewee.JOIN.LEFT_OUTER).get()
+            .join(Coupon, peewee.JOIN.LEFT_OUTER) \
+            .join(CouponType).get()
 
     except peewee.DoesNotExist:
         return rs.feedback(f'Заказа #{callback_data.order_id} нет в базе')

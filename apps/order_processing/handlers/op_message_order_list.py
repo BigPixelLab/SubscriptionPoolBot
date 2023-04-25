@@ -5,7 +5,7 @@ from apps.botpiska.models import Order, Subscription
 
 async def get_orders_handler(_):
     """ ... """
-    orders = Order.get_open().join(Subscription).order_by(Order.open_at)
+    orders = Order.select_open().join(Subscription).order_by(Order.created_at)
     return rs.message(template.render('apps/order_processing/templates/op-message-order-list.xml', {
         'orders': list(orders)
     }).extract())
@@ -13,7 +13,7 @@ async def get_orders_handler(_):
 
 async def update_orders_handler(_):
     """ ... """
-    orders = Order.get_open().join(Subscription).order_by(Order.open_at)
+    orders = Order.select_open().join(Subscription).order_by(Order.created_at)
     return rs.edit_original(template.render('apps/order_processing/templates/op-message-order-list.xml', {
         'orders': list(orders)
     }).extract())

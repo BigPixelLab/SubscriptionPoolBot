@@ -149,9 +149,9 @@ CREATE TABLE "Message" (
     id varchar not null
         PRIMARY KEY,
     banner_id varchar,
-    banner_bot_id bigint not null,
-    title varchar,
-    content varchar,
+    banner_bot_id bigint,
+    title varchar not null,
+    content varchar not null,
 
     CONSTRAINT fk_ResourceCache
         FOREIGN KEY (banner_id, banner_bot_id)

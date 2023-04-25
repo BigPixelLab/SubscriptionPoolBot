@@ -5,6 +5,7 @@ import peewee
 
 import response_system as rs
 from apps.coupons.models import Coupon
+from apps.coupons.models_shared import CouponType
 from result import *
 
 
@@ -24,9 +25,8 @@ async def get_coupon(
           - WRONG_SUBSCRIPTION - Купон не предназначен для данной подписки
           - ALREADY_USED - Купон уже был использован данным пользователем
     """
-
     try:
-        coupon: Coupon = Coupon.get_or_none(Coupon.code == code)
+        coupon: Coupon = Coupon.select_by_id(code).join(CouponType).get()
     except peewee.DoesNotExist:
         return Error('NOT_FOUND'), None
 

@@ -25,9 +25,12 @@ def get_BaseModel(db):
     class BaseModel(peewee.Model):
         """ Базовая модель """
 
-        # noinspection PyMissingOrEmptyDocstring
         class Meta:
             database = db
+
+        @classmethod
+        def select_by_id(cls, pk):
+            return cls.select().where(cls._meta.primary_key == pk)
 
     return BaseModel
 
@@ -89,6 +92,10 @@ async def main():
     async def delete_this_handler(_):
         """ Handler для удаления сообщения, которое он обрабатывает """
         return response_system.delete_original()
+
+    # Разрешаем циклические зависимости в базе данных
+    for model in gls.BaseModel.__subclasses__():
+        peewee.DeferredForeignKey.resolve(model)
 
     # Запускаем ботов
     await asyncio.gather(

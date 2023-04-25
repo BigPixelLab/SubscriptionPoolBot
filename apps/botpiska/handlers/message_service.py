@@ -30,7 +30,7 @@ def _pair_with_calculated_discounts(subscriptions: list[models.Subscription]) \
 
     discounts = []
 
-    for group, group_subscriptions in itertools.groupby(subscriptions, key=lambda x: x.group):
+    for group, group_subscriptions in itertools.groupby(subscriptions, key=lambda x: x.category):
         # groupby возвращает итератор, сохраняем значения
         # в список, чтобы можно было пройтись повторно
         group_subscriptions = list(group_subscriptions)

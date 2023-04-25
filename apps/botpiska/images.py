@@ -71,11 +71,16 @@ def render_gift_card_image(
     qr = qrcode.QRCode(error_correction=qrcode.constants.ERROR_CORRECT_Q)
     qr.add_data(link)
 
+    qr_width = 200
     qr_image = qr.make_image(
         image_factory=StyledPilImage,
         module_drawer=RoundedModuleDrawer(),
         embeded_image_path="apps/botpiska/templates/resources/QR-ICON.png",
+        back_color="transparent"
     )
-    qr_image.thumbnail((256, 256), Image.ANTIALIAS)
+    qr_image.thumbnail((qr_width, qr_width), Image.ANTIALIAS)
 
-    image.paste(qr_image, (0, 0))
+    image.paste(qr_image, (
+        (image.width - qr_width) // 2,
+        (image.height - qr_width) // 2 + 80)
+    )

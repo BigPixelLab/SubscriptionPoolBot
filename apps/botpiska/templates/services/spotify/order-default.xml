@@ -1,8 +1,7 @@
-<message requires="order,subscription,coupon_1p1">
+<message requires="order,subscription">
     <anim src.rs="{__dir__}/resources/SPOTIFY-ORDER.mp4"/>
     <template src="{__dir__.parent}/order-default.xml"
               order.cv="order"
               subscription.cv="subscription"
-              coupon_1p1.cv="coupon_1p1"
     />
 </message>

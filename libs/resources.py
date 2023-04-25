@@ -9,7 +9,7 @@ _resource_cache = {}
 
 def resource(path: str) -> typing.Union[aiogram.types.InputFile, str]:
     """ Возвращает file-id ресурса, или InputFile для его загрузки """
-    from apps.maintenance.models import Resource
+    from apps.maintenance.models import ResourceCache
     global _resource_cache
 
     # Will try to get resource from cache, if failed continues
@@ -21,8 +21,8 @@ def resource(path: str) -> typing.Union[aiogram.types.InputFile, str]:
     with contextlib.suppress(peewee.DoesNotExist):
 
         # Getting from database
-        res = Resource.select().where(
-            Resource.bot_id == bot.id, Resource.path == path
+        res = ResourceCache.select().where(
+            ResourceCache.bot_id == bot.id, ResourceCache.id == path
         ).get()
 
         # Saving to cache (if found in database)
@@ -36,7 +36,7 @@ def resource(path: str) -> typing.Union[aiogram.types.InputFile, str]:
 
 def load(path: str, file_id: str) -> None:
     """ Загружает file-id в систему """
-    from apps.maintenance.models import Resource
+    from apps.maintenance.models import ResourceCache
     global _resource_cache
 
     bot = aiogram.Bot.get_current()
@@ -45,9 +45,9 @@ def load(path: str, file_id: str) -> None:
     _resource_cache[path] = file_id
 
     # Saving to database
-    Resource(
+    ResourceCache(
+        id=path,
         bot_id=bot.id,
-        path=path,
         file_id=file_id
     ).save(force_insert=True)
 

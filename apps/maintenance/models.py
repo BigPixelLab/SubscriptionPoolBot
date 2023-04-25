@@ -1,17 +1,17 @@
 """ ... """
-from peewee import BigIntegerField, CharField, CompositeKey, TextField
+import peewee
 
 import gls
 
 
-class Resource(gls.BaseModel):
+class ResourceCache(gls.BaseModel):
     """ ... """
 
-    bot_id = BigIntegerField()
-    path = CharField()
-    file_id = TextField()
+    id = peewee.CharField()
+    bot_id = peewee.BigIntegerField()
+    file_id = peewee.TextField()
+    is_fs = peewee.BooleanField()
 
-    # noinspection PyMissingOrEmptyDocstring
     class Meta:
-        primary_key = CompositeKey('bot_id', 'path')
-        table_name = 'Resource'
+        primary_key = peewee.CompositeKey('bot_id', 'id')
+        table_name = 'ResourceCache'

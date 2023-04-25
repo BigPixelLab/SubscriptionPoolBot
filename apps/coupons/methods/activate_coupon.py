@@ -5,7 +5,7 @@ import gls
 import response_system as rs
 import template
 from apps.botpiska import methods as botpiska_methods
-from apps.botpiska.models import Subscription, Bill
+from apps.botpiska.models import Bill
 from apps.coupons import methods as coupons_methods
 from response_system import Response
 
@@ -20,7 +20,7 @@ async def activate_coupon(code: str, user: aiogram.types.User, silent: bool = Fa
 
     # Обрабатываем случаи, когда купон недействителен
     if result.is_error and result.error in COUPON_EXCEPTIONS:
-        message = COUPON_EXCEPTIONS[result.error].format(coupon=coupon)
+        message = COUPON_EXCEPTIONS[result.error].format(coupon=coupon.code)
         return rs.message(message)
 
     if result.is_error:
@@ -33,8 +33,7 @@ async def activate_coupon(code: str, user: aiogram.types.User, silent: bool = Fa
     })
 
     # Если купон действителен всего для одной подписки - отправляем счёт на эту подписку
-    if len(allowed_subscriptions := coupon.get_allowed_subscription_ids()) == 1:
-        subscription = Subscription.get_by_id(allowed_subscriptions.pop())
+    if subscription := coupon.get_sub_single():
         return await botpiska_methods.send_bill(user, subscription)
 
     # Если есть не просроченный счёт - заново его генерируем

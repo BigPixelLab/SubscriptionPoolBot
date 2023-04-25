@@ -16,10 +16,10 @@ async def startup_handler():
 
     query = """
         UPDATE "Order" AS O SET
-            is_notified_to_renew = True
+            notified_renew = True
         FROM "Subscription" AS S
         WHERE O.subscription_id = S.id
-            AND NOT O.is_notified_to_renew
+            AND NOT O.notified_renew
             AND O.closed_at IS NOT NULL
             AND %(now)s >= O.closed_at + S.duration - %(notify_before)s
         RETURNING O.client_id, O.subscription_id

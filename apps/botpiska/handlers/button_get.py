@@ -16,7 +16,7 @@ import settings
 import template
 from .. import images
 from ..methods import BILL_STATUSES
-from ..models import Bill, Order, Client, Employee
+from ..models import Bill, Order, Client, Employee, Subscription
 from apps.coupons.models import Coupon
 
 
@@ -44,7 +44,7 @@ BILL_GET_ERROR = (
 )
 
 
-async def _get_order_wrapper(function, user: aiogram.types.User) -> list[Response]:
+async def _order_wrapper(function, user: aiogram.types.User) -> list[Response]:
     """ Производит предварительные действия перед обработкой
         получения заказа """
 
@@ -77,17 +77,21 @@ async def _get_order_wrapper(function, user: aiogram.types.User) -> list[Respons
     # Регистрируем пользователя, если не зарегистрирован и
     # устанавливаем его как реферала
     coupon = bill.coupon
-    client = Client.get_or_register(user.id, referral=coupon and coupon.sets_referral_id)
+    client = Client.get_or_register(
+        user.id,
+        referral=coupon.sets_referral_id if coupon else None,
+        force_referral=True
+    )
 
     return await function(client, bill, qiwi_bill)
 
 
-def _get_order_handler(function):
+def _order_handler(function):
     """ Декоратор, оборачивающий функцию в get_order_wrapper """
-    return functools.partial(_get_order_wrapper, function)
+    return functools.partial(_order_wrapper, function)
 
 
-@_get_order_handler
+@_order_handler
 async def get_for_self(client: Client, bill: Bill, qiwi_bill: qiwi_types.Bill) -> list[Response]:
     """ Часть логики, относящаяся к покупке подписки для себя """
 
@@ -105,8 +109,7 @@ async def get_for_self(client: Client, bill: Bill, qiwi_bill: qiwi_types.Bill) -
         rs.message(
             template.render(subscription.order_template, {
                 'subscription': subscription,
-                'order': order,
-                'coupon_1p1': None
+                'order': order
             }),
             # Важная часть, т.к. в сообщении со счётом находится кнопка "Для себя"
             delete_original=True,
@@ -121,18 +124,19 @@ async def get_for_self(client: Client, bill: Bill, qiwi_bill: qiwi_types.Bill) -
     )
 
 
-@_get_order_handler
+@_order_handler
 async def get_as_gift(client: Client, bill: Bill, _: qiwi_types.Bill) -> list[Response]:
     """ Часть логики, относящаяся к покупке подписки в подарок """
 
-    gift_coupon = Coupon.generate_gift(
-        bill.subscription_id, client.chat_id,
-        note='Подписка, купленная в подарок'
+    subscription: Subscription = bill.subscription
+    gift_coupon = Coupon.from_type(
+        subscription.gift_coupon_type_id,
+        sets_referral=client.chat_id,
+        now=rs.global_time.get()
     )
-    subscription = bill.subscription
 
     gift_card_image = pilgram.PilImageInputFile(
-        images.render_gift_card_image(f't.me/botpiska_bot?start={gift_coupon}'),
+        images.render_gift_card_image(f't.me/botpiska_bot?start={gift_coupon.code}'),
         filename='GIFT.png'
     )
 
