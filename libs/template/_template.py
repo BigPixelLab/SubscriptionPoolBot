@@ -207,7 +207,6 @@ specifiers = {
 }
 
 StopParsing = object()
-StopParsing.__str__ = StopParsing.__repr__ = lambda: 'StopParsing'
 """ Объект, используемый для указания parser-у о завершении обработки """
 
 
