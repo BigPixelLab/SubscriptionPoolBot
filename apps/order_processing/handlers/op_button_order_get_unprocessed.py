@@ -4,8 +4,7 @@ from peewee import JOIN
 import response_system as rs
 import template
 from apps.botpiska.models import Order, Subscription
-from apps.coupons.models import Coupon
-from apps.coupons.models_shared import CouponType
+from apps.coupons.models import Coupon, CouponType
 
 
 async def get_unprocessed_order_handler(_):
@@ -17,7 +16,7 @@ async def get_unprocessed_order_handler(_):
             .join(Subscription) \
             .switch(Order) \
             .join(Coupon, JOIN.LEFT_OUTER) \
-            .join(CouponType).get()
+            .join(CouponType, peewee.JOIN.LEFT_OUTER).get()
 
     except peewee.DoesNotExist:
         return rs.feedback('Нет активных заказов')

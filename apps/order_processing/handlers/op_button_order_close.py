@@ -6,8 +6,7 @@ import gls
 import response_system as rs
 import template
 from apps.botpiska.models import Order, Subscription
-from apps.coupons.models import Coupon
-from apps.coupons.models_shared import CouponType
+from apps.coupons.models import Coupon, CouponType
 from apps.order_processing import callbacks
 
 
@@ -19,7 +18,7 @@ async def close_order_handler(_, callback_data: callbacks.OrderActionCallback):
             .join(Subscription) \
             .switch(Order) \
             .join(Coupon, peewee.JOIN.LEFT_OUTER) \
-            .join(CouponType).get()
+            .join(CouponType, peewee.JOIN.LEFT_OUTER).get()
 
     except peewee.DoesNotExist:
         return rs.feedback(f'Заказа #{callback_data.order_id} нет в базе')

@@ -18,6 +18,7 @@ from .. import images
 from ..methods import BILL_STATUSES
 from ..models import Bill, Order, Client, Employee, Subscription
 from apps.coupons.models import Coupon
+from ..services import Service
 
 
 async def get_for_self_button_handler(_, user: aiogram.types.User):
@@ -100,14 +101,15 @@ async def get_for_self(client: Client, bill: Bill, qiwi_bill: qiwi_types.Bill) -
         subscription=bill.subscription_id,
         coupon=bill.coupon_id,
         paid_amount=qiwi_bill.amount.value,
-        open_at=rs.global_time.get()
+        created_at=rs.global_time.get()
     )
     order.save()
 
-    subscription = bill.subscription
+    subscription: Subscription = bill.subscription
+    service = Service.get_by_id(subscription.service_id)
     return (
         rs.message(
-            template.render(subscription.order_template, {
+            template.render(service.order_template, {
                 'subscription': subscription,
                 'order': order
             }),

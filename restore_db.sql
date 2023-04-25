@@ -135,68 +135,48 @@ CREATE INDEX Bill_coupon_id ON "Bill" (coupon_id);
 
 
 CREATE TABLE "ResourceCache" (
-    id varchar not null,
+    path varchar not null,
     bot_id bigint not null,
     file_id varchar not null,
 
-    PRIMARY KEY (id, bot_id)
+    PRIMARY KEY (path, bot_id)
 );
 
-CREATE INDEX ResourceCache_pk ON "ResourceCache" (id, bot_id);
-
-
-CREATE TABLE "Message" (
-    id varchar not null
-        PRIMARY KEY,
-    banner_id varchar,
-    banner_bot_id bigint,
-    title varchar not null,
-    content varchar not null,
-
-    CONSTRAINT fk_ResourceCache
-        FOREIGN KEY (banner_id, banner_bot_id)
-        REFERENCES "ResourceCache" (id, bot_id)
-);
-
-CREATE INDEX Message_pk ON "Message" (id);
-CREATE INDEX Message_banner_id ON "Message" (banner_id);
+CREATE INDEX ResourceCache_pk ON "ResourceCache" (bot_id, path);
 
 
 CREATE TABLE "Season" (
-    id serial not null
+    id int not null
         PRIMARY KEY,
-    message_id varchar not null
-        REFERENCES "Message" (id)
+    description text not null
 );
 
 CREATE INDEX Season_pk ON "Season" (id);
-CREATE INDEX Season_message_id ON "Season" (message_id);
 
 
 CREATE TABLE "SeasonPrize" (
-    id serial not null
+    id int not null
         PRIMARY KEY,
     coupon_type_id varchar not null
         REFERENCES "CouponType" (id),
-    message_id varchar not null
-        REFERENCES "Message" (id),
+    banner varchar not null,
+    title varchar not null,
     cost bigint not null
 );
 
 CREATE INDEX SeasonPrize_pk ON "SeasonPrize" (id);
 CREATE INDEX SeasonPrize_coupon_type_id ON "SeasonPrize" (coupon_type_id);
-CREATE INDEX SeasonPrize_message_id ON "SeasonPrize" (message_id);
 
 
 CREATE TABLE "Lottery" (
     id varchar not null
         PRIMARY KEY,
-    message_id varchar not null
-        REFERENCES "Message" (id)
+    banner varchar not null,
+    title varchar not null,
+    description text not null
 );
 
 CREATE INDEX Lottery_pk ON "Lottery" (id);
-CREATE INDEX Lottery_message_id ON "Lottery" (message_id);
 
 
 CREATE TABLE "LotteryPrize" (
@@ -204,13 +184,13 @@ CREATE TABLE "LotteryPrize" (
         PRIMARY KEY,
     coupon_type_id varchar not null
         REFERENCES "CouponType" (id),
-    message_id varchar not null
-        REFERENCES "Message" (id)
+    banner varchar not null,
+    title varchar not null,
+    description text not null
 );
 
 CREATE INDEX LotteryPrize_pk ON "LotteryPrize" (id);
 CREATE INDEX LotteryPrize_coupon_type_id ON "LotteryPrize" (coupon_type_id);
-CREATE INDEX LotteryPrize_message_id ON "LotteryPrize" (message_id);
 
 
 CREATE VIEW "SubGroupHierarchyView" AS

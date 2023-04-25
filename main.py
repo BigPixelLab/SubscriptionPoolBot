@@ -8,6 +8,7 @@ import peewee
 from aiogram.fsm.storage.memory import MemoryStorage
 from glQiwiApi import QiwiP2PClient
 
+import ezqr
 import response_system
 import settings
 import gls
@@ -77,6 +78,7 @@ async def main():
     # Инициализация подключения к базе данных
     gls.db = peewee.PostgresqlDatabase(settings.DATABASE_URI)
     gls.BaseModel = get_BaseModel(gls.db)
+    ezqr.set_default_db(gls.db)
 
     # Подключаем router-ы
     from apps.routers import routers

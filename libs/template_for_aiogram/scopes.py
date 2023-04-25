@@ -92,16 +92,16 @@ def message_assembler() -> Generator[MessageRender,
             message.animation = token.input_file
             continue
 
-        if isinstance(token, (Text, str)):
-            layout.add_word(token)
+        if isinstance(token, Section):
+            layout.add_section(token)
             continue
 
         if isinstance(token, Paragraph):
             layout.add_paragraph(token)
             continue
 
-        if isinstance(token, Section):
-            layout.add_section(token)
+        if isinstance(token, (Text, str)):
+            layout.add_word(token)
             continue
 
         if isinstance(token, (InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove)):
@@ -125,16 +125,16 @@ def text_assembler() -> Generator[str, Union[Paragraph, Text], None]:
 
     while (token := (yield)) is not StopParsing:
 
-        if isinstance(token, (Text, str)):
-            layout.add_word(token)
+        if isinstance(token, Section):
+            layout.add_section(token)
             continue
 
         if isinstance(token, Paragraph):
             layout.add_paragraph(token)
             continue
 
-        if isinstance(token, Section):
-            layout.add_section(token)
+        if isinstance(token, (Text, str)):
+            layout.add_word(token)
             continue
 
         raise ParsingCoroutineError(f'Got unexpected token "{token}" (type: {token.__class__})')

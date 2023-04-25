@@ -1,16 +1,7 @@
-"""
-Модели::
-
-    Coupon:
-    - code: varchar(COUPON_MAX_LENGTH) primary key
-    - type: CouponType foreign key
-    - sets_referral: Client? foreign key
-    - created_at: timestamp
-
-"""
 import datetime
 import decimal
 import random
+import typing
 from typing import Optional
 
 import peewee
@@ -18,8 +9,11 @@ import peewee
 import ezqr
 import gls
 import settings
-from .models_shared import CouponType
-from ..botpiska.models_shared import Subscription, Client
+from apps.botpiska.models.client import Client
+from .coupon_type import CouponType
+
+if typing.TYPE_CHECKING:
+    from apps.botpiska.models.subscription import Subscription
 
 
 class Coupon(gls.BaseModel):
@@ -55,7 +49,7 @@ class Coupon(gls.BaseModel):
                 and code = %(code)s
         """, dict(subscription=subscription_id, code=self.code))
 
-    def get_sub_single(self) -> Optional[Subscription]:
+    def get_sub_single(self) -> Optional['Subscription']:
         """ Если купон доступен для единственной подписки - вернёт её,
             иначе None """
 

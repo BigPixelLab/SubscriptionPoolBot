@@ -1,35 +1,8 @@
-"""
-Модели::
-
-    SubscriptionGroup
-    - id: varchar primary key
-    - parent_id: SubscriptionGroup? foreign key
-    - subscription_id: Subscription? foreign key
-
-    CouponType
-    - id: varchar primary key
-    - subscription_group: SubscriptionGroup foreign key
-    - discount: numeric
-    - max_usages: integer?
-    - lifespan: timeinterval?
-    - allows_gifts: boolean = true
-
-"""
 import peewee
 from playhouse.postgres_ext import IntervalField
 
 import gls
-
-
-class SubscriptionGroup(gls.BaseModel):
-    """ ... """
-
-    id = peewee.CharField(primary_key=True)
-    parent = peewee.ForeignKeyField('self', on_delete='CASCADE', null=True)
-    subscription = peewee.DeferredForeignKey('Subscription', on_delete='CASCADE', null=True)
-
-    class Meta:
-        table_name = 'SubscriptionGroup'
+from .subscription_group import SubscriptionGroup
 
 
 class CouponType(gls.BaseModel):

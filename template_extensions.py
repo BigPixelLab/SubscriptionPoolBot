@@ -13,7 +13,7 @@ from template_for_aiogram.types import *
 from template_for_aiogram.scopes import *
 
 if typing.TYPE_CHECKING:
-    from apps.botpiska.models import Subscription
+    from apps.botpiska.models.subscription import Subscription
 
 # TEMPLATE GLOBALS --------------------------------------------------
 

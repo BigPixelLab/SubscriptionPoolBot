@@ -1,21 +1,19 @@
 """ ... """
 import itertools
 
-import aiogram.types
-
-import gls
 import response_system as rs
 import template
-from .. import services, models
+from ..models import Subscription
+from ..services import Service
 
 
-async def service_message_handler(_, service: services.Service):
+async def service_message_handler(_, service: Service):
     """ ... """
 
     # Получаем список подписок данного сервиса в нужном порядке
     subscriptions = []
     if service.has_subscription_plans:
-        subscriptions = models.Subscription.select_service_plans(service.id).execute()
+        subscriptions = Subscription.select_service_plans(service.id).execute()
 
     subscription_plans = _pair_with_calculated_discounts(subscriptions)
     return rs.message(template.render(service.showcase_template, {
@@ -23,8 +21,8 @@ async def service_message_handler(_, service: services.Service):
     }))
 
 
-def _pair_with_calculated_discounts(subscriptions: list[models.Subscription]) \
-        -> list[tuple[models.Subscription, int]]:
+def _pair_with_calculated_discounts(subscriptions: list[Subscription]) \
+        -> list[tuple[Subscription, int]]:
     """ Рассчитывает скидку. Подписки должны быть предоставлены
        в отсортированном по группе виде """
 

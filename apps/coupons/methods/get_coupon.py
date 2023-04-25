@@ -4,8 +4,7 @@ from __future__ import annotations
 import peewee
 
 import response_system as rs
-from apps.coupons.models import Coupon
-from apps.coupons.models_shared import CouponType
+from apps.coupons.models import Coupon, CouponType
 from result import *
 
 

@@ -1,27 +1,3 @@
-"""
-Этот файл существует, для того чтобы разрешить циклический импорт.
-Все модели этого файла могут быть доступны из models.py
-
-Модели::
-
-    Subscription
-    - id: varchar primary key
-    - service_id: varchar
-    - gift_coupon_type: CouponType? foreign key
-    - title: varchar
-    - short_title: varchar
-    - order_template: text
-    - duration: interval
-    - price: numeric
-    - category: varchar = ''
-
-    Client
-    - chat_id: bigint primary key
-    - season_bonuses: integer = 0
-    - referral: Client? foreign key = null
-    - terms_message_id: integer? = null
-
-"""
 import datetime
 import decimal
 import typing
@@ -31,7 +7,7 @@ from playhouse.postgres_ext import IntervalField
 
 import gls
 from apps.botpiska.services import Service
-from apps.coupons.models_shared import CouponType
+from apps.coupons.models.coupon_type import CouponType
 
 
 class Subscription(gls.BaseModel):
@@ -47,8 +23,6 @@ class Subscription(gls.BaseModel):
     """ Короткое наименование подписки, для отображения в кнопках """
     title = peewee.CharField()
     """ Полное наименование подписки, с названием сервиса, типом и длительностью """
-    # order_template = peewee.TextField()
-    # """ Индекс шаблона заказа. Появляется после покупки """
     duration = IntervalField()
     """ Продолжительность подписки """
     price = peewee.DecimalField(max_digits=1000, decimal_places=2)
@@ -85,43 +59,3 @@ class Subscription(gls.BaseModel):
         return cls.select()\
             .where(cls.service_id == service_id)\
             .order_by(cls.category, cls.duration.desc())
-
-
-class Client(gls.BaseModel):
-    """ ... """
-
-    chat_id = peewee.BigIntegerField(primary_key=True)
-    """ Телеграм ID чата с пользователем """
-    referral = peewee.ForeignKeyField('self', on_delete='SET NULL', null=True, default=None)
-    """ Пользователь, по ссылке которого перешёл данный пользователь """
-    season_points = peewee.IntegerField(default=0)
-    """ Количество полученных пользователем бонусов в сезоне """
-    terms_message_id = peewee.IntegerField(null=True, default=None)
-    """ Телеграм ID сообщения, содержащего условия """
-
-    class Meta:
-        table_name = 'Client'
-
-    @classmethod
-    def get_or_register(cls, user_id: int, referral: int = None, force_referral: bool = False) -> 'Client':
-        """ Пытается получить пользователя из базы и, если не найден,
-           добавить его """
-
-        client, _ = cls.get_or_create(chat_id=user_id, defaults={'referral': referral})
-
-        if force_referral and referral and not client.referral_id:
-            client.referral = referral
-            client.save()
-
-        return client
-
-
-class Message(gls.BaseModel):
-    id = peewee.CharField(primary_key=True)
-    banner = peewee.CharField(null=True)
-    banner_bot_id = peewee.BigIntegerField(null=True)
-    title = peewee.CharField()
-    content = peewee.TextField()
-
-    class Meta:
-        table_name = 'Message'

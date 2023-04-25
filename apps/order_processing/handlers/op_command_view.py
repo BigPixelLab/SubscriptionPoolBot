@@ -4,8 +4,7 @@ import peewee
 import response_system as rs
 import template
 from apps.botpiska.models import Order, Subscription
-from apps.coupons.models import Coupon
-from apps.coupons.models_shared import CouponType
+from apps.coupons.models import Coupon, CouponType
 
 
 async def view_command_handler(_, command: aiogram.filters.CommandObject):
@@ -23,7 +22,7 @@ async def view_command_handler(_, command: aiogram.filters.CommandObject):
             .join(Subscription) \
             .switch(Order) \
             .join(Coupon, peewee.JOIN.LEFT_OUTER) \
-            .join(CouponType).get()
+            .join(CouponType, peewee.JOIN.LEFT_OUTER).get()
 
     except peewee.DoesNotExist:
         return rs.feedback(f'Заказа #{order_id} нет в базе')

@@ -22,7 +22,7 @@ def resource(path: str) -> typing.Union[aiogram.types.InputFile, str]:
 
         # Getting from database
         res = ResourceCache.select().where(
-            ResourceCache.bot_id == bot.id, ResourceCache.id == path
+            ResourceCache.bot_id == bot.id, ResourceCache.path == path
         ).get()
 
         # Saving to cache (if found in database)
@@ -46,7 +46,7 @@ def load(path: str, file_id: str) -> None:
 
     # Saving to database
     ResourceCache(
-        id=path,
+        path=path,
         bot_id=bot.id,
         file_id=file_id
     ).save(force_insert=True)
