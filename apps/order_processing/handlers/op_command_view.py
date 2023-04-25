@@ -18,12 +18,7 @@ async def view_command_handler(_, command: aiogram.filters.CommandObject):
         return rs.feedback('"order-id" должно быть integer')
 
     try:
-        order = Order.select_by_id(order_id) \
-            .join(Subscription) \
-            .switch(Order) \
-            .join(Coupon, peewee.JOIN.LEFT_OUTER) \
-            .join(CouponType, peewee.JOIN.LEFT_OUTER).get()
-
+        order = Order.select_by_id_joined(order_id).get()
     except peewee.DoesNotExist:
         return rs.feedback(f'Заказа #{order_id} нет в базе')
 

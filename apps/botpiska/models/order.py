@@ -4,7 +4,8 @@ import gls
 from .subscription import Subscription
 from .client import Client
 from .employee import Employee
-from apps.coupons.models import Coupon
+from apps.coupons.models.coupon import Coupon
+from apps.coupons.models.coupon_type import CouponType
 
 
 class Order(gls.BaseModel):
@@ -55,3 +56,19 @@ class Order(gls.BaseModel):
     def select_open(cls, *query):
         """ Возвращает Query открытых заказов """
         return cls.select(*query).where(cls.closed_at.is_null(True))
+
+    @classmethod
+    def select_by_id_joined(cls, pk: int):
+        return cls.select_by_id(pk) \
+            .join(Subscription) \
+            .switch(Order) \
+            .join(Coupon, peewee.JOIN.LEFT_OUTER) \
+            .join(CouponType, peewee.JOIN.LEFT_OUTER)
+
+    @classmethod
+    def select_open_joined(cls):
+        return cls.select_open() \
+            .join(Subscription) \
+            .switch(Order) \
+            .join(Coupon, peewee.JOIN.LEFT_OUTER) \
+            .join(CouponType, peewee.JOIN.LEFT_OUTER)

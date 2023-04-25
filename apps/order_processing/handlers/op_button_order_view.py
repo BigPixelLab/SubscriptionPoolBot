@@ -11,12 +11,7 @@ async def view_order_handler(_, callback_data: callbacks.OrderActionCallback):
     """ ... """
 
     try:
-        order = Order.select_by_id(callback_data.order_id) \
-            .join(Subscription) \
-            .switch(Order) \
-            .join(Coupon, peewee.JOIN.LEFT_OUTER) \
-            .join(CouponType, peewee.JOIN.LEFT_OUTER).get()
-
+        order = Order.select_by_id_joined(callback_data.order_id).get()
     except peewee.DoesNotExist:
         return rs.feedback(f'Заказа #{callback_data.order_id} нет в базе')
 

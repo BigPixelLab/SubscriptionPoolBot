@@ -1,22 +1,16 @@
 import peewee
-from peewee import JOIN
 
 import response_system as rs
 import template
-from apps.botpiska.models import Order, Subscription
-from apps.coupons.models import Coupon, CouponType
+from apps.botpiska.models import Order
 
 
 async def get_unprocessed_order_handler(_):
     """ ... """
     try:
-        order = Order.select_open().where(
+        order = Order.select_open_joined().where(
             Order.processing_employee.is_null(True)
-        ).order_by(Order.created_at) \
-            .join(Subscription) \
-            .switch(Order) \
-            .join(Coupon, JOIN.LEFT_OUTER) \
-            .join(CouponType, peewee.JOIN.LEFT_OUTER).get()
+        ).order_by(Order.created_at).get()
 
     except peewee.DoesNotExist:
         return rs.feedback('Нет активных заказов')
