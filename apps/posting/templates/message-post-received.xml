@@ -1,0 +1,11 @@
+<message requires="reference_id">
+
+    <heading> ОТПРАВИТЬ ПОСТ? </heading>
+    
+    <inline-keyboard>
+        <row>
+            <button callback_data="delete-this"> Отмена </button>
+            <button callback_data="post:{reference_id}"> Отправить </button>
+        </row>
+    </inline-keyboard>
+</message>

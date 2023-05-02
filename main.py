@@ -5,6 +5,7 @@ import sys
 
 import aiogram.types
 import peewee
+from aiogram.fsm.state import any_state
 from aiogram.fsm.storage.memory import MemoryStorage
 from glQiwiApi import QiwiP2PClient
 
@@ -89,8 +90,8 @@ async def main():
     for router in operator_routers:
         operator_dispatcher.include_router(router)
 
-    @dispatcher.callback_query(aiogram.F.data == 'delete-this')
-    @operator_dispatcher.callback_query(aiogram.F.data == 'delete-this')
+    @dispatcher.callback_query(any_state, aiogram.F.data == 'delete-this')
+    @operator_dispatcher.callback_query(any_state, aiogram.F.data == 'delete-this')
     async def delete_this_handler(_):
         """ Handler для удаления сообщения, которое он обрабатывает """
         return response_system.delete_original()

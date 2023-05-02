@@ -19,5 +19,5 @@ class Employee(gls.BaseModel):
         return ezqr.single_value(query, {'user_id': user_id})
 
     @classmethod
-    def get_to_notify_on_purchase(cls) -> list[int]:
+    def get_all_chats(cls) -> list[int]:
         return ezqr.fetch_values(""" SELECT chat_id FROM "Employee" """, {})

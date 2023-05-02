@@ -3,12 +3,12 @@ import peewee
 
 import gls
 import response_system as rs
-import template
+import response_system_extensions as rse
 from apps.botpiska.models import Order
 from apps.order_processing import callbacks
 
 
-async def take_order_handler(_, user: aiogram.types.User, callback_data: callbacks.OrderActionCallback):
+async def take_order_handler(_, user: aiogram.types.User, callback_data: callbacks.OrderActionCallback) -> rs.Response:
     """ ... """
 
     try:
@@ -25,18 +25,15 @@ async def take_order_handler(_, user: aiogram.types.User, callback_data: callbac
     order.processing_employee = user.id
     order.save()
 
-    notification = rs.Notification(
-        template.render('apps/order_processing/templates/order-status-notifications/taken.xml', {
+    return (
+        rse.tmpl_edit('apps/order_processing/templates/op-message-order-detailed.xml', {
+            'order': order
+        })
+        + rse.tmpl_send('apps/order_processing/templates/order-status-notifications/taken.xml', {
             'operator': user,
             'order': order
-        }),
-        [order.client_id],
-        bot=gls.bot
+        }, chat=order.client_id, bot=gls.bot)
     )
-
-    return rs.edit_original(template.render('apps/order_processing/templates/op-message-order-detailed.xml', {
-        'order': order
-    }).extract(), notify=notification)
 
 
 __all__ = ('take_order_handler',)

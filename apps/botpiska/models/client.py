@@ -1,5 +1,6 @@
 import peewee
 
+import ezqr
 import gls
 
 
@@ -30,3 +31,7 @@ class Client(gls.BaseModel):
             client.save()
 
         return client
+
+    @classmethod
+    def get_all_chats(cls) -> list[int]:
+        return ezqr.fetch_values(' SELECT chat_id FROM "Client" ', {})

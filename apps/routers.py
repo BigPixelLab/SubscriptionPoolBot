@@ -12,11 +12,13 @@ from .coupons.routers import coupon_router
 from .debug.routers import debug_router, only_in_dev_debug_router
 from .notifications.routers import notifications_router
 from .order_processing.routers import op_order_processing_router
+from .posting.routers import posting_router
 from .seasons.routers import seasons_router
 
 # Router-ы основного бота
 routers: list[aiogram.Router] = [
     botpiska_router,
+    posting_router,
     notifications_router,
     coupon_router,
     seasons_router,

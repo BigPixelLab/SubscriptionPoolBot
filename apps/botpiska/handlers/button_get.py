@@ -11,12 +11,12 @@ from glQiwiApi.qiwi.clients.p2p import types as qiwi_types
 import gls
 import pilgram
 import response_system as rs
+import response_system_extensions as rse
 from response_system import Response
 import settings
-import template
 from .. import images
 from ..methods import BILL_STATUSES
-from ..models import Bill, Order, Client, Employee, Subscription
+from ..models import Bill, Order, Client, Subscription
 from apps.coupons.models import Coupon
 from ..services import Service
 
@@ -45,7 +45,7 @@ BILL_GET_ERROR = (
 )
 
 
-async def _order_wrapper(function, user: aiogram.types.User) -> list[Response]:
+async def _order_wrapper(function, user: aiogram.types.User) -> Response:
     """ Производит предварительные действия перед обработкой
         получения заказа """
 
@@ -73,7 +73,8 @@ async def _order_wrapper(function, user: aiogram.types.User) -> list[Response]:
         bill.delete_instance()
 
         status_message = BILL_STATUSES[status]
-        return rs.delete(bill.message_id, feedback=status_message)
+        return rs.delete(bill.message_id) + \
+            rs.feedback(status_message)
 
     # Регистрируем пользователя, если не зарегистрирован и
     # устанавливаем его как реферала
@@ -93,7 +94,7 @@ def _order_handler(function):
 
 
 @_order_handler
-async def get_for_self(client: Client, bill: Bill, qiwi_bill: qiwi_types.Bill) -> list[Response]:
+async def get_for_self(client: Client, bill: Bill, qiwi_bill: qiwi_types.Bill) -> Response:
     """ Часть логики, относящаяся к покупке подписки для себя """
 
     order = Order(
@@ -107,27 +108,21 @@ async def get_for_self(client: Client, bill: Bill, qiwi_bill: qiwi_types.Bill) -
 
     subscription: Subscription = bill.subscription
     service = Service.get_by_id(subscription.service_id)
+
     return (
-        rs.message(
-            template.render(service.order_template, {
-                'subscription': subscription,
-                'order': order
-            }),
-            # Важная часть, т.к. в сообщении со счётом находится кнопка "Для себя"
-            delete_original=True,
-        ) +
-        rs.notify(
-            template.render('apps/order_processing/templates/op-message-order-new.xml', {
-                'order': order
-            }),
-            Employee.get_to_notify_on_purchase(),
-            bot=gls.operator_bot
-        )
+        rs.delete(on_success=bill.delete_instance)
+        + rse.tmpl_send(service.order_template, {
+            'subscription': subscription,
+            'order': order
+        })
+        + rse.tmpl_notify_employee('apps/order_processing/templates/op-message-order-new.xml', {
+            'order': order
+        })
     )
 
 
 @_order_handler
-async def get_as_gift(client: Client, bill: Bill, _: qiwi_types.Bill) -> list[Response]:
+async def get_as_gift(client: Client, bill: Bill, _: qiwi_types.Bill) -> Response:
     """ Часть логики, относящаяся к покупке подписки в подарок """
 
     subscription: Subscription = bill.subscription
@@ -142,14 +137,13 @@ async def get_as_gift(client: Client, bill: Bill, _: qiwi_types.Bill) -> list[Re
         filename='GIFT.png'
     )
 
-    bill.delete_instance()
-    return rs.message(
-        template.render('apps/botpiska/templates/message-gift.xml', {
+    return (
+        rs.delete(on_success=bill.delete_instance)
+        + rse.tmpl_send('apps/botpiska/templates/message-gift.xml', {
             'gift-card-image': gift_card_image,
             'subscription': subscription,
             'coupon': gift_coupon
-        }),
-        delete_original=True
+        })
     )
 
 

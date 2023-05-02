@@ -1,11 +1,10 @@
 """ ... """
-import response_system as rs
-import template
+import response_system_extensions as rse
 
 
 async def terms_message_handler(_):
     """ ... """
-    return rs.message(template.render('apps/botpiska/templates/message-terms.xml', {}))
+    return rse.tmpl_send('apps/botpiska/templates/message-terms.xml', {})
 
 
 __all__ = ('terms_message_handler',)

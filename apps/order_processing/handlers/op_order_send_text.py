@@ -1,14 +1,13 @@
 import gls
-import response_system as rs
-import template
+import response_system_extensions as rse
 from apps.order_processing import callbacks
 
 
 async def send_text_handler(_, callback_data: callbacks.SendTextCallback):
     """ ... """
-    return rs.notify(
-        template.render('apps/order_processing/templates/op-message-profile-private.xml', {}),
-        [callback_data.chat_id],
+    return rse.tmpl_send(
+        'apps/order_processing/templates/op-message-profile-private.xml', {},
+        chat=callback_data.chat_id,
         bot=gls.bot
     )
 

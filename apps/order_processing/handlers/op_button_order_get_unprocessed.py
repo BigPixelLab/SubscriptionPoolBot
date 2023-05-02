@@ -1,7 +1,7 @@
 import peewee
 
 import response_system as rs
-import template
+import response_system_extensions as rse
 from apps.botpiska.models import Order
 
 
@@ -15,9 +15,9 @@ async def get_unprocessed_order_handler(_):
     except peewee.DoesNotExist:
         return rs.feedback('Нет активных заказов')
 
-    return rs.message(template.render('apps/order_processing/templates/op-message-order-detailed.xml', {
+    return rse.tmpl_send('apps/order_processing/templates/op-message-order-detailed.xml', {
         'order': order
-    }))
+    })
 
 
 __all__ = ('get_unprocessed_order_handler',)

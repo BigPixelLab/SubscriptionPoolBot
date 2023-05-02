@@ -2,7 +2,7 @@ import aiogram.filters
 import peewee
 
 import response_system as rs
-import template
+import response_system_extensions as rse
 from apps.botpiska.models import Order
 
 
@@ -21,6 +21,6 @@ async def view_command_handler(_, command: aiogram.filters.CommandObject):
     except peewee.DoesNotExist:
         return rs.feedback(f'Заказа #{order_id} нет в базе')
 
-    return rs.message(template.render('apps/order_processing/templates/op-message-order-detailed.xml', {
+    return rse.tmpl_send('apps/order_processing/templates/op-message-order-detailed.xml', {
         'order': order
-    }).extract())
+    })

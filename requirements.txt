@@ -7,3 +7,4 @@ Levenshtein==0.20.9
 peewee~=3.15.4
 qrcode~=7.4.2
 aiohttp~=3.8.3
+sortedcontainers~=2.4.0

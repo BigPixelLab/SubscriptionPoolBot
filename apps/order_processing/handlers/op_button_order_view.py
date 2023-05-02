@@ -1,7 +1,7 @@
 import peewee
 
 import response_system as rs
-import template
+import response_system_extensions as rse
 from apps.botpiska.models import Order
 from apps.order_processing import callbacks
 
@@ -14,9 +14,9 @@ async def view_order_handler(_, callback_data: callbacks.OrderActionCallback):
     except peewee.DoesNotExist:
         return rs.feedback(f'Заказа #{callback_data.order_id} нет в базе')
 
-    return rs.edit_original(template.render('apps/order_processing/templates/op-message-order-detailed.xml', {
+    return rse.tmpl_edit('apps/order_processing/templates/op-message-order-detailed.xml', {
         'order': order
-    }).extract())
+    })
 
 
 __all__ = ('view_order_handler',)

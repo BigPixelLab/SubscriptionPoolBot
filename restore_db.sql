@@ -279,22 +279,22 @@ INSERT INTO "CouponType" (
     max_usages,             lifespan,               allows_gifts
 ) VALUES (
     'gift_netflix_4k_1m',   'netflix_4k_1m',        100,
-    1,                      '90 days'::interval,    false
+    1,                      '30 days'::interval,    false
 ), (
     'gift_netflix_HD_1m',   'netflix_HD_1m',        100,
-    1,                      '90 days'::interval,    false
+    1,                      '30 days'::interval,    false
 ), (
     'gift_spotify_ind_1m',  'spotify_ind_1m',       100,
-    1,                      '90 days'::interval,    false
+    1,                      '30 days'::interval,    false
 ), (
     'gift_spotify_ind_3m',  'spotify_ind_3m',       100,
     1,                      '90 days'::interval,    false
 ), (
     'gift_spotify_ind_6m',  'spotify_ind_6m',       100,
-    1,                      '90 days'::interval,    false
+    1,                      '180 days'::interval,   false
 ), (
     'gift_spotify_ind_1y',  'spotify_ind_1y',       100,
-    1,                      '90 days'::interval,    false
+    1,                      '360 days'::interval,   false
 ), (
     'spotify_promo_20',     'spotify',              20,
     null,                   '30 days'::interval,    true

@@ -3,14 +3,14 @@ from aiogram.fsm.storage.base import StorageKey
 
 import gls
 import response_system as rs
-import template
+import response_system_extensions as rse
 from apps.botpiska import methods as botpiska_methods
 from apps.botpiska.models import Bill
 from apps.coupons import methods as coupons_methods
 from response_system import Response
 
 
-async def activate_coupon(code: str, user: aiogram.types.User, silent: bool = False) -> list[Response]:
+async def activate_coupon(code: str, user: aiogram.types.User, silent: bool = False) -> Response:
     """ Активирует купон и при необходимости выводит сообщение со счётом """
 
     bot = aiogram.Bot.get_current()
@@ -21,7 +21,7 @@ async def activate_coupon(code: str, user: aiogram.types.User, silent: bool = Fa
     # Обрабатываем случаи, когда купон недействителен
     if result.is_error and result.error in COUPON_EXCEPTIONS:
         message = COUPON_EXCEPTIONS[result.error].format(coupon=coupon.code)
-        return rs.message(message)
+        return rs.send(message)
 
     if result.is_error:
         return rs.no_response()
@@ -43,9 +43,7 @@ async def activate_coupon(code: str, user: aiogram.types.User, silent: bool = Fa
     if silent:
         return rs.no_response()
 
-    return rs.message(
-        template.render('apps/coupons/templates/message-coupon-success.xml', {})
-    )
+    return rse.tmpl_send('apps/coupons/templates/message-coupon-success.xml', {})
 
 
 COUPON_EXCEPTIONS = {

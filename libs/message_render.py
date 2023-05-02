@@ -15,7 +15,8 @@ class MessageRender:
     photo: typing.Optional[typing.Union[str, aiogram.types.InputFile]] = None
     animation: typing.Optional[typing.Union[str, aiogram.types.InputFile]] = None
     keyboard: typing.Optional[typing.Union[aiogram.types.InlineKeyboardMarkup,
-                                           aiogram.types.ReplyKeyboardMarkup]] = None
+                                           aiogram.types.ReplyKeyboardMarkup,
+                                           aiogram.types.ReplyKeyboardRemove]] = None
 
     def validate(self):
         """ ... """
@@ -26,21 +27,14 @@ class MessageRender:
         """ Отправляет сообщение в указанный чат """
 
         self.validate()
-
         bot = bot or aiogram.Bot.get_current()
-        config = {}
-
-        if self.keyboard:
-            config['reply_markup'] = self.keyboard
 
         if self.photo:
-            if self.text:
-                config['caption'] = self.text
-
             message = await bot.send_photo(
                 chat_id,
                 photo=self.photo,
-                **config
+                caption=self.text,
+                reply_markup=self.keyboard
             )
 
             # Если фото было загружено из файла - запоминаем его file_id
@@ -53,13 +47,11 @@ class MessageRender:
             return message
 
         if self.animation:
-            if self.text:
-                config['caption'] = self.text
-
             message = await bot.send_animation(
                 chat_id,
                 animation=self.animation,
-                **config
+                caption=self.text,
+                reply_markup=self.keyboard
             )
 
             if isinstance(self.animation, aiogram.types.FSInputFile):
@@ -69,10 +61,11 @@ class MessageRender:
 
             return message
 
-        if self.text:
-            config['text'] = self.text
-
-        return await bot.send_message(chat_id, **config)
+        return await bot.send_message(
+            chat_id,
+            text=self.text,
+            reply_markup=self.keyboard
+        )
 
     async def edit(self, message: aiogram.types.Message, bot: aiogram.Bot = None):
         """ Редактирует указанное сообщение """

@@ -6,6 +6,8 @@ from glQiwiApi.qiwi.exceptions import QiwiAPIError
 
 import gls
 import response_system as rs
+import response_system.core.middleware
+import response_system.core.responses
 from apps.botpiska.models import Bill
 from result import *
 
@@ -45,7 +47,7 @@ async def delete_previous_bill(user: aiogram.types.User) -> Result[None, str]:
             await gls.qiwi.reject_p2p_bill(qiwi_bill.id)
 
     bill.delete_instance()
-    await rs.respond(rs.delete(bill.message_id))
+    rs.respond(rs.delete(bill.message_id))
 
     return Ok()
 

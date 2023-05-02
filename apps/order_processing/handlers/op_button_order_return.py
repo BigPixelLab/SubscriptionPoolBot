@@ -2,12 +2,12 @@ import peewee
 
 import gls
 import response_system as rs
-import template
+import response_system_extensions as rse
 from apps.botpiska.models import Order
 from apps.order_processing import callbacks
 
 
-async def return_order_handler(_, callback_data: callbacks.OrderActionCallback):
+async def return_order_handler(_, callback_data: callbacks.OrderActionCallback) -> rs.Response:
     """ ... """
 
     try:
@@ -24,17 +24,14 @@ async def return_order_handler(_, callback_data: callbacks.OrderActionCallback):
     order.processing_employee = None
     order.save()
 
-    notification = rs.Notification(
-        template.render('apps/order_processing/templates/order-status-notifications/returned.xml', {
+    return (
+        rse.tmpl_edit('apps/order_processing/templates/op-message-order-detailed.xml', {
             'order': order
-        }),
-        [order.client_id],
-        bot=gls.bot
+        })
+        + rse.tmpl_send('apps/order_processing/templates/order-status-notifications/returned.xml', {
+            'order': order
+        }, chat=order.client_id, bot=gls.bot)
     )
-
-    return rs.edit_original(template.render('apps/order_processing/templates/op-message-order-detailed.xml', {
-        'order': order
-    }).extract(), notify=notification)
 
 
 __all__ = ('return_order_handler',)

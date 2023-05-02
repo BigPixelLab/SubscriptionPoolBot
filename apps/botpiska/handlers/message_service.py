@@ -1,8 +1,7 @@
 """ ... """
 import itertools
 
-import response_system as rs
-import template
+import response_system_extensions as rse
 from ..models import Subscription
 from ..services import Service
 
@@ -16,9 +15,9 @@ async def service_message_handler(_, service: Service):
         subscriptions = Subscription.select_service_plans(service.id).execute()
 
     subscription_plans = _pair_with_calculated_discounts(subscriptions)
-    return rs.message(template.render(service.showcase_template, {
+    return rse.tmpl_send(service.showcase_template, {
         'subscription_plans': subscription_plans
-    }))
+    })
 
 
 def _pair_with_calculated_discounts(subscriptions: list[Subscription]) \

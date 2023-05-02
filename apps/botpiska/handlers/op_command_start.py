@@ -1,10 +1,9 @@
-import response_system as rs
-import template
+import response_system_extensions as rse
 
 
 async def op_start_command_handler(_):
     """ ... """
-    return rs.message(template.render('apps/botpiska/templates/op-message-start.xml', {}))
+    return rse.tmpl_send('apps/botpiska/templates/op-message-start.xml', {})
 
 
 __all__ = ('op_start_command_handler',)

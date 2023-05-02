@@ -7,12 +7,10 @@ import aiogram
 import aiogram.exceptions
 from aiogram.dispatcher.event.bases import CancelHandler
 
+from message_render import MessageRender
 from . import globals_
 from .configure import ResponseConfig
-from .lock import Lock
-from .respond import respond
-from .response import Response
-from .waiting_message_manager import WaitingMessageManager
+from .responses import Response
 
 
 class ResponseMiddleware:
@@ -51,22 +49,23 @@ class ResponseMiddleware:
             waiting = WaitingMessageManager(config.waiting)
 
         with lock or contextlib.nullcontext():
-            # noinspection PyUnusedLocal
-            responses = []
 
             global_time_cv_token = globals_.global_time.set(datetime.datetime.now())
-            message_cv_token = globals_.message.set(message)
+            response_var_cv_token = globals_.response_var.set(Response())
+            message_var_cv_token = globals_.message_var.set(message)
 
             async with waiting or contextlib.AsyncExitStack():
                 data.update({'bot': bot, 'user': user, 'chat': chat})
-                responses: list[Response] = await handler(event, data)
+                response: Response = await handler(event, data)
 
-            await respond(filter(None, responses or []))
+            for action in response + globals_.response_var.get():
+                await action
 
             globals_.global_time.reset(global_time_cv_token)
-            globals_.message.reset(message_cv_token)
+            globals_.response_var.reset(response_var_cv_token)
+            globals_.message_var.reset(message_var_cv_token)
 
-            await self.answer(event, config and config.answer)
+            await self.answer(event, config.answer if config and config.answer else None)
 
 
 class MessageResponseMiddleware(ResponseMiddleware):
@@ -89,8 +88,35 @@ class CallbackQueryResponseMiddleware(ResponseMiddleware):
         await event.answer(text)
 
 
-__all__ = (
-    'ResponseMiddleware',
-    'MessageResponseMiddleware',
-    'CallbackQueryResponseMiddleware'
-)
+class WaitingMessageManager:
+    def __init__(self, render: MessageRender):
+        self.render: MessageRender = render
+        self.message: aiogram.types.Message
+
+    async def __aenter__(self):
+        # noinspection PyTypeChecker
+        chat: aiogram.types.Chat = aiogram.types.Chat.get_current()
+        with contextlib.suppress(aiogram.exceptions.TelegramForbiddenError):
+            self.message = await self.render.send(chat.id)
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        if not hasattr(self, 'message'):
+            return
+        with contextlib.suppress(aiogram.exceptions.TelegramForbiddenError):
+            await self.message.delete()
+
+
+class Lock:
+    def __init__(self, storage: set[tuple], key: tuple):
+        self.storage = storage
+        self.key = key
+
+    def is_set(self):
+        return self.key in self.storage
+
+    def __enter__(self):
+        self.storage.add(self.key)
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.storage.remove(self.key)

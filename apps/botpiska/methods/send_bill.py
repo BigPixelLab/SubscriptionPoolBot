@@ -6,8 +6,8 @@ import aiogram
 import gls
 import pilgram
 import response_system as rs
+import response_system_extensions as rse
 import settings
-import template
 from apps.botpiska import images
 from apps.botpiska import methods as botpiska_methods
 from apps.botpiska.methods.create_qiwi_bill import create_qiwi_bill
@@ -19,7 +19,7 @@ from response_system import Response
 async def send_bill(
         user: aiogram.types.User,
         subscription: Subscription
-) -> list[Response]:
+) -> Response:
     """
     Генерирует и отправляет сообщение со счётом указанному пользователю.
 
@@ -35,16 +35,17 @@ async def send_bill(
 
     # Выводим соглашение, если оно ещё не было выведено для пользователя
     if not client.terms_message_id:
-        async def set_client_terms_message_id(messages: list[aiogram.types.Message]):
-            message, = messages
+        async def set_client_terms_message_id(message: aiogram.types.Message):
+            await gls.bot.pin_chat_message(message.chat.id, message.message_id, disable_notification=True)
             client.terms_message_id = message.message_id
             client.save()
 
-        await rs.respond(rs.message(
-            template.render('apps/botpiska/templates/message-terms.xml', {}).extract(),
-            on_success=set_client_terms_message_id,
-            pin=True
-        ))
+        rs.respond(
+            rse.tmpl_send(
+                'apps/botpiska/templates/message-terms.xml', {},
+                on_success=lambda x: set_client_terms_message_id(x[0]),
+            )
+        )
 
     # Разбираемся с ранее выставленными счетами
     result = await botpiska_methods.delete_previous_bill(user)
@@ -58,10 +59,10 @@ async def send_bill(
 
     # Получаем активированный купон (сразу с CouponType)
     result, coupon = await coupons_methods.get_suggested_coupon(user.id, subscription.id)
-    coupon_feedback = None
 
     if result.error in COUPON_EXCEPTIONS:
-        coupon_feedback = COUPON_EXCEPTIONS[result.error].format(coupon=coupon)
+        error_text = COUPON_EXCEPTIONS[result.error].format(coupon=coupon)
+        rs.respond(rs.feedback(error_text))
 
     # Генерируем новый счёт
     bill_items, total = botpiska_methods.generate_bill_content(subscription, coupon)
@@ -76,9 +77,8 @@ async def send_bill(
 
     qiwi_bill = result.unpack()
 
-    def register_bill(messages: list[aiogram.types.Message]):
+    async def register_bill(message: aiogram.types.Message):
         """ Регистрирует счёт в базе """
-        message, = messages  # гарантированно одно сообщение в списке
         Bill.insert(
             client=client,
             subscription=subscription,
@@ -96,16 +96,12 @@ async def send_bill(
 
     is_gifts_allowed = coupon is None or coupon.type.allows_gifts
 
-    return rs.message(
-        template.render('apps/botpiska/templates/message-bill.xml', {
-            'bill-image': bill_image,
-            'subscription': subscription,
-            'bill': qiwi_bill,
-            'is_gifts_allowed': is_gifts_allowed
-        }).extract(),  # extract, чтобы удостоверится, что в списке всего одно сообщение
-        feedback=coupon_feedback,
-        on_success=register_bill
-    )
+    return rse.tmpl_send('apps/botpiska/templates/message-bill.xml', {
+        'bill-image': bill_image,
+        'subscription': subscription,
+        'bill': qiwi_bill,
+        'is_gifts_allowed': is_gifts_allowed
+    }, on_success=lambda x: register_bill(x[0]))
 
 
 COUPON_EXCEPTIONS = {
