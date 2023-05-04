@@ -13,7 +13,8 @@ CREATE TABLE "Client" (
         REFERENCES "Client" (chat_id),
     season_points bigint not null
         DEFAULT 0,
-    terms_message_id bigint
+    terms_message_id bigint,
+    created_at timestamp not null
 );
 
 CREATE INDEX Client_pk ON "Client" (chat_id);
@@ -316,5 +317,5 @@ UPDATE "Subscription" SET gift_coupon_type_id = 'gift_spotify_ind_6m' WHERE id =
 UPDATE "Subscription" SET gift_coupon_type_id = 'gift_spotify_ind_1y' WHERE id = 'spotify_ind_1y';
 
 
-INSERT INTO "Client" (chat_id) VALUES (1099569178);
+INSERT INTO "Client" (chat_id, created_at) VALUES (1099569178, now());
 INSERT INTO "Employee" (chat_id) VALUES (1099569178);
