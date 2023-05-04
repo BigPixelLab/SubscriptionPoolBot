@@ -94,7 +94,7 @@ async def main():
     @operator_dispatcher.callback_query(any_state, aiogram.F.data == 'delete-this')
     async def delete_this_handler(_):
         """ Handler для удаления сообщения, которое он обрабатывает """
-        return response_system.delete_original()
+        return response_system.delete()
 
     # Разрешаем циклические зависимости в базе данных
     for model in gls.BaseModel.__subclasses__():
