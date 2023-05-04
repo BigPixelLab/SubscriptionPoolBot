@@ -17,6 +17,7 @@ TSendSuccessHandler = typing.Callable[[list[typing.Optional[aiogram.types.Messag
 TFeedbackSuccessHandler = typing.Callable[[aiogram.types.Message], typing.Awaitable]
 TNotifyBasicSuccessHandler = typing.Callable[[int], typing.Awaitable]
 TNotifyEverySuccessHandler = typing.Callable[[int, int], typing.Awaitable]
+TNotifyCompletionHandler = typing.Callable[[int, int], typing.Awaitable]
 
 FEEDBACK_VISIBILITY_TIME = 2
 
@@ -60,172 +61,265 @@ def to_MessageRenderList(value: typing.Union[MessageRenderList, MessageRender, s
     ])
 
 
-async def capture(
-        function: typing.Awaitable,
-        on_success: typing.Callable[[...], typing.Awaitable] = None,
+async def handle(handler: typing.Optional[typing.Callable[[...], typing.Awaitable]], *args):
+    if handler is None:
+        return
+    await handler(*args)
+
+
+async def action_edit(
+        message: MessageRender,
+        original: aiogram.types.Message,
+        bot: aiogram.Bot,
+
+        on_success: TEditSuccessHandler = None,
         on_forbidden: TBasicHandler = None,
         on_error: TBasicHandler = None
 ):
     # noinspection PyBroadException
     try:
-        result = await function
-        if on_success:
-            await on_success(result)
-
+        result = await message.edit(original, bot=bot)
+        await handle(on_success, result)
     except aiogram.exceptions.TelegramForbiddenError:
-        if not on_forbidden and not on_error:
-            raise
-
-        if on_forbidden:
-            await on_forbidden()
-        if on_error:
-            await on_error()
-
+        await handle(on_forbidden)
+        await handle(on_error)
     except Exception:
-        if not on_error:
-            raise
-        await on_error()
+        await handle(on_error)
 
 
-# @response_action(priority=0)
+async def action_delete(
+        original: int,
+        chat: int,
+        bot: aiogram.Bot,
+
+        on_success: TDeleteSuccessHandler = None,
+        on_forbidden: TBasicHandler = None,
+        on_error: TBasicHandler = None,
+
+        delay: float = 0
+):
+    if delay:
+        await asyncio.sleep(delay)
+
+    # noinspection PyBroadException
+    try:
+        result = await bot.delete_message(chat, original)
+        await handle(on_success, result)
+    except aiogram.exceptions.TelegramForbiddenError:
+        await handle(on_forbidden)
+        await handle(on_error)
+    except Exception:
+        await handle(on_error)
+
+
+async def action_send(
+        message: MessageRenderList,
+        chat: int,
+        bot: aiogram.Bot,
+
+        on_success: TSendSuccessHandler = None,
+        on_forbidden: TBasicHandler = None,
+        on_error: TBasicHandler = None
+):
+    # noinspection PyBroadException
+    try:
+        result = await message.send(chat, bot=bot)
+        await handle(on_success, result)
+    except aiogram.exceptions.TelegramForbiddenError:
+        await handle(on_forbidden)
+        await handle(on_error)
+    except Exception:
+        await handle(on_error)
+
+
+async def action_feedback(
+        message: MessageRender,
+        chat: int,
+        bot: aiogram.Bot,
+
+        on_success: TFeedbackSuccessHandler = None,
+        on_forbidden: TBasicHandler = None,
+        on_error: TBasicHandler = None,
+        on_delete: TBasicHandler = None
+):
+    # noinspection PyBroadException
+    try:
+        fb, = message.send(chat, bot=bot)
+        asyncio.create_task(
+            action_delete(
+                fb.message_id,
+                fb.chat.id, bot,
+                on_success=on_delete,
+                delay=FEEDBACK_VISIBILITY_TIME
+            )
+        )
+        await handle(on_success, fb)
+    except aiogram.exceptions.TelegramForbiddenError:
+        await handle(on_forbidden)
+        await handle(on_error)
+    except Exception:
+        await handle(on_error)
+
+
+async def action_notify(
+        message: MessageRenderList,
+        receivers: typing.Sequence[int],
+        bot: aiogram.Bot,
+
+        on_every_success: TNotifyEverySuccessHandler = None,
+        on_every_forbidden: TNotifyBasicSuccessHandler = None,
+        on_every_error: TNotifyBasicSuccessHandler = None,
+        on_completion: TNotifyCompletionHandler = None
+):
+    succeeded = 0
+    # noinspection DuplicatedCode
+    for chat in receivers:
+        # noinspection PyBroadException
+        try:
+            result = await message.send(chat, bot=bot)
+            await handle(on_every_success, result)
+            succeeded += 1
+        except aiogram.exceptions.TelegramForbiddenError:
+            await handle(on_every_forbidden, chat)
+            await handle(on_every_error, chat)
+        except Exception:
+            await handle(on_every_error, chat)
+
+    await on_completion(succeeded, len(receivers))
+
+
+# ---
+
+
 def edit(
         message: typing.Union[MessageRender, str],
         original: aiogram.types.Message = None,
+        bot: aiogram.Bot = None,
+
         on_success: TEditSuccessHandler = None,
         on_forbidden: TBasicHandler = None,
-        on_error: TBasicHandler = None,
-        bot: aiogram.Bot = None
+        on_error: TBasicHandler = None
 ) -> Response:
-    async def action():
-        _bot = bot or aiogram.Bot.get_current()
-
-        _message = to_MessageRender(message)
-        _original = original or globals_.message_var.get()
-
-        await capture(
-            _message.edit(_original, bot=_bot),
-            on_success,
-            on_forbidden,
-            on_error
-        )
-
     response = Response()
-    response.add_action(action(), priority=0)
+    response.add_action(
+        action_edit(
+            to_MessageRender(message),
+            original or globals_.message_var.get(),
+            bot or aiogram.Bot.get_current(),
+            on_success=on_success,
+            on_forbidden=on_forbidden,
+            on_error=on_error
+        ),
+        priority=0
+    )
     return response
 
 
 def delete(
         original: typing.Union[aiogram.types.Message, int] = None,
         chat: int = None,
+        bot: aiogram.Bot = None,
+
         on_success: TDeleteSuccessHandler = None,
         on_forbidden: TBasicHandler = None,
-        on_error: TBasicHandler = None,
-        bot: aiogram.Bot = None
+        on_error: TBasicHandler = None
 ) -> Response:
-    async def action():
-        _bot = bot or aiogram.Bot.get_current()
+    if chat and not isinstance(original, int):
+        raise ValueError('Chat can be set only when original passed id')
 
-        if chat and not original:
-            raise ValueError('Chat cannot be set without original message id')
+    if chat is None and isinstance(original, int):
+        raise ValueError('Chat must be specified when original passed by id')
 
-        _chat = chat or globals_.message_var.get().chat.id
-        _original = original or globals_.message_var.get().message_id
-
-        await capture(
-            _bot.delete_message(_chat, _original),
-            on_success,
-            on_forbidden,
-            on_error
-        )
+    if isinstance(original, aiogram.types.Message):
+        original, chat = original.message_id, original.chat.id
 
     response = Response()
-    response.add_action(action(), priority=1)
+    response.add_action(
+        action_delete(
+            original,
+            chat,
+            bot or aiogram.Bot.get_current(),
+            on_success=on_success,
+            on_forbidden=on_forbidden,
+            on_error=on_error
+        ),
+        priority=0
+    )
     return response
 
 
 def send(
         message: typing.Union[MessageRenderList, MessageRender, str],
         chat: int = None,
+        bot: aiogram.Bot = None,
+
         on_success: TSendSuccessHandler = None,
         on_forbidden: TBasicHandler = None,
-        on_error: TBasicHandler = None,
-        bot: aiogram.Bot = None
+        on_error: TBasicHandler = None
 ) -> Response:
-    async def action():
-        _bot = bot or aiogram.Bot.get_current()
-
-        _chat = chat or globals_.message_var.get().chat.id
-        _message = to_MessageRenderList(message)
-
-        await capture(
-            _message.send(_chat, bot=_bot),
-            on_success,
-            on_forbidden,
-            on_error
-        )
-
     response = Response()
-    response.add_action(action(), priority=2)
+    response.add_action(
+        action_send(
+            to_MessageRenderList(message),
+            chat or globals_.message_var.get().chat.id,
+            bot or aiogram.Bot.get_current(),
+            on_success=on_success,
+            on_forbidden=on_forbidden,
+            on_error=on_error
+        ),
+        priority=2
+    )
     return response
 
 
 def feedback(
         message: typing.Union[MessageRender, str],
+        chat: int = None,
+        bot: aiogram.Bot = None,
         on_success: TFeedbackSuccessHandler = None,
         on_forbidden: TBasicHandler = None,
         on_error: TBasicHandler = None,
-        on_delete: TBasicHandler = None,
-        chat: int = None,
-        bot: aiogram.Bot = None
+        on_delete: TBasicHandler = None
 ) -> Response:
-    async def _delete_feedback(sent: aiogram.types.Message):
-        await asyncio.sleep(FEEDBACK_VISIBILITY_TIME)
-        await capture(sent.delete(), on_success=on_delete)
-
-    async def action():
-        _bot = bot or aiogram.Bot.get_current()
-
-        _chat = chat or globals_.message_var.get().chat.id
-        _message = to_MessageRender(message)
-
-        await capture(
-            _message.send(_chat, bot=_bot),
-            lambda x: asyncio.gather(
-                asyncio.create_task(_delete_feedback(x)),
-                on_success(x)
-            ),
-            on_forbidden,
-            on_error
-        )
-
     response = Response()
-    response.add_action(action(), priority=3)
+    response.add_action(
+        action_feedback(
+            to_MessageRender(message),
+            chat or globals_.message_var.get().chat.id,
+            bot or aiogram.Bot.get_current(),
+            on_success=on_success,
+            on_forbidden=on_forbidden,
+            on_error=on_error,
+            on_delete=on_delete
+        ),
+        priority=3
+    )
     return response
 
 
 def notify(
         message: typing.Union[MessageRenderList, MessageRender, str],
-        receivers: typing.Iterable[int],
+        receivers: typing.Sequence[int],
+        bot: aiogram.Bot = None,
+
         on_every_success: TNotifyEverySuccessHandler = None,
         on_every_forbidden: TNotifyBasicSuccessHandler = None,
         on_every_error: TNotifyBasicSuccessHandler = None,
-        bot: aiogram.Bot = None
+        on_completion: TNotifyCompletionHandler = None
 ) -> Response:
-    async def action():
-        _bot = bot or aiogram.Bot.get_current()
-
-        _message = to_MessageRenderList(message)
-
-        for chat in receivers:
-            await capture(
-                _message.send(chat, bot=_bot),
-                lambda x: on_every_success(chat, x),
-                lambda: on_every_forbidden(chat),
-                lambda: on_every_error(chat)
-            )
-
     response = Response()
-    response.add_action(action(), priority=4)
+    response.add_action(
+        action_notify(
+            to_MessageRenderList(message),
+            receivers,
+            bot or aiogram.Bot.get_current(),
+            on_every_success=on_every_success,
+            on_every_forbidden=on_every_forbidden,
+            on_every_error=on_every_error,
+            on_completion=on_completion
+        ),
+        priority=4
+    )
     return response
 
 
