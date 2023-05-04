@@ -1,6 +1,6 @@
 <message requires="reference_id">
 
-    <heading> ОТПРАВИТЬ ПОСТ? </heading>
+    <heading> УВЕРЕН, ЧТО ХОЧЕШЬ ОТПРАВИТЬ ПОСТ? </heading>
     
     <inline-keyboard>
         <row>
