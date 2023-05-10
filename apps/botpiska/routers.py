@@ -36,6 +36,11 @@ botpiska_router.message(
     F.text.lower() == "поддержка"
 )(handlers.support_message_handler)
 
+# Вывод полного списка товаров
+botpiska_router.message(
+    F.text.lower() == "список товаров"
+)(handlers.service_list_message_handler)
+
 # Производится поиск сервиса
 botpiska_router.message(
     filters.service_filter

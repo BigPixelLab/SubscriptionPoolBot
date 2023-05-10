@@ -15,9 +15,12 @@ async def service_message_handler(_, service: Service):
         subscriptions = Subscription.select_service_plans(service.id).execute()
 
     subscription_plans = _pair_with_calculated_discounts(subscriptions)
-    return rse.tmpl_send(service.showcase_template, {
-        'subscription_plans': subscription_plans
-    })
+    return (
+        rse.tmpl_send('apps/botpiska/templates/message-search-exact.xml', {})
+        + rse.tmpl_send(service.showcase_template, {
+            'subscription_plans': subscription_plans
+        })
+    )
 
 
 def _pair_with_calculated_discounts(subscriptions: list[Subscription]) \
