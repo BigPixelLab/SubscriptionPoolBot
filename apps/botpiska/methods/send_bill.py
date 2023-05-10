@@ -31,6 +31,8 @@ async def send_bill(
         или предупреждения
     """
 
+    response = rs.Response()
+
     client = Client.get_or_register(user.id)
 
     # Выводим соглашение, если оно ещё не было выведено для пользователя
@@ -40,42 +42,59 @@ async def send_bill(
             client.terms_message_id = message.message_id
             client.save()
 
-        rs.respond(
-            rse.tmpl_send(
-                'apps/botpiska/templates/message-terms.xml', {},
-                on_success=lambda x: set_client_terms_message_id(x[0]),
-            )
+        response += rse.tmpl_send(
+            'apps/botpiska/templates/message-terms.xml', {},
+            on_success=lambda x: set_client_terms_message_id(x[0]),
         )
 
     # Разбираемся с ранее выставленными счетами
-    result = await botpiska_methods.delete_previous_bill(user)
+    response += await botpiska_methods.delete_bill(user)
 
-    if result.error == 'BILL_IS_PAID':
-        return rs.feedback(
-            'У вас имеется не закрытый оплаченный счёт. '
-            'Чтобы сгенерировать новый, сначала завершите '
-            'предыдущий заказ'
+    coupon = None
+
+    try:
+        # Получаем активированный купон (сразу с CouponType)
+        coupon = await coupons_methods.get_suggested_coupon(user.id, subscription.id)
+
+    except coupons_methods.CouponNotFound:
+        pass
+
+    except coupons_methods.CouponProhibited as error:
+        response += rs.feedback(
+            f'Использующийся купон "{error.coupon.code}", вероятно, создан '
+            'вами и предназначается для других пользователей, счёт '
+            'выставлен без его учёта'
         )
 
-    # Получаем активированный купон (сразу с CouponType)
-    result, coupon = await coupons_methods.get_suggested_coupon(user.id, subscription.id)
+    except coupons_methods.CouponExpired as error:
+        response += rs.feedback(
+            f'Срок действия использующегося купона "{error.coupon.code}" иссяк '
+            f'{error.coupon.expires_after:%d.%m}, счёт выставлен без его учёта'
+        )
 
-    if result.error in COUPON_EXCEPTIONS:
-        error_text = COUPON_EXCEPTIONS[result.error].format(coupon=coupon)
-        rs.respond(rs.feedback(error_text))
+    except coupons_methods.CouponExceededUsage as error:
+        response += rs.feedback(
+            f'Превышено число использований купона "{error.coupon.code}" '
+            f'({error.coupon.max_usages} использований), счёт выставлен '
+            'без его учёта'
+        )
+
+    except coupons_methods.CouponWrongSubscription as error:
+        response += rs.feedback(
+            f'Использующийся купон "{error.coupon.code}" не распространяется '
+            'на данную подписку, счёт выставлен без его учёта'
+        )
+
+    except coupons_methods.CouponAlreadyUsed as error:
+        response += rs.feedback(
+            f'Вы уже использовали купон "{error.coupon.code}" при покупке ранее'
+        )
 
     # Генерируем новый счёт
     bill_items, total = botpiska_methods.generate_bill_content(subscription, coupon)
     expires_after = rs.global_time.get() + settings.BILL_TIMEOUT
 
-    result = await create_qiwi_bill(gls.qiwi, f'{total:.2f}', expires_after)
-    if result.is_error:
-        return rs.feedback(
-            'Ошибка создания счёта, пожалуйста, '
-            'обратитесь в поддержку'
-        )
-
-    qiwi_bill = result.unpack()
+    qiwi_bill = await create_qiwi_bill(gls.qiwi, f'{total:.2f}', expires_after)
 
     async def register_bill(message: aiogram.types.Message):
         """ Регистрирует счёт в базе """
@@ -96,36 +115,14 @@ async def send_bill(
 
     is_gifts_allowed = coupon is None or coupon.type.allows_gifts
 
-    return rse.tmpl_send('apps/botpiska/templates/message-bill.xml', {
-        'bill-image': bill_image,
-        'subscription': subscription,
-        'bill': qiwi_bill,
-        'is_gifts_allowed': is_gifts_allowed
-    }, on_success=lambda x: register_bill(x[0]))
-
-
-COUPON_EXCEPTIONS = {
-    'PROHIBITED': (
-        'Использующийся купон "{coupon.code}", вероятно, создан '
-        'вами и предназначается для других пользователей, счёт '
-        'выставлен без его учёта'
-    ),
-    'EXPIRED': (
-        'Срок действия использующегося купона "{coupon.code}" иссяк '
-        '{coupon.expires_after:%d.%m}, счёт выставлен без его учёта'
-    ),
-    'EXCEEDED_USAGE': (
-        'Превышено число использований купона "{coupon.code}" '
-        '({coupon.max_usages} использований), счёт выставлен '
-        'без его учёта'
-    ),
-    'WRONG_SUBSCRIPTION': (
-        'Использующийся купон "{coupon.code}" не распространяется '
-        'на данную подписку, счёт выставлен без его учёта'
-    ),
-    'ALREADY_USED': (
-        'Вы уже использовали купон "{coupon.code}" при покупке ранее'
+    return (
+        rse.tmpl_send('apps/botpiska/templates/message-bill.xml', {
+            'bill-image': bill_image,
+            'subscription': subscription,
+            'bill': qiwi_bill,
+            'is_gifts_allowed': is_gifts_allowed
+        }, on_success=lambda x: register_bill(x[0]))
+        + response
     )
-}
 
 __all__ = ('send_bill',)

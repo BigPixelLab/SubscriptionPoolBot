@@ -6,13 +6,14 @@ from glQiwiApi.qiwi.exceptions import QiwiAPIError
 
 import gls
 import response_system as rs
-import response_system.core.middleware
-import response_system.core.responses
 from apps.botpiska.models import Bill
-from result import *
 
 
-async def delete_previous_bill(user: aiogram.types.User) -> Result[None, str]:
+class BillIsPaid(rs.UserFriendlyException):
+    """ Счёт, который пытаются удалить, оплачен """
+
+
+async def delete_bill(user: aiogram.types.User) -> rs.Response:
     """
        Проверяет наличие ранее сгенерированного счёта и, если он не оплачен,
        удаляет его из базы и соответствующее ему сообщение из чата.
@@ -25,7 +26,7 @@ async def delete_previous_bill(user: aiogram.types.User) -> Result[None, str]:
     try:
         bill = Bill.get_by_id(user.id)
     except peewee.DoesNotExist:  # Нет ранее сгенерированного счёта, так что всё норм
-        return Ok()
+        return rs.no_response()
 
     # noinspection PyUnusedLocal
     qiwi_bill = None
@@ -39,17 +40,18 @@ async def delete_previous_bill(user: aiogram.types.User) -> Result[None, str]:
         # сообщения или счёта приведут к потере денег пользователем.
         # Скамить не хочется
         if qiwi_bill.status.value == 'PAID':
-            return Error('BILL_IS_PAID')
+            raise BillIsPaid(
+                'У вас имеется не закрытый оплаченный счёт. '
+                'Чтобы сгенерировать новый, сначала завершите '
+                'предыдущий заказ'
+            )
 
         # В противном случае можно отозвать счёт, чтобы его больше
         # нельзя было оплатить
         with contextlib.suppress(QiwiAPIError):
             await gls.qiwi.reject_p2p_bill(qiwi_bill.id)
 
-    bill.delete_instance()
-    rs.respond(rs.delete(bill.message_id))
-
-    return Ok()
+    return rs.delete(bill.message_id, on_success=lambda _: bill.delete_instance())
 
 
-__all__ = ('delete_previous_bill',)
+__all__ = ('delete_bill',)

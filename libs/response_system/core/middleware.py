@@ -10,6 +10,7 @@ from aiogram.dispatcher.event.bases import CancelHandler
 from message_render import MessageRender
 from . import globals_
 from .configure import ResponseConfig
+from .exceptions import UserFriendlyException
 from .responses import Response
 
 
@@ -56,9 +57,15 @@ class ResponseMiddleware:
 
             async with waiting or contextlib.AsyncExitStack():
                 data.update({'bot': bot, 'user': user, 'chat': chat})
-                response: Response = await handler(event, data)
 
-            for action in response + globals_.response_var.get():
+                try:
+                    response: Response = await handler(event, data)
+                    response += globals_.response_var.get()
+
+                except UserFriendlyException as error:
+                    response = error.response()
+
+            for action in response:
                 await action
 
             globals_.global_time.reset(global_time_cv_token)
