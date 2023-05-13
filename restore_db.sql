@@ -17,7 +17,6 @@ CREATE TABLE "Client" (
     created_at timestamp not null
 );
 
-CREATE INDEX Client_pk ON "Client" (chat_id);
 CREATE INDEX Client_referral_id ON "Client" (referral_id);
 
 
@@ -40,7 +39,6 @@ CREATE TABLE "CouponType" (
     allows_gifts bool not null
 );
 
-CREATE INDEX CouponType_pk ON "CouponType" (id);
 CREATE INDEX CouponType_subscription_group_id ON "CouponType" (subscription_group_id);
 
 
@@ -54,7 +52,6 @@ CREATE TABLE "Coupon" (
     created_at timestamp not null
 );
 
-CREATE INDEX Coupon_pk ON "Coupon" (code);
 CREATE INDEX Coupon_type_id ON "Coupon" (type_id);
 CREATE INDEX Coupon_sets_referral_id ON "Coupon" (sets_referral_id);
 
@@ -72,7 +69,6 @@ CREATE TABLE "Subscription" (
     category varchar not null
 );
 
-CREATE INDEX Subscription_pk ON "Subscription" (id);
 CREATE INDEX Subscription_gift_coupon_type_id ON "Subscription" (gift_coupon_type_id);
 
 
@@ -89,7 +85,6 @@ CREATE TABLE "SubscriptionGroup" (
 ALTER TABLE "CouponType" ADD CONSTRAINT fk_SubscriptionGroup
     FOREIGN KEY (subscription_group_id) REFERENCES "SubscriptionGroup" (id);
 
-CREATE INDEX SubscriptionGroup_pk ON "SubscriptionGroup" (id);
 CREATE INDEX SubscriptionGroup_parent_id ON "SubscriptionGroup" (parent_id);
 CREATE INDEX SubscriptionGroup_subscription_id ON "SubscriptionGroup" (subscription_id);
 
@@ -111,7 +106,6 @@ CREATE TABLE "Order" (
     notified_renew bool not null
 );
 
-CREATE INDEX Order_pk ON "Order" (id);
 CREATE INDEX Order_client_id ON "Order" (client_id);
 CREATE INDEX Order_subscription_id ON "Order" (subscription_id);
 CREATE INDEX Order_coupon_id ON "Order" (coupon_id);
@@ -130,7 +124,6 @@ CREATE TABLE "Bill" (
     expires_at timestamp not null
 );
 
-CREATE INDEX Bill_pk ON "Bill" (client_id);
 CREATE INDEX Bill_subscription_id ON "Bill" (subscription_id);
 CREATE INDEX Bill_coupon_id ON "Bill" (coupon_id);
 
@@ -145,18 +138,8 @@ CREATE TABLE "ResourceCache" (
 
 CREATE INDEX ResourceCache_pk ON "ResourceCache" (bot_id, path);
 
-
-CREATE TABLE "Season" (
-    id int not null
-        PRIMARY KEY,
-    description text not null
-);
-
-CREATE INDEX Season_pk ON "Season" (id);
-
-
 CREATE TABLE "SeasonPrize" (
-    id int not null
+    id serial not null
         PRIMARY KEY,
     coupon_type_id varchar not null
         REFERENCES "CouponType" (id),
@@ -165,8 +148,33 @@ CREATE TABLE "SeasonPrize" (
     cost bigint not null
 );
 
-CREATE INDEX SeasonPrize_pk ON "SeasonPrize" (id);
 CREATE INDEX SeasonPrize_coupon_type_id ON "SeasonPrize" (coupon_type_id);
+
+CREATE TABLE "Season" (
+    id smallint not null
+        PRIMARY KEY
+        CHECK (0 <= id and id < 4),
+    title varchar not null,
+    price1 int not null REFERENCES "SeasonPrize" (id),
+    price2 int not null REFERENCES "SeasonPrize" (id),
+    price3 int not null REFERENCES "SeasonPrize" (id),
+    description text not null
+);
+
+CREATE INDEX Season_pk ON "Season" (id);
+
+
+
+CREATE TABLE "SeasonPrizeBought" (
+    client_id bigint not null REFERENCES "Client",
+    season_prize_id int REFERENCES "SeasonPrize",
+    created_at timestamp not null,
+
+    PRIMARY KEY (client_id, season_prize_id)
+);
+
+CREATE INDEX SeasonPrizeBought_client_id ON "SeasonPrizeBought" (client_id);
+CREATE INDEX SeasonPrizeBought_season_prize_id ON "SeasonPrizeBought" (season_prize_id);
 
 
 CREATE TABLE "Lottery" (
@@ -319,3 +327,32 @@ UPDATE "Subscription" SET gift_coupon_type_id = 'gift_spotify_ind_1y' WHERE id =
 
 INSERT INTO "Client" (chat_id, created_at) VALUES (1099569178, now());
 INSERT INTO "Employee" (chat_id) VALUES (1099569178);
+
+-- --
+
+INSERT INTO "SeasonPrize"
+    (id, coupon_type_id, banner, title, cost)
+VALUES
+    (1,'spotify_promo_30','','Инфо о призе',0),
+    (2,'spotify_promo_30','','Инфо о призе',0),
+    (3,'spotify_promo_30','','Инфо о призе',0),
+    (4,'spotify_promo_30','','Инфо о призе',0),
+    (5,'spotify_promo_30','','Инфо о призе',0),
+    (6,'spotify_promo_30','','Инфо о призе',0),
+    (7,'spotify_promo_30','','Инфо о призе',0),
+    (8,'spotify_promo_30','','Инфо о призе',0),
+    (9,'spotify_promo_30','','Инфо о призе',0),
+    (10,'spotify_promo_30','','Инфо о призе',0),
+    (11,'spotify_promo_30','','Инфо о призе',0),
+    (12,'spotify_promo_30','','Инфо о призе',0);
+
+
+
+INSERT INTO "Season"
+    (id, title, price1, price2, price3, description)
+VALUES
+    (0,'Зима' , 1,2,3, '...'),
+    (1, 'Весна', 1,2,3, '...'),
+    (2, 'Лето', 1,2,3, '...'),
+    (3, 'Осень', 1,2,3, '...');
+
