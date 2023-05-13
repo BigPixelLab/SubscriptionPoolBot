@@ -331,28 +331,28 @@ INSERT INTO "Employee" (chat_id) VALUES (1099569178);
 -- --
 
 INSERT INTO "SeasonPrize"
-    (id, coupon_type_id, banner, title, cost)
+    (coupon_type_id, banner, title, cost)
 VALUES
-    (1,'spotify_promo_30','','Инфо о призе',0),
-    (2,'spotify_promo_30','','Инфо о призе',0),
-    (3,'spotify_promo_30','','Инфо о призе',0),
-    (4,'spotify_promo_30','','Инфо о призе',0),
-    (5,'spotify_promo_30','','Инфо о призе',0),
-    (6,'spotify_promo_30','','Инфо о призе',0),
-    (7,'spotify_promo_30','','Инфо о призе',0),
-    (8,'spotify_promo_30','','Инфо о призе',0),
-    (9,'spotify_promo_30','','Инфо о призе',0),
-    (10,'spotify_promo_30','','Инфо о призе',0),
-    (11,'spotify_promo_30','','Инфо о призе',0),
-    (12,'spotify_promo_30','','Инфо о призе',0);
+    ('spotify_promo_30', '', 'Инфо о призе',0),
+    ('spotify_promo_30', '', 'Инфо о призе',0),
+    ('spotify_promo_30', '', 'Инфо о призе',0),
+    ('spotify_promo_30', '', 'Инфо о призе',0),
+    ('spotify_promo_30', '', 'Инфо о призе',0),
+    ('spotify_promo_30', '', 'Инфо о призе',0),
+    ('spotify_promo_30', '', 'Инфо о призе',0),
+    ('spotify_promo_30', '', 'Инфо о призе',0),
+    ('spotify_promo_30', '', 'Инфо о призе',0),
+    ('spotify_promo_30', '', 'Инфо о призе',0),
+    ('spotify_promo_30', '', 'Инфо о призе',0),
+    ('spotify_promo_30', '', 'Инфо о призе',0);
 
 
 
 INSERT INTO "Season"
     (id, title, price1, price2, price3, description)
 VALUES
-    (0,'Зима' , 1,2,3, '...'),
+    (0, 'Зима' ,  1,2,3, '...'),
     (1, 'Весна', 1,2,3, '...'),
-    (2, 'Лето', 1,2,3, '...'),
+    (2, 'Лето',  1,2,3, '...'),
     (3, 'Осень', 1,2,3, '...');
 
