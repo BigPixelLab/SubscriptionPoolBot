@@ -128,6 +128,7 @@ def _text_(tag: Tag) -> Paragraph:
     """ Не обрамлённый в теги текст """
     words = re.split(SPACING_PATTERN, tag.element.nodeValue)
     result = ' '.join(words).strip().format_map(tag.context)
+    result = result.replace('<', '&lt;').replace('>', '&gt;')
     return Text(result)
 
 
@@ -419,6 +420,34 @@ def u(tag: Tag) -> Text:
 
     """
     return Text(f'<u>{ELEMENT.parse(tag.element, tag.context)}</u>')
+
+
+@register([MESSAGE, ELEMENT])
+def s(tag: Tag) -> Text:
+    """
+        Зачёркнутый текст.
+
+        Тип текста: Text
+
+        ::
+
+            │ <s>
+            │     ... ELEMENT Scope ...
+            │ </s>
+            └── MESSAGE/ELEMENT Scope
+
+        Пример использования::
+
+            main.xml
+            │ <message>
+            │     <s> Hello World! </s>
+            │ </message>
+
+            >>> render('main.xml', {})
+            MessageRender('<s>Hello World!</s>')
+
+    """
+    return Text(f'<s>{ELEMENT.parse(tag.element, tag.context)}</s>')
 
 
 @register([MESSAGE, ELEMENT])

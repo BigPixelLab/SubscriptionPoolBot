@@ -20,7 +20,7 @@ if typing.TYPE_CHECKING:
 set_global_context({
     'support': settings.SUPPORT_CHAT_ID,
     'tech_support': settings.TECH_SUPPORT_CHAT_ID,
-    'telegram': aiogram.types
+    'tg': aiogram.types
 })
 
 
@@ -36,7 +36,6 @@ specifiers.update(rs=res_extract_func)
 
 
 # TAGS --------------------------------------------------------------
-# Parser.register_to_many([MESSAGE, ELEMENT], arguments={'user': (int, None), 'display': (str, 'Пользователь')})
 
 @register([MESSAGE, ELEMENT], name='progressbar')
 def _progressbar(_, *, steps: int, of: int, width: int = None) -> str:

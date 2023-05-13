@@ -189,7 +189,7 @@ def exec_python_specifier(value, context, target_type) -> Any:
     :param target_type: Тип, который будет передан в код.
     :return: Значение переменной с указанным именем в контексте.
     """
-    return eval(value, context, {'__target__': target_type, '__context__': context})
+    return eval(value, {}, {**context, '__target__': target_type, '__context__': context})
 
 
 converters = {
