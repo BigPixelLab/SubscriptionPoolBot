@@ -1,20 +1,9 @@
-from pathlib import Path
+""" ... """
+import aiogram.types
 
-from aiogram.fsm.context import FSMContext
-from aiogram.types import Message, CallbackQuery
-
-from utils import template
-
-TEMPLATES = Path('apps/debug/templates')
+import response_system as rs
 
 
-async def command_debug(message: Message, state: FSMContext):
-    data = await state.get_data()
-    await template.render(TEMPLATES / 'debug.xml', {
-        'user_id': message.from_user.id,
-        'data': data.items()
-    }).send(message.chat.id)
-
-
-async def missed_query_handler(query: CallbackQuery):
-    await query.message.answer(f'Unhandled query: {query.data}')
+async def unhandled_callback_query(query: aiogram.types.CallbackQuery):
+    """ ... """
+    return rs.send(f'Unhandled query: {query.data}')

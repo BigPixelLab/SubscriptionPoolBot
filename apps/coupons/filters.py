@@ -1,20 +1,15 @@
-import string
+from __future__ import annotations
 
-import aiogram.filters
+import aiogram
+
+from apps.coupons import methods as coupons_methods
 
 
-class CouponLikeFilter(aiogram.filters.BaseFilter):
-    POSSIBLE_COUPON_SYMBOLS = set(string.digits + string.ascii_uppercase + '-')
-    COUPON_LENGTH = 6
+async def coupon_filter(message: aiogram.types.Message) -> dict | bool:
+    """ ... """
+    code = message.text
 
-    async def __call__(self, message: aiogram.types.Message):
-        coupon = message.text or message.caption
+    if code and coupons_methods.is_coupon_like(code):
+        return {'code': code}
 
-        if not coupon:
-            return False
-
-        if not set(coupon).issubset(self.POSSIBLE_COUPON_SYMBOLS) or \
-                len(coupon) != self.COUPON_LENGTH:
-            return False
-
-        return {'coupon_code': coupon}
+    return False

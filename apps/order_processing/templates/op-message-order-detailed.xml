@@ -1,0 +1,42 @@
+<!-- Order should be joined with Subscription and Coupon -->
+<message requires="order">
+
+    <heading>
+        ЗАКАЗ #{order.id}
+        <span if="order.is_processed"> (ВЗЯТ) </span>
+        <span if="order.is_closed"> (ЗАКРЫТ) </span>
+    </heading>
+
+    <section>
+        <p> Польз.: <chat user.py="order.client_id"/> </p>
+        <p> ID: <code> {order.client_id} </code> </p>
+    </section>
+    <section if="order.processing_employee_id">
+        <p> Опер.: <chat user.py="order.processing_employee_id" display="Оператор"/> </p>
+        <p> ID: <code> {order.processing_employee_id} </code> </p>
+    </section>
+    <section>
+        <p> План: {order.subscription.title} </p>
+        <p> Оплачено: {order.paid_amount:.2f}₽ </p>
+        <p> Цена: {order.subscription.price:.2f}₽ </p>
+    </section>
+    <section if="order.coupon_id">
+        <p> Купон: {order.coupon.code} {order.coupon.discount:.0f}% </p>
+        <p> {order.coupon.type.id} </p>
+    </section>
+
+    <inline-keyboard if="order.is_free">
+        <button callback_data="delete-this"> Скрыть </button>
+        <button callback_data="order:take:{order.id}"> Взять </button>
+    </inline-keyboard>
+
+    <inline-keyboard if="order.is_processed">
+        <row> <button callback_data="send-text:{order.client_id}"> Отправить сообщение </button> </row>
+        <button callback_data="order:return:{order.id}"> Вернуть </button>
+        <button callback_data="order:close:{order.id}"> Закрыть </button>
+    </inline-keyboard>
+
+    <inline-keyboard if="order.is_closed">
+        <button callback_data="delete-this"> Скрыть </button>
+    </inline-keyboard>
+</message>

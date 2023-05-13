@@ -1,0 +1,7 @@
+<template requires="plans">
+    <inline-keyboard>
+        <row for="plan,discount in plans">
+            <buy-button subscription.cv="plan" discount.cv="discount"/>
+        </row>
+    </inline-keyboard>
+</template>

@@ -1,0 +1,9 @@
+<message>
+
+    <heading> ВХОД АВТОРИЗОВАН </heading>
+    <p> Добро пожаловать, <chat-current/> </p>
+
+    <reply-keyboard resize_keyboard="True">
+        <button> Список заказов </button>
+    </reply-keyboard>
+</message>

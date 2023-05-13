@@ -1,0 +1,20 @@
+<message requires="subscription_plans">
+    <img src.rs="{__dir__}/resources/NETFLIX-BANNER.jpg"/>
+
+    <heading> NETFLIX </heading>
+    <section>
+        Снова смотри любимые фильмы и сериалы без рекламы казино в
+        высоком качестве.
+    </section>
+    <section>
+        <p> <b> Ты получаешь: </b> </p>
+        <p> - Доступ к оригинальным работам Netflix </p>
+        <p> - Доступ к огромной библиотеке фильмов и сериалов со всего
+            мира </p>
+        <p> - Возможность видеть новые фильмы и сериалы первым </p>
+    </section>
+    <section> ⚠️ <u><b> Для работы необходим VPN </b></u> ⚠️ </section>
+
+    <template src="{__dir__.parent}/keyboard-showcase-default.xml"
+              plans.cv="subscription_plans"/>
+</message>

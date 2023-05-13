@@ -1,0 +1,4 @@
+<message>
+    <p> Вот то, что вам нужно: </p>
+    <template src="{__dir__}/keyboard-general.xml"/>
+</message>

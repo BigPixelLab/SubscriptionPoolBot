@@ -1,0 +1,4 @@
+<message>
+    <p> Вот полный список товаров… </p>
+    <template src="{__dir__}/keyboard-service-list.xml"/>
+</message>

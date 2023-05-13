@@ -1,0 +1,13 @@
+<message requires="orders">
+
+    <heading> СПИСОК ЗАКАЗОВ </heading>
+    <p for="order in orders">
+        <template src="apps/order_processing/templates/template-order.xml" order.cv="order"/>
+    </p>
+    <p if="not orders"> Нет заказов. </p>
+
+    <inline-keyboard>
+        <row> <button callback_data="order-list-update"> Обновить </button> </row>
+        <row> <button callback_data="order-get-unprocessed"> Получить необработанный </button> </row>
+    </inline-keyboard>
+</message>

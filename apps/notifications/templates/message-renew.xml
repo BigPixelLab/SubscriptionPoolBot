@@ -1,0 +1,18 @@
+<message requires="subscription,featured">
+
+    <heading> ПОДПИСКА ЗАКАНЧИВАЕТСЯ.. </heading>
+    <section>
+        <p> Твоя подписка {subscription.title} скоро закончится. </p>
+        <p> Жми кнопку внизу, чтобы не потерять! </p>
+    </section>
+    <section if="featured">
+        <p> Или продли план, чтобы подписка стала ещё выгодней 😏. </p>
+    </section>
+
+    <inline-keyboard>
+        <row if="featured">
+            <buy-button subscription.cv="featured"/>
+        </row>
+        <row> <buy-button subscription.cv="subscription"/> </row>
+    </inline-keyboard>
+</message>
