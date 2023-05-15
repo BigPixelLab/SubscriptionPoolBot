@@ -16,15 +16,7 @@ async def activate_coupon(code: str, user: aiogram.types.User, silent: bool = Fa
     bot = aiogram.Bot.get_current()
 
     # Получение купона
-    result, coupon = await coupons_methods.get_coupon(code, user.id)
-
-    # Обрабатываем случаи, когда купон недействителен
-    if result.is_error and result.error in COUPON_EXCEPTIONS:
-        message = COUPON_EXCEPTIONS[result.error].format(coupon=coupon.code)
-        return rs.send(message)
-
-    if result.is_error:
-        return rs.no_response()
+    coupon = await coupons_methods.get_coupon(code, user.id)
 
     # Если действителен - записываем в userdata
     key = StorageKey(bot.id, user.id, user.id)
@@ -45,27 +37,5 @@ async def activate_coupon(code: str, user: aiogram.types.User, silent: bool = Fa
 
     return rse.tmpl_send('apps/coupons/templates/message-coupon-success.xml', {})
 
-
-COUPON_EXCEPTIONS = {
-    'PROHIBITED': (
-        'Использующийся купон "{coupon.code}", вероятно, создан '
-        'вами и предназначается для других пользователей'
-    ),
-    'EXPIRED': (
-        'Срок действия использующегося купона "{coupon.code}" иссяк '
-        '{coupon.expires_after:%d.%m}'
-    ),
-    'EXCEEDED_USAGE': (
-        'Превышено число использований купона "{coupon.code}" '
-        '({coupon.max_usages} использований)'
-    ),
-    'WRONG_SUBSCRIPTION': (
-        'Использующийся купон "{coupon.code}" не распространяется '
-        'на данную подписку'
-    ),
-    'ALREADY_USED': (
-        'Вы уже использовали купон "{coupon.code}" при покупке ранее'
-    )
-}
 
 __all__ = ('activate_coupon',)
