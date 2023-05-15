@@ -1,0 +1,6 @@
+<message>
+    <p> Переменные: </p>
+    <p for="var, val in __context__.items()">
+        <p> - {var}: {val} </p>
+    </p>
+</message>
