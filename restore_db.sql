@@ -34,7 +34,8 @@ CREATE TABLE "CouponType" (
     id varchar not null
         PRIMARY KEY,
     subscription_group_id varchar not null,  -- Fk added later
-    discount numeric(1000, 2) not null,
+    discount numeric(1000, 2) not null
+        CHECK ( discount >= 0 and discount <= 100 ),
     max_usages bigint,
     lifespan interval,
     allows_gifts bool not null
@@ -67,8 +68,10 @@ CREATE TABLE "Subscription" (
     service_id varchar not null,
     short_title varchar not null,
     title varchar not null,
-    duration interval not null,
-    price numeric(1000, 2) not null,
+    duration interval not null
+        CHECK ( duration > interval '0' ),
+    price numeric(1000, 2) not null
+        CHECK ( price >= 0 ),
     category varchar not null
 );
 
@@ -105,7 +108,8 @@ CREATE TABLE "Order" (
         REFERENCES "Coupon" (code),
     processing_employee_id bigint
         REFERENCES "Employee" (chat_id),
-    paid_amount numeric(1000, 2) not null,
+    paid_amount numeric(1000, 2) not null
+        CHECK ( paid_amount >= 0 ),
     created_at timestamp not null,
     closed_at timestamp,
     notified_renew bool not null
@@ -163,6 +167,7 @@ CREATE TABLE "SeasonPrize" (
     banner varchar not null,
     title varchar not null,
     cost bigint not null
+        CHECK ( cost >= 0 )
 );
 
 CREATE INDEX SeasonPrize_pk ON "SeasonPrize" (id);
@@ -181,16 +186,26 @@ CREATE INDEX Lottery_pk ON "Lottery" (id);
 
 
 CREATE TABLE "LotteryPrize" (
-    id varchar not null
+    id serial not null
         PRIMARY KEY,
+    lottery_id varchar not null
+        REFERENCES "Lottery" (id),
     coupon_type_id varchar not null
         REFERENCES "CouponType" (id),
+    weight int not null,
+    count int,
+
     banner varchar not null,
     title varchar not null,
-    description text not null
+    description text not null,
+
+    -- Only one of "weight" and "count" must be filled
+    CONSTRAINT ether_weight_or_cost_specified
+        CHECK ( (weight is null) != (count is null) )
 );
 
 CREATE INDEX LotteryPrize_pk ON "LotteryPrize" (id);
+CREATE INDEX LotteryPrize_lottery_id ON "LotteryPrize" (lottery_id);
 CREATE INDEX LotteryPrize_coupon_type_id ON "LotteryPrize" (coupon_type_id);
 
 
