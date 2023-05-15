@@ -1,4 +1,4 @@
-<template requires="order,subscription">
+<template requires="order, subscription">
     <heading> ЗАКАЗ #{order.id} {subscription.title} </heading>
     <section>
         Как только оператор будет готов обработать ваш заказ

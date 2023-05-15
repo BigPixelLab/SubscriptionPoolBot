@@ -1,4 +1,4 @@
-<message requires="subscription,featured">
+<message requires="subscription, featured">
 
     <heading> ПОДПИСКА ЗАКАНЧИВАЕТСЯ.. </heading>
     <section>

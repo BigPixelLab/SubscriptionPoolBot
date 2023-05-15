@@ -1,4 +1,4 @@
-<message requires="order,subscription">
+<message requires="order, subscription">
     <anim src.rs="{__dir__}/resources/NETFLIX-ORDER.mp4"/>
     <template src="{__dir__.parent}/order-default.xml"
               order.cv="order"

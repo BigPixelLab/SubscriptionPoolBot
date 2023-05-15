@@ -72,7 +72,7 @@ def template(tag: Tag, *, src: str, __rem: dict):
         Пример использования::
 
             template.xml
-            │ <template requires="firstname,surname">
+            │ <template requires="firstname, surname">
             │     <p> Привет, {surname} {firstname}! </p>
             │ </template>
 

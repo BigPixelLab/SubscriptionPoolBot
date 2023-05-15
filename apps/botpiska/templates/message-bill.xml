@@ -1,4 +1,4 @@
-<message requires="bill-image,subscription,bill,is_gifts_allowed">
+<message requires="bill-image, subscription, bill, is_gifts_allowed">
     <img src.cv="bill-image"/>
 
     <heading> СЧЁТ ЗА {subscription.title} </heading>
