@@ -20,6 +20,7 @@ TNotifyEverySuccessHandler = typing.Callable[[int, int], typing.Awaitable]
 TNotifyCompletionHandler = typing.Callable[[int, int], typing.Awaitable]
 
 FEEDBACK_VISIBILITY_TIME = 2
+__debugging__ = False
 
 
 class Response:
@@ -80,11 +81,18 @@ async def action_edit(
     try:
         result = await message.edit(original, bot=bot)
         await handle(on_success, result)
-    except aiogram.exceptions.TelegramForbiddenError:
-        await handle(on_forbidden)
+
+    except Exception as error:
+        do_raise = __debugging__ and on_error is None
+
+        if isinstance(error, aiogram.exceptions.TelegramForbiddenError):
+            do_raise = __debugging__ and on_forbidden is None
+            await handle(on_forbidden)
+
         await handle(on_error)
-    except Exception:
-        await handle(on_error)
+
+        if do_raise:
+            raise
 
 
 async def action_delete(
@@ -105,11 +113,18 @@ async def action_delete(
     try:
         result = await bot.delete_message(chat, original)
         await handle(on_success, result)
-    except aiogram.exceptions.TelegramForbiddenError:
-        await handle(on_forbidden)
+
+    except Exception as error:
+        do_raise = __debugging__ and on_error is None
+
+        if isinstance(error, aiogram.exceptions.TelegramForbiddenError):
+            do_raise = __debugging__ and on_forbidden is None
+            await handle(on_forbidden)
+
         await handle(on_error)
-    except Exception:
-        await handle(on_error)
+
+        if do_raise:
+            raise
 
 
 async def action_send(
@@ -125,11 +140,18 @@ async def action_send(
     try:
         result = await message.send(chat, bot=bot)
         await handle(on_success, result)
-    except aiogram.exceptions.TelegramForbiddenError:
-        await handle(on_forbidden)
+
+    except Exception as error:
+        do_raise = __debugging__ and on_error is None
+
+        if isinstance(error, aiogram.exceptions.TelegramForbiddenError):
+            do_raise = __debugging__ and on_forbidden is None
+            await handle(on_forbidden)
+
         await handle(on_error)
-    except Exception:
-        await handle(on_error)
+
+        if do_raise:
+            raise
 
 
 async def action_feedback(
@@ -154,11 +176,18 @@ async def action_feedback(
             )
         )
         await handle(on_success, fb)
-    except aiogram.exceptions.TelegramForbiddenError:
-        await handle(on_forbidden)
+
+    except Exception as error:
+        do_raise = __debugging__ and on_error is None
+
+        if isinstance(error, aiogram.exceptions.TelegramForbiddenError):
+            do_raise = __debugging__ and on_forbidden is None
+            await handle(on_forbidden)
+
         await handle(on_error)
-    except Exception:
-        await handle(on_error)
+
+        if do_raise:
+            raise
 
 
 async def action_notify(
@@ -179,11 +208,18 @@ async def action_notify(
             result = await message.send(chat, bot=bot)
             await handle(on_every_success, result)
             succeeded += 1
-        except aiogram.exceptions.TelegramForbiddenError:
-            await handle(on_every_forbidden, chat)
+
+        except Exception as error:
+            do_raise = __debugging__ and on_every_error is None
+
+            if isinstance(error, aiogram.exceptions.TelegramForbiddenError):
+                do_raise = __debugging__ and on_every_forbidden is None
+                await handle(on_every_forbidden, chat)
+
             await handle(on_every_error, chat)
-        except Exception:
-            await handle(on_every_error, chat)
+
+            if do_raise:
+                raise
 
     await on_completion(succeeded, len(receivers))
 

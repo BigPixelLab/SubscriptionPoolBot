@@ -11,6 +11,7 @@ from glQiwiApi import QiwiP2PClient
 
 import ezqr
 import response_system
+import response_system.core.responses
 import settings
 import gls
 import template
@@ -44,6 +45,8 @@ async def main():
     logger.info("Starting bot")
 
     template.set_default_syntax(aiogram_syntax)
+
+    response_system.core.responses.__debugging__ = settings.DEBUG
 
     # noinspection PyUnresolvedReferences
     import template_extensions

@@ -13,7 +13,7 @@ from apps.botpiska.models import Employee
 from response_system.core import globals_
 from response_system.core.responses import TEditSuccessHandler, TBasicHandler, Response, TSendSuccessHandler, \
     TFeedbackSuccessHandler, TNotifyEverySuccessHandler, TNotifyBasicSuccessHandler, handle, \
-    TNotifyCompletionHandler, action_edit, action_send, action_feedback
+    TNotifyCompletionHandler, action_edit, action_send, action_feedback, __debugging__
 
 
 async def action_tmpl_notify(
@@ -44,11 +44,18 @@ async def action_tmpl_notify(
             result = await message.send(chat, bot=bot)
             await handle(on_every_success, result)
             succeeded += 1
-        except aiogram.exceptions.TelegramForbiddenError:
-            await handle(on_every_forbidden, chat)
+
+        except Exception as error:
+            do_raise = __debugging__ and on_every_error is None
+
+            if isinstance(error, aiogram.exceptions.TelegramForbiddenError):
+                do_raise = __debugging__ and on_every_forbidden is None
+                await handle(on_every_forbidden, chat)
+
             await handle(on_every_error, chat)
-        except Exception:
-            await handle(on_every_error, chat)
+
+            if do_raise:
+                raise
 
     await on_completion(succeeded, len(receivers))
 
