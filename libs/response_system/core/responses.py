@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import inspect
 import typing
 
 import aiogram
@@ -65,7 +66,10 @@ def to_MessageRenderList(value: typing.Union[MessageRenderList, MessageRender, s
 async def handle(handler: typing.Optional[typing.Callable[[...], typing.Awaitable]], *args):
     if handler is None:
         return
-    await handler(*args)
+
+    result = handler(*args)
+    if inspect.isawaitable(result):
+        await result
 
 
 async def action_edit(
@@ -166,7 +170,7 @@ async def action_feedback(
 ):
     # noinspection PyBroadException
     try:
-        fb, = message.send(chat, bot=bot)
+        fb = await message.send(chat, bot=bot)
         asyncio.create_task(
             action_delete(
                 fb.message_id,
@@ -264,7 +268,10 @@ def delete(
         raise ValueError('Chat can be set only when original passed id')
 
     if chat is None and isinstance(original, int):
-        raise ValueError('Chat must be specified when original passed by id')
+        chat = globals_.message_var.get().chat.id
+
+    if original is None:
+        original = globals_.message_var.get()
 
     if isinstance(original, aiogram.types.Message):
         original, chat = original.message_id, original.chat.id
