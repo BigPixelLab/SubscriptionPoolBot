@@ -46,6 +46,13 @@ SERVICES: set[Service] = {
         featured_subscription_id='spotify_ind_1y'
     ),
     Service(
+        id='chatgpt',
+        search_title='CHAT-GPT',
+        showcase_template='apps/botpiska/templates/services/chatgpt/showcase.xml',
+        order_template='apps/botpiska/templates/services/chatgpt/order.xml',
+        featured_subscription_id='chatgpt_plus_1m'
+    ),
+    Service(
         id='steam',
         search_title='STEAM',
         showcase_template='apps/botpiska/templates/services/steam/showcase.xml',

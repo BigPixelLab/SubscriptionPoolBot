@@ -1,0 +1,7 @@
+<message requires="order, subscription">
+    <img src.rs="{__dir__}/resources/CHATGPT-BANNER.jpg"/>
+    <template src="{__dir__.parent}/order-default.xml"
+              order.cv="order"
+              subscription.cv="subscription"
+    />
+</message>

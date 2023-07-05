@@ -120,6 +120,32 @@ def template(tag: Tag, *, src: str, __rem: dict):
         tag.process(element, ReadOnlyDict(__rem))
 
 
+@register([MESSAGE, ELEMENT])
+def paste(_, value: str) -> Text:
+    """
+        Вставляет текст переданный в value в сыром виде.
+
+        Тип текста: Text
+
+        ::
+
+            │ <paste/>
+            └── MESSAGE/ELEMENT Scope
+
+        Пример использования::
+
+            main.xml
+            │ <message>
+            │     <paste value="<b>    Oh, wow! </b>"/>
+            │ </message>
+
+            >>> render('main.xml', {})
+            MessageRender('<b>    Oh, wow! </b>')
+
+    """
+    return Text(value)
+
+
 SPACING_PATTERN = re.compile(r'\s+')
 
 

@@ -57,7 +57,7 @@ async def action_tmpl_notify(
             if do_raise:
                 raise
 
-    await on_completion(succeeded, len(receivers))
+    await handle(on_completion, succeeded, len(receivers))
 
 
 # ---

@@ -68,8 +68,9 @@ CREATE TABLE "Subscription" (
     service_id varchar not null,
     short_title varchar not null,
     title varchar not null,
-    duration interval not null
-        CHECK ( duration > interval '0' ),
+    duration interval
+        CHECK ( duration IS NULL
+        	OR duration > interval '0' ),
     price numeric(1000, 2) not null
         CHECK ( price >= 0 ),
     category varchar not null
@@ -273,6 +274,14 @@ INSERT INTO "Subscription" (
     'spotify_ind_1y',   'spotify',
     '1 год',            'SPOTIFY 1 год',        '360 days'::interval,
     1499.00,            ''
+), (
+    'chatgpt_account',  'chatgpt',
+    'Аккаунт',          'ChatGPT Аккаунт',     NULL,
+    149.00,             'account'
+), (
+    'chatgpt_plus_1m',  'chatgpt',
+    'Plus 1 месяц',     'ChatGPT PLUS+',        '30 days'::interval,
+    1999.00,            'plus'
 );
 
 
@@ -287,7 +296,10 @@ VALUES
     ('spotify_ind_1y',  'spotify',  'spotify_ind_1y'),
     ('netflix',         'all',      null),
     ('netflix_4k_1m',   'netflix',  'netflix_4k_1m'),
-    ('netflix_HD_1m',   'netflix',  'netflix_HD_1m');
+    ('netflix_HD_1m',   'netflix',  'netflix_HD_1m'),
+    ('chatgpt',         'all',      null),
+    ('chatgpt_account', 'chatgpt',  'chatgpt_account'),
+    ('chatgpt_plus_1m', 'chatgpt',  'chatgpt_plus_1m');
 
 
 INSERT INTO "CouponType" (
@@ -312,6 +324,12 @@ INSERT INTO "CouponType" (
     'gift_spotify_ind_1y',  'spotify_ind_1y',       100,
     1,                      '360 days'::interval,   false
 ), (
+    'gift_chatgpt_account', 'chatgpt_account',      100,
+    1,                      '30 days'::interval,    false
+), (
+    'gift_chatgpt_plus_1m', 'chatgpt_plus_1m',      100,
+    1,                      '30 days'::interval,    false
+), (
     'spotify_promo_20',     'spotify',              20,
     null,                   '30 days'::interval,    true
 ), (
@@ -330,7 +348,34 @@ UPDATE "Subscription" SET gift_coupon_type_id = 'gift_spotify_ind_1m' WHERE id =
 UPDATE "Subscription" SET gift_coupon_type_id = 'gift_spotify_ind_3m' WHERE id = 'spotify_ind_3m';
 UPDATE "Subscription" SET gift_coupon_type_id = 'gift_spotify_ind_6m' WHERE id = 'spotify_ind_6m';
 UPDATE "Subscription" SET gift_coupon_type_id = 'gift_spotify_ind_1y' WHERE id = 'spotify_ind_1y';
+UPDATE "Subscription" SET gift_coupon_type_id = 'gift_chatgpt_account' WHERE id = 'chatgpt_account';
+UPDATE "Subscription" SET gift_coupon_type_id = 'gift_chatgpt_plus_1m' WHERE id = 'chatgpt_plus_1m';
 
 
 INSERT INTO "Client" (chat_id, created_at) VALUES (1099569178, now());
 INSERT INTO "Employee" (chat_id) VALUES (1099569178);
+
+
+INSERT INTO "Lottery"
+	(id, banner, title, description)
+VALUES (
+	'test', 'apps/botpiska/templates/resources/BILL.png', 'WOW!',
+	$$
+	<section>
+		<heading> Yup! </heading>
+		<section>
+			This is a lottery, totally doesnt look like a scam
+		</section>
+	</section>
+	$$
+);
+
+
+INSERT INTO "LotteryPrize"
+	(lottery_id, coupon_type_id, weight, count, banner, title, description)
+VALUES
+	('test', 'spotify_promo_30', 1, null, 'apps/botpiska/templates/resources/BILL.png', 'Ye', 'Omg');
+
+	
+	
+	

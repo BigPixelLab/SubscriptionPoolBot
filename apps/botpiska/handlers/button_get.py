@@ -1,29 +1,14 @@
 """ ... """
 from __future__ import annotations
 
-import functools
-
 import aiogram.types
-import peewee
-from glQiwiApi.qiwi.exceptions import QiwiAPIError
-from glQiwiApi.qiwi.clients.p2p import types as qiwi_types
 
-import gls
-import pilgram
-import response_system as rs
-import response_system_extensions as rse
-from response_system import Response
-import settings
-from .. import images
-from ..methods import BILL_STATUSES
-from ..models import Bill, Order, Client, Subscription
-from apps.coupons.models import Coupon
-from ..services import Service
+from ..methods.buy import buy_for_user, buy_as_gift_by_user
 
 
 async def get_for_self_button_handler(_, user: aiogram.types.User):
     """ Открывает заказ, который после будет обработан оператором """
-    return await get_for_self(user)
+    return await buy_for_user(user)
 
 
 async def get_as_gift_button_handler(_, user: aiogram.types.User):
@@ -34,117 +19,7 @@ async def get_as_gift_button_handler(_, user: aiogram.types.User):
     Купон при покупке зарегистрирует пользователя как реферала,
     также не позволит передарить подписку.
     """
-    return await get_as_gift(user)
-
-
-# ВСПОМОГАТЕЛЬНОЕ ---------------------------------------------------
-
-BILL_GET_ERROR = (
-    'Ошибка получения счёта, пожалуйста, '
-    'обратитесь в поддержку'
-)
-
-
-async def _order_wrapper(function, user: aiogram.types.User) -> Response:
-    """ Производит предварительные действия перед обработкой
-        получения заказа """
-
-    # Получение счёта из базы и соответствующего ему счёта qiwi
-    try:
-        bill = Bill.get_by_id(user.id)
-    except peewee.DoesNotExist:
-        return rs.feedback(BILL_GET_ERROR)
-
-    try:
-        qiwi_bill = await gls.qiwi.get_bill_by_id(bill.qiwi_id)
-    except QiwiAPIError:
-        return rs.feedback(BILL_GET_ERROR)
-
-    # Получение статуса счёта (в DEBUG режиме всегда 'PAID')
-    status = settings.DEBUG and 'PAID' or bill.status.value
-
-    # Счёт не оплачен - предупреждаем, что нужно оплатить, чтобы продолжить
-    if status == 'WAITING':
-        status_message = BILL_STATUSES['WAITING']
-        return rs.feedback(status_message)
-
-    # Счёт отменён или его срок истёк - удаляем
-    elif status != 'PAID':
-        bill.delete_instance()
-
-        status_message = BILL_STATUSES[status]
-        return rs.delete(bill.message_id) + \
-            rs.feedback(status_message)
-
-    # Регистрируем пользователя, если не зарегистрирован и
-    # устанавливаем его как реферала
-    coupon = bill.coupon
-    client = Client.get_or_register(
-        user.id,
-        referral=coupon.sets_referral_id if coupon else None,
-        force_referral=True
-    )
-
-    return await function(client, bill, qiwi_bill)
-
-
-def _order_handler(function):
-    """ Декоратор, оборачивающий функцию в get_order_wrapper """
-    return functools.partial(_order_wrapper, function)
-
-
-@_order_handler
-async def get_for_self(client: Client, bill: Bill, qiwi_bill: qiwi_types.Bill) -> Response:
-    """ Часть логики, относящаяся к покупке подписки для себя """
-
-    order = Order(
-        client=client,
-        subscription=bill.subscription_id,
-        coupon=bill.coupon_id,
-        paid_amount=qiwi_bill.amount.value,
-        created_at=rs.global_time.get()
-    )
-    order.save()
-
-    subscription: Subscription = bill.subscription
-    service = Service.get_by_id(subscription.service_id)
-
-    return (
-        rs.delete(on_success=bill.delete_instance)
-        + rse.tmpl_send(service.order_template, {
-            'subscription': subscription,
-            'order': order
-        })
-        + rse.tmpl_notify_employee('apps/order_processing/templates/op-message-order-new.xml', {
-            'order': order
-        })
-    )
-
-
-@_order_handler
-async def get_as_gift(client: Client, bill: Bill, _: qiwi_types.Bill) -> Response:
-    """ Часть логики, относящаяся к покупке подписки в подарок """
-
-    subscription: Subscription = bill.subscription
-    gift_coupon = Coupon.from_type(
-        subscription.gift_coupon_type_id,
-        sets_referral=client.chat_id,
-        now=rs.global_time.get()
-    )
-
-    gift_card_image = pilgram.PilImageInputFile(
-        images.render_gift_card_image(f't.me/botpiska_bot?start={gift_coupon.code}'),
-        filename='GIFT.png'
-    )
-
-    return (
-        rs.delete(on_success=bill.delete_instance)
-        + rse.tmpl_send('apps/botpiska/templates/message-gift.xml', {
-            'gift-card-image': gift_card_image,
-            'subscription': subscription,
-            'coupon': gift_coupon
-        })
-    )
+    return await buy_as_gift_by_user(user)
 
 
 __all__ = (

@@ -31,8 +31,6 @@ async def send_bill(
         или предупреждения
     """
 
-    response = rs.Response()
-
     client = Client.get_or_register(user.id)
 
     # Выводим соглашение, если оно ещё не было выведено для пользователя
@@ -42,13 +40,13 @@ async def send_bill(
             client.terms_message_id = message.message_id
             client.save()
 
-        response += rse.tmpl_send(
+        rs.respond(rse.tmpl_send(
             'apps/botpiska/templates/message-terms.xml', {},
             on_success=lambda x: set_client_terms_message_id(x[0]),
-        )
+        ))
 
     # Разбираемся с ранее выставленными счетами
-    response += await botpiska_methods.delete_bill(user)
+    rs.respond(await botpiska_methods.delete_bill(user))
 
     coupon = None
 
@@ -60,35 +58,35 @@ async def send_bill(
         pass
 
     except coupons_methods.CouponProhibited as error:
-        response += rs.feedback(
+        rs.respond(rs.feedback(
             f'Использующийся купон "{error.coupon.code}", вероятно, создан '
             'вами и предназначается для других пользователей, счёт '
             'выставлен без его учёта'
-        )
+        ))
 
     except coupons_methods.CouponExpired as error:
-        response += rs.feedback(
+        rs.respond(rs.feedback(
             f'Срок действия использующегося купона "{error.coupon.code}" иссяк '
             f'{error.coupon.expires_after:%d.%m}, счёт выставлен без его учёта'
-        )
+        ))
 
     except coupons_methods.CouponExceededUsage as error:
-        response += rs.feedback(
+        rs.respond(rs.feedback(
             f'Превышено число использований купона "{error.coupon.code}" '
             f'({error.coupon.max_usages} использований), счёт выставлен '
             'без его учёта'
-        )
+        ))
 
     except coupons_methods.CouponWrongSubscription as error:
-        response += rs.feedback(
+        rs.respond(rs.feedback(
             f'Использующийся купон "{error.coupon.code}" не распространяется '
             'на данную подписку, счёт выставлен без его учёта'
-        )
+        ))
 
     except coupons_methods.CouponAlreadyUsed as error:
-        response += rs.feedback(
+        rs.respond(rs.feedback(
             f'Вы уже использовали купон "{error.coupon.code}" при покупке ранее'
-        )
+        ))
 
     # Генерируем новый счёт
     bill_items, total = botpiska_methods.generate_bill_content(subscription, coupon)
@@ -96,14 +94,14 @@ async def send_bill(
 
     qiwi_bill = await create_qiwi_bill(gls.qiwi, f'{total:.2f}', expires_after)
 
-    async def register_bill(message: aiogram.types.Message):
+    async def register_bill(messages: list[aiogram.types.Message]):
         """ Регистрирует счёт в базе """
         Bill.insert(
             client=client,
             subscription=subscription,
             coupon=coupon,
             qiwi_id=qiwi_bill.id,
-            message_id=message.message_id,
+            message_id=messages[0].message_id,
             expires_at=expires_after
         ).execute()
 
@@ -121,8 +119,7 @@ async def send_bill(
             'subscription': subscription,
             'bill': qiwi_bill,
             'is_gifts_allowed': is_gifts_allowed
-        }, on_success=lambda x: register_bill(x[0]))
-        + response
+        }, on_success=register_bill)
     )
 
 __all__ = ('send_bill',)

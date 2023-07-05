@@ -103,6 +103,10 @@ async def main():
     for model in gls.BaseModel.__subclasses__():
         peewee.DeferredForeignKey.resolve(model)
 
+    # Инициализация событий
+    # noinspection PyUnresolvedReferences
+    import events
+
     # Запускаем ботов
     await asyncio.gather(
         dispatcher.start_polling(gls.bot),

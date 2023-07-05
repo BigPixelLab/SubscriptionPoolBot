@@ -1,0 +1,16 @@
+<message requires="subscription_plans">
+    <img src.rs="{__dir__}/resources/CHATGPT-BANNER.jpg"/>
+
+    <heading> CHATGPT </heading>
+    <section>
+        Ну эт ЧатГПТ
+    </section>
+    <section>
+        <p> <b> Ты получаешь: </b> </p>
+        <p> - ЧатГПТ, сори, что есть </p>
+    </section>
+    <section> ⚠️ <u><b> Для работы необходим VPN </b></u> ⚠️ </section>
+
+    <template src="{__dir__.parent}/keyboard-showcase-default.xml"
+              plans.cv="subscription_plans"/>
+</message>

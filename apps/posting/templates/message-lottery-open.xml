@@ -1,0 +1,9 @@
+<message requires="prize">
+    <img src.rs="{prize.banner}"/>
+
+    <heading> {prize.title} </heading>
+    <section>
+        {prize.description}
+    </section>
+
+</message>

@@ -7,6 +7,7 @@ from glQiwiApi.qiwi.exceptions import QiwiAPIError
 import gls
 import response_system as rs
 from apps.botpiska.models import Bill
+from utils import do_nothing
 
 
 class BillIsPaid(rs.UserFriendlyException):
@@ -51,7 +52,8 @@ async def delete_bill(user: aiogram.types.User) -> rs.Response:
         with contextlib.suppress(QiwiAPIError):
             await gls.qiwi.reject_p2p_bill(qiwi_bill.id)
 
-    return rs.delete(bill.message_id, on_success=lambda _: bill.delete_instance())
+    bill.delete_instance()
+    return rs.delete(bill.message_id, on_error=do_nothing)
 
 
 __all__ = ('delete_bill',)

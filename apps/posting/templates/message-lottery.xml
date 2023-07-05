@@ -1,0 +1,11 @@
+<message requires="banner, content, prize">
+    <img src.rs="{banner}"/>
+
+    <section>
+        <paste value.cv="content"/>
+    </section>
+
+    <inline-keyboard>
+        <button callback_data="lottery-open:{prize.id}"> 🔸 Открыть 🔸 </button>
+    </inline-keyboard>
+</message>

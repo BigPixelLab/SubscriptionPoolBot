@@ -1,7 +1,7 @@
-from __future__ import annotations
-
 import contextlib
 import datetime
+import logging
+import typing
 
 import aiogram
 import aiogram.exceptions
@@ -12,6 +12,8 @@ from . import globals_
 from .configure import ResponseConfig
 from .exceptions import UserFriendlyException
 from .responses import Response
+
+logger = logging.getLogger(__name__)
 
 
 class ResponseMiddleware:
@@ -66,7 +68,11 @@ class ResponseMiddleware:
                     response = error.response()
 
             for action in response:
-                await action
+                try:
+                    await action
+                except Exception:
+                    logger.error('RESPONSE EXCEPTION AT (' + getattr(handler, '__name__', 'handler') + ')')
+                    raise
 
             globals_.global_time.reset(global_time_cv_token)
             globals_.response_var.reset(response_var_cv_token)
@@ -81,7 +87,7 @@ class MessageResponseMiddleware(ResponseMiddleware):
     def get_message(self, event: aiogram.types.Message) -> aiogram.types.Message:
         return event
 
-    async def answer(self, event: aiogram.types.Message, text: str | None) -> None:
+    async def answer(self, event: aiogram.types.Message, text: typing.Optional[str]) -> None:
         pass
 
 
@@ -91,7 +97,7 @@ class CallbackQueryResponseMiddleware(ResponseMiddleware):
     def get_message(self, event: aiogram.types.CallbackQuery) -> aiogram.types.Message:
         return event.message
 
-    async def answer(self, event: aiogram.types.CallbackQuery, text: str | None) -> None:
+    async def answer(self, event: aiogram.types.CallbackQuery, text: typing.Optional[str]) -> None:
         await event.answer(text)
 
 

@@ -1,7 +1,7 @@
 import settings
 
 
-def is_coupon_like(code: str):
+def is_coupon_like(code: str) -> bool:
     """ Возвращает True если переданная строка похожа на купон.
         Не совершает никаких дополнительных проверок в базе """
 
