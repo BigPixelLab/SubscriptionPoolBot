@@ -5,10 +5,10 @@ import typing
 
 
 class SeasonType:
-    WINTER = 'зимний сезон'
-    SPRING = 'весенний сезон'
-    SUMMER = 'летний сезон'
-    AUTUMN = 'осенний сезон'
+    WINTER = 'ЗИМНИЙ СЕЗОН'
+    SPRING = 'ВЕСЕННИЙ СЕЗОН'
+    SUMMER = 'ЛЕТНИЙ СЕЗОН'
+    AUTUMN = 'ОСЕННИЙ СЕЗОН'
 
 
 class Season(typing.NamedTuple):

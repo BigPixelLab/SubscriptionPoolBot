@@ -37,7 +37,6 @@ async def _order_wrapper(function, user: aiogram.types.User) -> Response:
 
     # Получение статуса счёта (в DEBUG режиме всегда 'PAID')
     status = settings.DEBUG and 'PAID' or bill.status.value
-
     # Счёт не оплачен - предупреждаем, что нужно оплатить, чтобы продолжить
     if status == 'WAITING':
         status_message = BILL_STATUSES['WAITING']
@@ -78,7 +77,6 @@ class SelfOrderEvent(Event):
 @_order_handler
 async def buy_for_user(client: Client, bill: Bill, qiwi_bill: qiwi_types.Bill) -> Response:
     """ Часть логики, относящаяся к покупке подписки для себя """
-
     order = Order.create(
         client=client,
         subscription=bill.subscription_id,
@@ -86,6 +84,8 @@ async def buy_for_user(client: Client, bill: Bill, qiwi_bill: qiwi_types.Bill) -
         paid_amount=qiwi_bill.amount.value,
         created_at=rs.global_time.get()
     )
+    client = Client.get(chat_id=client)
+    client.award_points(order.paid_amount * settings.SEASON_BONUS_PERCENTAGE)
 
     subscription: Subscription = bill.subscription
     service = Service.get_by_id(subscription.service_id)
@@ -107,7 +107,7 @@ async def buy_for_user(client: Client, bill: Bill, qiwi_bill: qiwi_types.Bill) -
 
 
 @_order_handler
-async def buy_as_gift_by_user(client: Client, bill: Bill, _: qiwi_types.Bill) -> Response:
+async def buy_as_gift_by_user(client: Client, bill: Bill, qiwi_bill: qiwi_types.Bill) -> Response:
     """ Часть логики, относящаяся к покупке подписки в подарок """
 
     subscription: Subscription = bill.subscription
@@ -118,9 +118,12 @@ async def buy_as_gift_by_user(client: Client, bill: Bill, _: qiwi_types.Bill) ->
     )
 
     gift_card_image = pilgram.PilImageInputFile(
-        images.render_gift_card_image(f't.me/botpiska_bot?start={gift_coupon.code}'),
+        images.render_gift_card_image(f't.me/{settings.BOT_NAME}?start={gift_coupon.code}'),
         filename='GIFT.png'
     )
+    print(f'qiwi_bill.amount.value = {qiwi_bill.amount.value}')
+    client = Client.get(chat_id=client)
+    client.award_points(bill.paid_amount * settings.SEASON_BONUS_PERCENTAGE)
 
     bill.delete_instance()
     return (
@@ -128,7 +131,8 @@ async def buy_as_gift_by_user(client: Client, bill: Bill, _: qiwi_types.Bill) ->
         + rse.tmpl_send('apps/botpiska/templates/message-gift.xml', {
             'gift-card-image': gift_card_image,
             'subscription': subscription,
-            'coupon': gift_coupon
+            'coupon': gift_coupon,
+            'botpiska_bot': settings.BOT_NAME
         })
     )
 

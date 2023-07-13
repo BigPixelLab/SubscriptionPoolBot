@@ -6,6 +6,7 @@ import ezqr
 import gls
 
 
+
 class Client(gls.BaseModel):
     """ ... """
 
@@ -22,6 +23,27 @@ class Client(gls.BaseModel):
 
     class Meta:
         table_name = 'Client'
+
+    def award_points(self, points: int):
+        ''' Начисление бонусов пользователю и тому кто его пригласил '''
+        self.season_points += points
+        self.save()
+        if (ref := self.referral) is not None:
+            ref.season_points += points
+            ref.save()
+
+    def get_rating_position(self):
+        ''' Сделать вложенный запрос в ORDER BY + отсортировать по общему кол-во '''
+        query = """ SELECT COUNT(*) + 1 
+            FROM (SELECT season_points FROM "Client" ORDER BY season_points DESC) AS scores
+            WHERE scores.season_points > %(season_points)s; """
+        return ezqr.single_value(query, {'season_points': self.season_points})
+
+    def get_referrals(self):
+        query = """ SELECT COUNT(*) 
+        FROM "Client"
+        WHERE referral_id = %(chat_id)s; """
+        return ezqr.single_value(query, {'chat_id': self.chat_id})
 
     @classmethod
     def get_or_register(cls, user_id: int, referral: int = None, force_referral: bool = False) -> 'Client':

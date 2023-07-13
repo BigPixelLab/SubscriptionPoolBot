@@ -1,22 +1,58 @@
-<message requires="points-current, points-total, monthly-prize">
-
-    <heading> ВЕСЕННИЙ СЕЗОН </heading>
+<message requires="season_points">
+    <!--            <img src.rs="{prize.banner}" if="today_month == prize.id"/>-->
+    <heading> {season_title} </heading>
+    <section if="prize_index == 0">
+        <p> <b> Призы месяца: </b> </p>
+        <p>🔶{prize.title}</p>
+        <p>🔹???</p>
+        <p>🔹???</p>
+    </section>
+    <section if="prize_index == 1">
+        <p> <b> Призы месяца: </b> </p>
+        <p>🔹{prize2.title}</p>
+        <p>🔶{prize.title}</p>
+        <p>🔹???</p>
+    </section>
+    <section if="prize_index == 2">
+        <p> <b> Призы месяца: </b> </p>
+        <p>🔹{prize2.title}</p>
+        <p>🔹{prize3.title}</p>
+        <p>🔶{prize.title}</p>
+    </section>
+<!--    <img src.rs="{__dir__}/resources/photo.jpg"/>-->
     <section>
-        <p> <b> Приз месяца: </b> </p>
-        <p> {monthly-prize} </p>
+        Место в рейтинге: #{rating}
+        <span if="rating == 1"> 🥇 </span>
+        <span if="rating == 2"> 🥈 </span>
+        <span if="rating == 3"> 🥉 </span>
     </section>
     <section>
         <p> Твой прогресс: </p>
-        <progressbar steps.cv="points-current" of.cv="points-total"/>
-        <p> <i> {points-current}/{points-total} </i> </p>
+        <progressbar steps.cv="season_points" of.py="prize.cost" />
+<!--        <progressbar if="prize_title==''" style.cv="background:'red'"  steps.cv="season_points" of.py="prize.cost"/>-->
+        <p><paste if="is_prize_bought" value="П Р И З  У Ж Е  П О Л У Ч Е Н"/></p>
+        <p if="not is_prize_bought"> <i> {season_points}/{prize.cost} бонусов</i>. Осталось: {days_left_in_mont}д </p>
+    </section>
+    <section>
+        Копи бонусы и получай призы, каждый месяц новый!Главный призы,
+        каждый месяц новый! Главный приз в конце сезона, не успусти, а
+        пока копи бонусы, ведь лни тебе понадобятся😉
     </section>
     <section>
         👬 Приглашай друзей, ведь с ними покорять сезоны намного
         интереснее (и получай очки за их покупки тоже 👀)
     </section>
-
+    <section>
+        <p if="get_referrals > 0">Вам помогают: {get_referrals}</p>
+    </section>
     <inline-keyboard>
-        <row> <button callback_data="season:help"> Что такое сезон? </button> </row>
-        <row> <button callback_data="season:referral-link"> Пригласить друга </button> </row>
+        <row> <button callback_data="season-help"> Что такое сезон? </button> </row>
+        <row> <button callback_data="referral-link"> Пригласить друга </button> </row>
+        <row if="not is_prize_bought and season_points >= prize.cost">
+<!--            <button callback_data="season-prize:{prize.coupon_type_id}"> Получить </button>-->
+            <button callback_data="season-prize:{prize.coupon_type_id}:{prize.id}" > Получить </button>
+
+        </row>
     </inline-keyboard>
+
 </message>

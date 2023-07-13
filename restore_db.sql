@@ -151,17 +151,8 @@ CREATE TABLE "ResourceCache" (
 CREATE INDEX ResourceCache_pk ON "ResourceCache" (bot_id, path);
 
 
-CREATE TABLE "Season" (
-    id int not null
-        PRIMARY KEY,
-    description text not null
-);
-
-CREATE INDEX Season_pk ON "Season" (id);
-
-
 CREATE TABLE "SeasonPrize" (
-    id int not null
+    id serial not null
         PRIMARY KEY,
     coupon_type_id varchar not null
         REFERENCES "CouponType" (id),
@@ -171,9 +162,40 @@ CREATE TABLE "SeasonPrize" (
         CHECK ( cost >= 0 )
 );
 
-CREATE INDEX SeasonPrize_pk ON "SeasonPrize" (id);
+-- CREATE INDEX SeasonPrize_pk ON "SeasonPrize" (id);
 CREATE INDEX SeasonPrize_coupon_type_id ON "SeasonPrize" (coupon_type_id);
 
+
+CREATE TABLE "Season" (
+    id smallint not null
+        PRIMARY KEY
+        CHECK (0 <= id and id < 4),
+    title varchar not null ,
+    prize1_id int not null
+        REFERENCES "SeasonPrize" (id),
+    prize2_id int not null
+        REFERENCES "SeasonPrize" (id),
+    prize3_id int not null
+        REFERENCES "SeasonPrize" (id),
+    description text not null
+);
+
+CREATE INDEX Season_pk ON "Season" (id);
+CREATE INDEX Season_prize1 ON "Season" (prize1_id);
+CREATE INDEX Season_prize2 ON "Season" (prize2_id);
+CREATE INDEX Season_prize3 ON "Season" (prize3_id);
+
+
+CREATE TABLE "SeasonPrizeBought" (
+    client_id int not null
+        PRIMARY KEY,
+    season_prize_id int not null
+        REFERENCES "SeasonPrize" (id),
+    created_at timestamp not null
+);
+
+CREATE INDEX SeasonPrizeBought_pk ON "SeasonPrizeBought" (client_id);
+CREATE INDEX SeasonPrizeBought_season_prize ON "SeasonPrizeBought" (season_prize_id);
 
 CREATE TABLE "Lottery" (
     id varchar not null
@@ -338,6 +360,9 @@ INSERT INTO "CouponType" (
 ), (
     'spotify_promo_30',     'spotify',              30,
     null,                   '30 days'::interval,    true
+), (
+    'invitation',            'spotify',              30,
+    null,                   '30 days'::interval,    true
 );
 
 
@@ -352,8 +377,11 @@ UPDATE "Subscription" SET gift_coupon_type_id = 'gift_chatgpt_account' WHERE id 
 UPDATE "Subscription" SET gift_coupon_type_id = 'gift_chatgpt_plus_1m' WHERE id = 'chatgpt_plus_1m';
 
 
-INSERT INTO "Client" (chat_id, created_at) VALUES (1099569178, now());
-INSERT INTO "Employee" (chat_id) VALUES (1099569178);
+INSERT INTO "Client" (chat_id, created_at)
+VALUES (1099569178, now());
+--        (911233771, now());
+INSERT INTO "Employee" (chat_id)
+VALUES (1099569178);
 
 
 INSERT INTO "Lottery"
@@ -375,6 +403,36 @@ INSERT INTO "LotteryPrize"
 	(lottery_id, coupon_type_id, weight, count, banner, title, description)
 VALUES
 	('test', 'spotify_promo_30', 1, null, 'apps/botpiska/templates/resources/BILL.png', 'Ye', 'Omg');
+
+
+INSERT INTO "SeasonPrize"
+	(coupon_type_id, banner, title, cost)
+VALUES
+	('spotify_promo_20', 'apps\botpiska\templates\resources\BILL.png', '1 мес', 10),
+	('spotify_promo_25', 'apps\botpiska\templates\resources\BILL.png', '2 мес', 20),
+	('spotify_promo_30', 'apps\botpiska\templates\resources\BILL.png', '3 мес', 30),
+    ('spotify_promo_20', 'apps\botpiska\templates\resources\BILL.png', '4 мес', 40),
+	('spotify_promo_25', 'apps\botpiska\templates\resources\BILL.png', '5 мес', 50),
+	('spotify_promo_30', 'apps\botpiska\templates\resources\BILL.png', '6 мес', 60),
+    ('spotify_promo_20', 'apps\botpiska\templates\resources\BILL.png', '7 мес', 70),
+	('spotify_promo_25', 'apps\botpiska\templates\resources\BILL.png', '8 мес', 80),
+	('spotify_promo_30', 'apps\botpiska\templates\resources\BILL.png', '9 мес', 90),
+    ('spotify_promo_20', 'apps\botpiska\templates\resources\BILL.png', '10 мес', 100),
+	('spotify_promo_25', 'apps\botpiska\templates\resources\BILL.png', '11 мес', 110),
+	('spotify_promo_30', 'apps\botpiska\templates\resources\BILL.png', '12 мес', 120);
+
+
+INSERT INTO "Season"
+	(id, title, prize1_id, prize2_id, prize3_id, description)
+VALUES
+	(0, 'ЗИМА', 12, 1, 2, 'Описание зимнего сезона'),
+    (1, 'ВЕСНА', 3, 4, 5, 'Описание весеннего сезона'),
+    (2, 'ЛЕТО', 6, 7, 8, 'Описание летнего сезона'),
+    (3, 'ОСЕНЬ', 9, 10, 11, 'Описание осеннего сезона');
+
+
+
+
 
 	
 	

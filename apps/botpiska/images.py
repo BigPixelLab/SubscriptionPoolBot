@@ -78,7 +78,8 @@ def render_gift_card_image(
         embeded_image_path="apps/botpiska/templates/resources/QR-ICON.png",
         back_color="transparent"
     )
-    qr_image.thumbnail((qr_width, qr_width), Image.ANTIALIAS)
+    # qr_image.thumbnail((qr_width, qr_width), Image.ANTIALIAS) # не работает
+    qr_image.thumbnail((qr_width, qr_width), Image.Resampling.LANCZOS)
 
     image.paste(qr_image, (
         (image.width - qr_width) // 2,
