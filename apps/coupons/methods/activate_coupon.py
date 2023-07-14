@@ -12,7 +12,6 @@ from response_system import Response
 
 async def activate_coupon(code: str, user: aiogram.types.User, silent: bool = False) -> Response:
     """ Активирует купон и при необходимости выводит сообщение со счётом """
-    print('Активирует купон ')
     bot = aiogram.Bot.get_current()
 
     # Получение купона

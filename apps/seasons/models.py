@@ -27,6 +27,7 @@ class SeasonPrize(gls.BaseModel):
 
     @classmethod
     def get_season_prize_id(cls, prize_id: int):
+        """ ... """
         return cls.select() \
             .where(cls.id == prize_id).get()
 
@@ -52,21 +53,17 @@ class Season(gls.BaseModel):
 
     @classmethod
     def get_season_id(cls, season_id: int):
-        return cls.select() \
-                        .where(cls.id == season_id).get()
-
-    @classmethod
-    def get_season_title(cls, season_title: str):
-        return cls.select() \
-            .where(cls.title == season_title).get()
+        """ ... """
+        return cls.select().where(cls.id == season_id).get()
 
     @classmethod
     def select_seasons(cls):
-        """ Возвращает все сезоны"""
+        """ Возвращает все сезоны """
         return list(cls.select())
 
     @classmethod
     def get_current_season_id(cls):
+        """ Возвращает текущий месяц в сезоне """
         return date.today().month % 12 // 3
 
 
@@ -85,7 +82,8 @@ class SeasonPrizeBought(gls.BaseModel):
         primary_key = peewee.CompositeKey('client', 'season_prize')
 
     @classmethod
-    def get_season_prize_bought(cls, user_id: int, season_prize_id: int):
+    def get_season_prize_bought(cls, user_id: int, season_prize_id: int) -> bool:
+        """ Проверяет куплен ли приз """
         query = """ SELECT season_prize_id FROM "SeasonPrizeBought" WHERE client_id= %(user_id)s """
         response = ezqr.fetch_values(query, {'user_id': user_id})
         if season_prize_id in response:

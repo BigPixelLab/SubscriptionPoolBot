@@ -23,9 +23,6 @@ async def coupon_message_handler(_, user: aiogram.types.User, code: str):
         )
 
     except coupons_methods.CouponExpired as error:
-        print(f'error.coupon = {error}')
-        print(f'error.coupon = {error.coupon}')
-        print(f'error.coupon = {error.coupon.expires_after}')
         return rs.feedback(
             f'Срок действия использующегося купона "{error.coupon.code}" иссяк '
             f'{error.coupon.created_at + error.coupon.type.lifespan:%d.%m}'

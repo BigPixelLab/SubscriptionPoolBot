@@ -136,8 +136,7 @@ class Coupon(gls.BaseModel):
                 raise
 
             # Купон с таким кодом уже есть в базе
-            except peewee.IntegrityError as e:
-                print("Произошла ошибка IntegrityError:", str(e))
+            except peewee.IntegrityError:
                 continue
 
             break

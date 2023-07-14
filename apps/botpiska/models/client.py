@@ -25,7 +25,7 @@ class Client(gls.BaseModel):
         table_name = 'Client'
 
     def award_points(self, points: int):
-        ''' Начисление бонусов пользователю и тому кто его пригласил '''
+        """ Начисление бонусов пользователю и тому кто его пригласил """
         self.season_points += points
         self.save()
         if (ref := self.referral) is not None:
@@ -33,13 +33,14 @@ class Client(gls.BaseModel):
             ref.save()
 
     def get_rating_position(self):
-        ''' Сделать вложенный запрос в ORDER BY + отсортировать по общему кол-во '''
+        """ Сделать вложенный запрос в ORDER BY + отсортировать по общему кол-во """
         query = """ SELECT COUNT(*) + 1 
             FROM (SELECT season_points FROM "Client" ORDER BY season_points DESC) AS scores
             WHERE scores.season_points > %(season_points)s; """
         return ezqr.single_value(query, {'season_points': self.season_points})
 
     def get_referrals(self):
+        """ ... """
         query = """ SELECT COUNT(*) 
         FROM "Client"
         WHERE referral_id = %(chat_id)s; """
@@ -63,4 +64,5 @@ class Client(gls.BaseModel):
 
     @classmethod
     def get_all_chats(cls) -> list[int]:
+        """ ... """
         return ezqr.fetch_values(' SELECT chat_id FROM "Client" ', {})

@@ -7,10 +7,8 @@ import response_system as rs
 import response_system_extensions as rse
 from apps.botpiska.models import Client
 from apps.coupons.models import Coupon
-from apps.seasons.models import Season, SeasonPrize, SeasonPrizeBought
-from apps.seasons.seasons import get_current_season
+from apps.seasons.models import Season, SeasonPrizeBought
 from apps.seasons import callbacks
-from response_system.core import globals_
 from settings import BOT_NAME
 
 
@@ -18,31 +16,23 @@ async def season_message_handler(_, user: aiogram.types.User):
     """ ... """
     client = Client.get_or_register(user.id)
 
-    from datetime import timedelta, date
-    today = date.today()
-    last_day_of_month = today.replace(day=28) + timedelta(days=4)
-    last_day_of_month = last_day_of_month - timedelta(days=last_day_of_month.day % 28 or 28)
+    today = datetime.date.today()
+    last_day_of_month = today.replace(day=28) + datetime.timedelta(days=4)
+    last_day_of_month = last_day_of_month - datetime.timedelta(days=last_day_of_month.day % 28 or 28)
     if last_day_of_month.day == 29:
-        last_day_of_month -= timedelta(days=1)
+        last_day_of_month -= datetime.timedelta(days=1)
     days_left_in_month = (last_day_of_month - today).days
     season_id = today.month % 12 // 3
 
     season = Season.get_season_id(season_id)
-    season_points = client.season_points
     lst = [season.prize1, season.prize2, season.prize3]
     current_prize = lst[today.month % 12 % 3]
     lst.pop(today.month % 12 % 3)
     prize2, prize3 = lst
 
-    # deep_link = f'https://t.me/{BOT_NAME}?start={coupon.code}'
-    # return rse.tmpl_send('apps/seasons/templates/message-season-invite.xml', {
-    #     'deep-link': deep_link
-    # })
-    # coupon_type_id
-    print(f'today.month % 12 % 3 = {today.month % 12 % 3}')
     season_prize_bought = SeasonPrizeBought.get_season_prize_bought(user.id, current_prize.id)
     return rse.tmpl_send('apps/seasons/templates/message-season-general.xml', {
-        'today': f'{date.today()}',
+        'today': f'{datetime.date.today()}',
         'is_prize_bought': season_prize_bought,
         'prize_index': today.month % 12 % 3,
         'rating': client.get_rating_position(),
@@ -61,10 +51,7 @@ async def season_help(_):
     })
 
 
-async def season_invite(_, user: aiogram.types.User, callback_data: callbacks.GetSeasonPrizeCallbackData):
-    # client = Client.get_or_register(user.id)
-    # coupon = Coupon.from_type(type_id='invitation', sets_referral=user.id)
-    # deep_link = f'https://t.me/{BOT_NAME}?start={coupon.code}'
+async def season_invite(_, user: aiogram.types.User):
     if not Coupon.is_coupon_type_id(user_id=user.id, coupon_type_id='invitation'):
         Coupon.from_type(type_id='invitation', sets_referral=user.id)
 
@@ -77,20 +64,17 @@ async def season_invite(_, user: aiogram.types.User, callback_data: callbacks.Ge
 async def get_season_prize(_, user: aiogram.types.User, callback_data: callbacks.GetSeasonPrizeCallbackData):
     client = Client.get_or_register(user.id)
 
-    from datetime import timedelta, date
-    today = date.today()
-    last_day_of_month = today.replace(day=28) + timedelta(days=4)
-    last_day_of_month = last_day_of_month - timedelta(days=last_day_of_month.day % 28 or 28)
+    today = datetime.date.today()
+    last_day_of_month = today.replace(day=28) + datetime.timedelta(days=4)
+    last_day_of_month = last_day_of_month - datetime.timedelta(days=last_day_of_month.day % 28 or 28)
     if last_day_of_month.day == 29:
-        last_day_of_month -= timedelta(days=1)
+        last_day_of_month -= datetime.timedelta(days=1)
     days_left_in_month = (last_day_of_month - today).days
     season_id = today.month % 12 // 3
 
     season = Season.get_season_id(season_id)
-    season_points = client.season_points
     lst = [season.prize1, season.prize2, season.prize3]
     current_prize = lst[today.month % 12 % 3]
-    print(f'current_prize = {current_prize}')
     lst.pop(today.month % 12 % 3)
     prize2, prize3 = lst
 
@@ -99,7 +83,7 @@ async def get_season_prize(_, user: aiogram.types.User, callback_data: callbacks
     if season_prize_bought:
         return(
             rse.tmpl_edit('apps/seasons/templates/message-season-general.xml', {
-                'today': f'{date.today()}',
+                'today': f'{datetime.date.today()}',
                 'is_prize_bought': season_prize_bought,
                 'prize_index': today.month % 12 % 3,
                 'rating': client.get_rating_position(),
@@ -128,7 +112,7 @@ async def get_season_prize(_, user: aiogram.types.User, callback_data: callbacks
         season_prize.create(client=user.id, season_prize=current_prize.id, created_at=rs.global_time.get())
         return (
             rse.tmpl_edit('apps/seasons/templates/message-season-general.xml', {
-                'today': f'{date.today()}',
+                'today': f'{datetime.date.today()}',
                 'is_prize_bought': season_prize_bought,
                 'prize_index': today.month % 12 % 3,
                 'rating': client.get_rating_position(),
