@@ -2,14 +2,13 @@
 import aiogram.types
 
 import datetime
-import gls
+import settings
 import response_system as rs
 import response_system_extensions as rse
 from apps.botpiska.models import Client
 from apps.coupons.models import Coupon
 from apps.seasons.models import Season, SeasonPrizeBought
 from apps.seasons import callbacks
-from settings import BOT_NAME
 
 
 async def season_message_handler(_, user: aiogram.types.User):
@@ -41,7 +40,7 @@ async def season_message_handler(_, user: aiogram.types.User):
         'prize': current_prize,
         'prize2': prize2,
         'prize3': prize3,
-        'get_referrals': client.get_referrals(),
+        'get_referrals': client.get_referrals_count(),
         'season_points': client.season_points,
     })
 
@@ -52,12 +51,12 @@ async def season_help(_):
 
 
 async def season_invite(_, user: aiogram.types.User):
-    if not Coupon.is_coupon_type_id(user_id=user.id, coupon_type_id='invitation'):
+    if not Coupon.has_invitation_coupon(user_id=user.id):
         Coupon.from_type(type_id='invitation', sets_referral=user.id)
 
-    coupon_id = Coupon.get_coupon_type_id(user_id=user.id, coupon_type_id='invitation')
+    coupon_id = Coupon.get_invitation_coupon(user_id=user.id)
     return rse.tmpl_send('apps/seasons/templates/message-season-invite.xml', {
-        'deep-link': f'https://t.me/{BOT_NAME}?start={coupon_id}'
+        'deep-link': f'https://t.me/{settings.BOT_NAME}?start={coupon_id}'
     })
 
 
@@ -93,7 +92,7 @@ async def get_season_prize(_, user: aiogram.types.User, callback_data: callbacks
                 'season_prize_id': season_prize_id,
                 'prize2': prize2,
                 'prize3': prize3,
-                'get_referrals': client.get_referrals(),
+                'get_referrals': client.get_referrals_count(),
                 'season_points': client.season_points,
             })
         )
@@ -122,7 +121,7 @@ async def get_season_prize(_, user: aiogram.types.User, callback_data: callbacks
                 'season_prize_id': season_prize_id,
                 'prize2': prize2,
                 'prize3': prize3,
-                'get_referrals': client.get_referrals(),
+                'get_referrals': client.get_referrals_count(),
                 'season_points': client.season_points,
             })
             + rse.tmpl_send('apps/seasons/templates/message-season-prize.xml', {

@@ -60,8 +60,6 @@ async def startup_handler():
             notified += 1
         total += 1
 
-    print(f'Оповещено о продлении {notified}/{total}')
-
     if not total:
         return
 

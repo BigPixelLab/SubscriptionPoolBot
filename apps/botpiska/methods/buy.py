@@ -121,7 +121,6 @@ async def buy_as_gift_by_user(client: Client, bill: Bill, qiwi_bill: qiwi_types.
         images.render_gift_card_image(f't.me/{settings.BOT_NAME}?start={gift_coupon.code}'),
         filename='GIFT.png'
     )
-    print(f'qiwi_bill.amount.value = {qiwi_bill.amount.value}')
     client = Client.get(chat_id=client)
     client.award_points(bill.paid_amount * settings.SEASON_BONUS_PERCENTAGE)
 
@@ -132,7 +131,6 @@ async def buy_as_gift_by_user(client: Client, bill: Bill, qiwi_bill: qiwi_types.
             'gift-card-image': gift_card_image,
             'subscription': subscription,
             'coupon': gift_coupon,
-            'botpiska_bot': settings.BOT_NAME
         })
     )
 

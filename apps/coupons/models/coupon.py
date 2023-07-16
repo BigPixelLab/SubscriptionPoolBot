@@ -81,21 +81,17 @@ class Coupon(gls.BaseModel):
         """, dict(client=user_id, coupon=self.code))
 
     @classmethod
-    def get_coupon_type_id(cls, user_id: int, coupon_type_id: str):
+    def get_invitation_coupon(cls, user_id: int):
         query = """ SELECT code FROM "Coupon" 
                 WHERE sets_referral_id=%(user_id)s 
-                    and type_id=%(coupon_type_id)s"""
-        return ezqr.single_value(query, {'user_id': user_id, 'coupon_type_id': coupon_type_id})
+                    and type_id='invitation' """
+        return ezqr.single_value(query, {'user_id': user_id})
 
     @classmethod
-    def is_coupon_type_id(cls, user_id: int, coupon_type_id: str):
-        query = """ SELECT type_id FROM "Coupon" 
-        WHERE sets_referral_id=%(user_id)s 
-            and type_id=%(coupon_type_id)s"""
-        response = ezqr.fetch_values(query, {'user_id': user_id, 'coupon_type_id': coupon_type_id})
-        if coupon_type_id in response:
-            return True
-        return False
+    def has_invitation_coupon(cls, user_id: int):
+        query = """ SELECT COUNT(*) FROM "Coupon" 
+        WHERE sets_referral_id=%(user_id)s
+        and type_id='invitation' """
 
     @classmethod
     def get_random_code(cls):

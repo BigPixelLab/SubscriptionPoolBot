@@ -20,7 +20,8 @@ if typing.TYPE_CHECKING:
 set_global_context({
     'support': settings.SUPPORT_CHAT_ID,
     'tech_support': settings.TECH_SUPPORT_CHAT_ID,
-    'tg': aiogram.types
+    'tg': aiogram.types,
+    'botpiska_bot': settings.BOT_NAME
 })
 
 

@@ -33,14 +33,14 @@ class Client(gls.BaseModel):
             ref.save()
 
     def get_rating_position(self):
-        """ Сделать вложенный запрос в ORDER BY + отсортировать по общему кол-во """
+        """ Возвращает позицию пользователя в рейтинге, исходя из набранного им кол-во очков"""
         query = """ SELECT COUNT(*) + 1 
             FROM (SELECT season_points FROM "Client" ORDER BY season_points DESC) AS scores
             WHERE scores.season_points > %(season_points)s; """
         return ezqr.single_value(query, {'season_points': self.season_points})
 
-    def get_referrals(self):
-        """ ... """
+    def get_referrals_count(self):
+        """ Возвращает кол-во пользователей, которые были приглашены по реф-ссылке  """
         query = """ SELECT COUNT(*) 
         FROM "Client"
         WHERE referral_id = %(chat_id)s; """
