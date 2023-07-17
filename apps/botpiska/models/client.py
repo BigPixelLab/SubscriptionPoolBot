@@ -28,9 +28,11 @@ class Client(gls.BaseModel):
         """ Начисление бонусов пользователю и тому кто его пригласил """
         self.season_points += points
         self.save()
-        if (ref := self.referral) is not None:
-            ref.season_points += points
-            ref.save()
+        referral = self.referral
+        if referral is None:
+            return
+        referral.season_points += points
+        referral.save()
 
     def get_rating_position(self):
         """ Возвращает позицию пользователя в рейтинге, исходя из набранного им кол-во очков"""
