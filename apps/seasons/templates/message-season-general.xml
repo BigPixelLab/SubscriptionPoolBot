@@ -1,58 +1,55 @@
-<message requires="season_points">
-    <!--            <img src.rs="{prize.banner}" if="today_month == prize.id"/>-->
-    <heading> {season_title} </heading>
-    <section if="prize_index == 0">
-        <p> <b> Призы месяца: </b> </p>
-        <p>🔶{prize.title}</p>
-        <p>🔹???</p>
-        <p>🔹???</p>
-    </section>
-    <section if="prize_index == 1">
-        <p> <b> Призы месяца: </b> </p>
-        <p>🔹{prize2.title}</p>
-        <p>🔶{prize.title}</p>
-        <p>🔹???</p>
-    </section>
-    <section if="prize_index == 2">
-        <p> <b> Призы месяца: </b> </p>
-        <p>🔹{prize2.title}</p>
-        <p>🔹{prize3.title}</p>
-        <p>🔶{prize.title}</p>
-    </section>
-<!--    <img src.rs="{__dir__}/resources/photo.jpg"/>-->
-    <section>
-        Место в рейтинге: #{rating}
-        <span if="rating == 1"> 🥇 </span>
-        <span if="rating == 2"> 🥈 </span>
-        <span if="rating == 3"> 🥉 </span>
-    </section>
+<message requires="season, client, is_prize_bought">
+    <!--            <img src.rs="{prize.banner}"/>-->
+    <heading> {season.title} </heading>
+
     <section>
         <p> Твой прогресс: </p>
-        <progressbar steps.cv="season_points" of.py="prize.cost" />
-<!--        <progressbar if="prize_title==''" style.cv="background:'red'"  steps.cv="season_points" of.py="prize.cost"/>-->
-        <p><paste if="is_prize_bought" value="П Р И З  У Ж Е  П О Л У Ч Е Н"/></p>
-        <p if="not is_prize_bought"> <i> {season_points}/{prize.cost} бонусов</i>. Осталось: {days_left_in_mont}д </p>
+        <progressbar steps.py="client.season_points" of.py="season.current_prize.cost" />
+        <p if="not is_prize_bought">
+            <i> {client.season_points}/{season.current_prize.cost} бонусов </i>.
+            Осталось: {season.current_prize_days_left}д
+        </p>
+        <p else="">
+            <i> 🎉 Приз уже получен </i>
+        </p>
+    </section>
+
+    <section>
+        <span> Место в рейтинге: #{client.rating_position} </span>
+        <span if="client.rating_position == 1"> 🥇 </span>
+        <span if="client.rating_position == 2"> 🥈 </span>
+        <span if="client.rating_position == 3"> 🥉 </span>
+    </section>
+
+    <section>
+        <p> <b> Призы месяца: </b> </p>
+        <p for="i, prize in enumerate(season.prizes)">
+            <p if="i < season.current_prize_index">  🔹{prize.title} </p>
+            <p if="i == season.current_prize_index"> 🔶{prize.title} </p>
+            <p if="i > season.current_prize_index">  🔹??? </p>
+        </p>
+    </section>
+
+    <section if="client.clients_invited > 0">
+        Вам помогают: {client.clients_invited}
+    </section>
+
+    <section>
+        <p> Зарабатывай бонусы за покупки и покупки друзей,
+            чтобы получать крутые призы каждый месяц! </p>
     </section>
     <section>
-        Копи бонусы и получай призы, каждый месяц новый!Главный призы,
-        каждый месяц новый! Главный приз в конце сезона, не успусти, а
-        пока копи бонусы, ведь лни тебе понадобятся😉
+        <p> Приглашать друзей выгодно - за все их покупки
+            ты получаешь столько же бонусов сколько и они! </p>
     </section>
-    <section>
-        👬 Приглашай друзей, ведь с ними покорять сезоны намного
-        интереснее (и получай очки за их покупки тоже 👀)
-    </section>
-    <section>
-        <p if="get_referrals > 0">Вам помогают: {get_referrals}</p>
-    </section>
+
     <inline-keyboard>
         <row> <button callback_data="season-help"> Что такое сезон? </button> </row>
         <row> <button callback_data="referral-link"> Пригласить друга </button> </row>
-        <row if="not is_prize_bought and season_points >= prize.cost">
-<!--            <button callback_data="season-prize:{prize.coupon_type_id}"> Получить </button>-->
-            <button callback_data="season-prize:{prize.coupon_type_id}:{prize.id}" > Получить </button>
-
+        <row if="not is_prize_bought and client.season_points >= season.current_prize.cost">
+            <button callback_data="season-prize:{season.current_prize.coupon_type_id}:{season.current_prize.id}" >
+                Получить
+            </button>
         </row>
     </inline-keyboard>
-
 </message>

@@ -1,8 +1,6 @@
 """ ... """
 from __future__ import annotations
 
-import datetime
-
 import peewee
 
 import response_system as rs

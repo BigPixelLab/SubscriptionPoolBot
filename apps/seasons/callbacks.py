@@ -18,4 +18,4 @@ class InviteFriendCallbackData(CallbackData, prefix='referral-link'):
 class GetSeasonPrizeCallbackData(CallbackData, prefix='season-prize'):
     """ ... """
     coupon_type_id: str
-    season_prize_id: str
+    season_prize_id: int

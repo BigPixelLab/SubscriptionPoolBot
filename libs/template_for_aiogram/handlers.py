@@ -116,8 +116,9 @@ def template(tag: Tag, *, src: str, __rem: dict):
 
     # Processing template elements
 
+    cond_status = MutableVariable(None)
     for element in tmpl.childNodes:
-        tag.process(element, ReadOnlyDict(__rem))
+        tag.process(element, ReadOnlyDict(__rem), cond_status)
 
 
 @register([MESSAGE, ELEMENT])

@@ -1,9 +1,11 @@
 import dataclasses
 import functools
 from pathlib import Path
-from typing import Callable, Generator, Optional, Type, Any, Union, Iterable
+from typing import Callable, Generator, Optional, Type, Any, Union, Iterable, Generic, TypeVar
 from xml.dom import minidom
 from xml.dom.minidom import Element, Document
+
+T = TypeVar('T')
 
 
 class ReadOnlyDict(dict):
@@ -18,6 +20,21 @@ class ReadOnlyDict(dict):
     update = __readonly__
     setdefault = __readonly__
     del __readonly__
+
+
+class MutableVariable(Generic[T]):
+    __slots__ = ('_value',)
+
+    def __init__(self, initial: T):
+        self._value: T = initial
+
+    @property
+    def value(self) -> T:
+        return self._value
+
+    @value.setter
+    def value(self, value: T):
+        self._value = value
 
 
 class TemplateModuleError(Exception):
@@ -73,11 +90,22 @@ def str2bool(value: str) -> bool:
 def str2list(item_conv, sep=', ') -> Union[Callable[[str], list], list]:
     """ Возвращает converter, преобразующий строку в список. Или, если передана
         строка - преобразует её в список """
+
     # if item_conv is a string then we're already converting.
     # Helpful then using like this:
     #   `ConvertBy[str2list]`
     if isinstance(item_conv, str):
-        return item_conv.split(sep)
+        return list(map(str.strip, item_conv.split(sep)))
+
+    # if you need to preserve spaces around items, you
+    # can use function as follows:
+    #   `ConvertBy[str2list(None)]`
+    if item_conv is None:
+        return lambda x: x.split(sep)
+
+    # any function that gets str and returns any can
+    # be set as a converter:
+    #   `ConvertBy[str2list(int)]`
     return lambda x: list(map(item_conv, x.split(sep)))
 
 
@@ -211,7 +239,9 @@ StopParsing = object()
 
 
 class ParsingScope:
-    DISPLAY_ATTRIBUTE = 'if'
+    DISPLAY_ATTRIBUTE_IF = 'if'
+    DISPLAY_ATTRIBUTE_ELSE_IF = 'else-if'
+    DISPLAY_ATTRIBUTE_ELSE = 'else'
     DUPLICATE_ATTRIBUTE = 'for'
     DUPLICATE_SEPARATOR = ' in '
     """ Атрибуты использующиеся для указания условного отображения элемента и его дублирования"""
@@ -291,16 +321,62 @@ class ParsingScope:
 
         return args
 
-    def __display__(self, attributes: dict[str, str], context: ReadOnlyDict) -> bool:
+    def __display__(self, attributes: dict[str, str], context: ReadOnlyDict,
+                    cond_status: MutableVariable[Optional[bool]]) -> bool:
         """ Вызывается на каждом элементе, чтобы определить должен
             ли он быть отображён """
-        try:
-            value = attributes.pop(self.DISPLAY_ATTRIBUTE)
-        except KeyError:
+        cond_attr_present = (
+            (self.DISPLAY_ATTRIBUTE_IF in attributes)
+            + (self.DISPLAY_ATTRIBUTE_ELSE_IF in attributes)
+            + (self.DISPLAY_ATTRIBUTE_ELSE in attributes)
+        )
+
+        if cond_attr_present > 1:
+            raise ParsingError('There must be only one of "if", "else-if" or "else" in a single tag')
+
+        if cond_attr_present == 0:
             return True
 
-        result = exec_python_specifier(value, context, None)
-        return bool(result)
+        # "if" attribute
+
+        cond = attributes.pop(self.DISPLAY_ATTRIBUTE_IF, None)
+
+        if cond is not None:
+            cond_status.value = bool(exec_python_specifier(cond, context, bool))
+            return cond_status.value
+
+        # "else-if" attribute
+
+        cond = attributes.pop(self.DISPLAY_ATTRIBUTE_ELSE_IF, None)
+
+        if cond is not None:
+            if cond_status.value is None:
+                raise ParsingError('Tag with "else-if" attribute must come somewhere after '
+                                   'a tag with "if" attribute')
+
+            cond_status.value = not cond_status.value \
+                and bool(exec_python_specifier(cond, context, bool))
+
+            return cond_status.value
+
+        # "else" attribute
+
+        cond = attributes.pop(self.DISPLAY_ATTRIBUTE_ELSE, None)
+
+        if cond is not None:
+            if cond_status.value is None:
+                raise ParsingError('Tag with "else" attribute must come somewhere after '
+                                   'a tag with "if" or "else-if" attribute')
+
+            if len(cond) != 0:
+                raise ParsingError('Content of the "else" attribute must be empty')
+
+            result = not cond_status.value
+            cond_status.value = None
+            return result
+
+        # Should be unreachable, unless there is an error in this code
+        raise
 
     def __duplicate__(self, attributes: dict[str, str], context: ReadOnlyDict) -> Iterable[ReadOnlyDict]:
         """ Вызывается на каждом элементе, чтобы определить сколько
@@ -341,15 +417,17 @@ class ParsingScope:
         except StopIteration:
             raise ParsingCoroutineError('Parser returned StopIteration after initialization')
 
+        cond_status = MutableVariable(None)
         for element in element.childNodes:
-            self.process(parser, element, context)
+            self.process(parser, element, context, cond_status)
 
         try:
             return parser.send(StopParsing)
         except StopIteration:
             raise ParsingCoroutineError('Parser returned StopIteration after receiving StopParsing')
 
-    def process(self, parser: Generator, element: Element, context: ReadOnlyDict):
+    def process(self, parser: Generator, element: Element, context: ReadOnlyDict,
+                cond_status: MutableVariable[Optional[bool]]):
 
         if element.nodeType == Element.TEXT_NODE and self.text_handler:
             tag = Tag(self, parser, element, context)
@@ -365,7 +443,7 @@ class ParsingScope:
         # атрибуты 'if' и 'for', если они есть
         attributes = dict(element.attributes.items())
 
-        if not self.__display__(attributes, context):
+        if not self.__display__(attributes, context, cond_status):
             return
 
         try:
@@ -539,7 +617,8 @@ class Tag:
     def context(self):
         return self._context
 
-    def process(self, element: Element, context: Union[ReadOnlyDict, dict] = None):
+    def process(self, element: Element, context: Union[ReadOnlyDict, dict] = None,
+                cond_status: MutableVariable[Optional[bool]] = None):
         """
         Обрабатывает элемент как если бы он был частью шаблона.
 
@@ -579,15 +658,42 @@ class Tag:
                 <p> WOW #4! </p>
             </example>
 
+        Если в элементе используются (или могут использоваться) условные атрибуты,
+        такие как "if", "else-if" или "else" - в функцию следует также передавать
+        cond_status, который будет передавать состояние условий между тегами::
+
+            @register([EXAMPLE])
+            def wow(tag: Tag):
+                elem = minidom.parseString('''
+                    <section>
+                        <p if="a"> WOW #1! </p>
+                        <p else-if="b"> WOW #2! </p>
+                        <p else=""> WOW #3! </p>
+                    </section>
+                ''')
+
+                cond_status = MutableVariable(None)
+                for element in elem.childNodes:
+                    tag.process(element, {'a': False, 'b': True}, cond_status)
+
+            <example>
+                <section>
+                    <p> WOW #2! </p>
+                </section>
+            </example>
+
         """
         if context and not isinstance(context, ReadOnlyDict):
             context = ReadOnlyDict(context)
         if context is None:
             context = self._context
 
+        if cond_status is None:
+            cond_status = MutableVariable(None)
+
         # Обычно ParsingScope.process не возвращает ничего при вызове,
         # но может начать при наследовании
-        return self._scope.process(self._parser, element, context)
+        return self._scope.process(self._parser, element, context, cond_status)
 
     def send(self, token: Any):
         """
@@ -698,6 +804,7 @@ def render(path: str, context: dict, syntax: ParsingScope = None):
 
 __all__ = (
     'ReadOnlyDict',
+    'MutableVariable',
     'TemplateModuleError',
     'RegistrationError',
     'HandlerError',

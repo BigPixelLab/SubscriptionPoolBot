@@ -67,7 +67,7 @@ async def send_bill(
     except coupons_methods.CouponExpired as error:
         rs.respond(rs.feedback(
             f'Срок действия использующегося купона "{error.coupon.code}" иссяк '
-            f'{error.coupon.expires_after:%d.%m}, счёт выставлен без его учёта'
+            f'{error.coupon.created_at + error.coupon.type.lifespan:%d.%m}, счёт выставлен без его учёта'
         ))
 
     except coupons_methods.CouponExceededUsage as error:

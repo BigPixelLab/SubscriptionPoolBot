@@ -1,10 +1,10 @@
 import datetime
+import functools
 
 import peewee
 
 import ezqr
 import gls
-
 
 
 class Client(gls.BaseModel):
@@ -28,24 +28,36 @@ class Client(gls.BaseModel):
         """ Начисление бонусов пользователю и тому кто его пригласил """
         self.season_points += points
         self.save()
+
         referral = self.referral
         if referral is None:
             return
+
         referral.season_points += points
         referral.save()
 
-    def get_rating_position(self):
-        """ Возвращает позицию пользователя в рейтинге, исходя из набранного им кол-во очков"""
-        query = """ SELECT COUNT(*) + 1 
-            FROM (SELECT season_points FROM "Client" ORDER BY season_points DESC) AS scores
-            WHERE scores.season_points > %(season_points)s; """
+    @functools.cached_property
+    def rating_position(self):
+        """ Возвращает позицию пользователя в рейтинге, исходя из набранного им кол-ва очков """
+        query = """
+            SELECT COUNT(*) + 1 
+            FROM (
+                SELECT season_points
+                FROM "Client"
+                ORDER BY season_points DESC
+            ) AS scores
+            WHERE scores.season_points > %(season_points)s
+        """
         return ezqr.single_value(query, {'season_points': self.season_points})
 
-    def get_referrals_count(self):
+    @functools.cached_property
+    def clients_invited(self):
         """ Возвращает кол-во пользователей, которые были приглашены по реф-ссылке  """
-        query = """ SELECT COUNT(*) 
-        FROM "Client"
-        WHERE referral_id = %(chat_id)s; """
+        query = """
+            SELECT COUNT(*) 
+            FROM "Client"
+            WHERE referral_id = %(chat_id)s;
+        """
         return ezqr.single_value(query, {'chat_id': self.chat_id})
 
     @classmethod

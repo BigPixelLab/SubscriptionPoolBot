@@ -1,4 +1,6 @@
-from datetime import date
+import functools
+from datetime import date, timedelta
+from typing import Optional
 
 import peewee
 
@@ -25,11 +27,18 @@ class SeasonPrize(gls.BaseModel):
     class Meta:
         table_name = 'SeasonPrize'
 
-    @classmethod
-    def get_season_prize_id(cls, prize_id: int):
-        """ ... """
-        return cls.select() \
-            .where(cls.id == prize_id).get()
+    def is_bought_by_client(self, user_id: int):
+        query = """
+            SELECT count(1)
+            FROM "SeasonPrizeBought"
+            WHERE client_id = %(user_id)s
+                AND season_prize_id = %(season_prize_id)s
+        """
+        result = ezqr.single_value(query, {
+            'season_prize_id': self.id,
+            'user_id': user_id
+        })
+        return bool(result)
 
 
 class Season(gls.BaseModel):
@@ -51,20 +60,48 @@ class Season(gls.BaseModel):
     class Meta:
         table_name = 'Season'
 
-    @classmethod
-    def get_season_id(cls, season_id: int):
-        """ ... """
-        return cls.select().where(cls.id == season_id).get()
+    @functools.cached_property
+    def current_prize(self) -> Optional[SeasonPrize]:
+        month = date.today().month
+
+        if month % 12 // 3 != self.id:
+            return None
+
+        # Чтобы не делать два отдельных запроса, заодно кешируем призы
+        return self.prizes[self.current_prize_index]
+
+    @functools.cached_property
+    def prizes(self) -> tuple[SeasonPrize, SeasonPrize, SeasonPrize]:
+        # Вариантом проще было бы сделать (self.prize1, self.prize2, self.prize3),
+        # но реализованным тут методом мы отправляем один запрос вместо трёх
+        query = (
+            SeasonPrize.select().where(SeasonPrize.id == self.prize1_id)
+            | SeasonPrize.select().where(SeasonPrize.id == self.prize2_id)
+            | SeasonPrize.select().where(SeasonPrize.id == self.prize3_id)
+        )
+        return tuple(query)
+
+    @property
+    def current_prize_index(self) -> int:
+        return date.today().month % 12 % 3
+
+    @property
+    def current_prize_days_left(self) -> int:
+        today = date.today()
+        # The day 28 exists in every month. 4 days later, it's always next month
+        next_month = today.replace(day=28) + timedelta(days=4)
+        # subtracting the number of the current day brings us back one month
+        end_of_the_month = next_month - timedelta(days=next_month.day)
+        # and to get days left we can subtract current date from it
+        return (end_of_the_month - today).days
 
     @classmethod
-    def select_seasons(cls):
-        """ Возвращает все сезоны """
-        return list(cls.select())
-
-    @classmethod
-    def get_current_season_id(cls):
-        """ Возвращает текущий месяц в сезоне """
-        return date.today().month % 12 // 3
+    def get_current(cls) -> Optional['Season']:
+        season_id = date.today().month % 12 // 3
+        try:
+            return cls.get_by_id(season_id)
+        except peewee.DoesNotExist:
+            return None
 
 
 class SeasonPrizeBought(gls.BaseModel):
@@ -80,12 +117,3 @@ class SeasonPrizeBought(gls.BaseModel):
     class Meta:
         table_name = 'SeasonPrizeBought'
         primary_key = peewee.CompositeKey('client', 'season_prize')
-
-    @classmethod
-    def get_season_prize_bought(cls, user_id: int, season_prize_id: int) -> bool:
-        """ Проверяет куплен ли приз """
-        query = """ SELECT season_prize_id FROM "SeasonPrizeBought" WHERE client_id= %(user_id)s """
-        response = ezqr.fetch_values(query, {'user_id': user_id})
-        if season_prize_id in response:
-            return True
-        return False

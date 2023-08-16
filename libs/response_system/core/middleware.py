@@ -62,6 +62,7 @@ class ResponseMiddleware:
 
                 try:
                     response: Response = await handler(event, data)
+                    response = response or Response()
                     response += globals_.response_var.get()
 
                 except UserFriendlyException as error:

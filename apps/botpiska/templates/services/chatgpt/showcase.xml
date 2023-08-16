@@ -1,13 +1,9 @@
 <message requires="subscription_plans">
     <img src.rs="{__dir__}/resources/CHATGPT-BANNER.jpg"/>
 
-    <heading> CHATGPT </heading>
+    <heading> CHATGPT ⚙ </heading>
     <section>
-        Ну эт ЧатГПТ
-    </section>
-    <section>
-        <p> <b> Ты получаешь: </b> </p>
-        <p> - ЧатГПТ, сори, что есть </p>
+        Революционная AI теперь у тебя во вкладке барузера!
     </section>
     <section> ⚠️ <u><b> Для работы необходим VPN </b></u> ⚠️ </section>
 

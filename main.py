@@ -9,14 +9,21 @@ from aiogram.fsm.state import any_state
 from aiogram.fsm.storage.memory import MemoryStorage
 from glQiwiApi import QiwiP2PClient
 
+import settings
+# Добавляем папки с библиотеками и модулями в path
+sys.path.extend(settings.LIBS)
+
 import ezqr
 import response_system
 import response_system.core.responses
-import settings
 import gls
 import template
 import userdata
 from template_for_aiogram import aiogram_syntax
+
+logger = logging.getLogger('peewee')
+logger.addHandler(logging.StreamHandler())
+logger.setLevel(logging.DEBUG)
 
 logger = logging.getLogger(__name__)
 
@@ -50,9 +57,6 @@ async def main():
 
     # noinspection PyUnresolvedReferences
     import template_extensions
-
-    # Добавляем папки с библиотеками и модулями в path
-    sys.path.extend(settings.LIBS)
 
     # Инициализация ботов
     gls.storage = MemoryStorage()
