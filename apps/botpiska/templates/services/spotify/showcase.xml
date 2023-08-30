@@ -1,5 +1,5 @@
 <message requires="subscription_plans">
-    <img src.rs="{__dir__}/resources/SPOTIFY-BANNER.jpg"/>
+    <img src.rs="{__dir__}/resources/SPOTIFY-BANNER-SPEEDSEASON-min.jpg"/>
 
     <heading> SPOTIFY INDIVIDUAL 🧩 </heading>
     <section>

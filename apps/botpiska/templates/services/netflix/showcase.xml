@@ -1,5 +1,5 @@
 <message requires="subscription_plans">
-    <img src.rs="{__dir__}/resources/NETFLIX-BANNER.jpg"/>
+    <img src.rs="{__dir__}/resources/NETFLIX-BANNER-SPEEDSEASON-min.jpg"/>
 
     <heading> NETFLIX 🚗 </heading>
     <section>
