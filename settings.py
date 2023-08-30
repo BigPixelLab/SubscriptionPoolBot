@@ -84,6 +84,12 @@ LOGGING_LEVEL = logging.INFO
 LOGGING_FORMAT = '%(filename)s:%(lineno)d #%(levelname)-8s ' \
                  '[%(asctime)s] - %(name)s - %(message)s'
 
+# Путь к файлу, куда будут записываться логи
+LOGGING_DIRECTORY = os.environ['LOGGING_DIRECTORY']
+
+# Формат имени файла логов
+LOGGING_FILENAME_FORMAT = '%Y_%m_%d_%H_%M_%S_%f.log'
+
 
 # OUTPUT --------------------------------------------------
 
