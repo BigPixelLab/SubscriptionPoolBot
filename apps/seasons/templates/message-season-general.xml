@@ -1,5 +1,4 @@
 <message requires="season, client, is_prize_bought">
-    <!--            <img src.rs="{prize.banner}"/>-->
     <heading> {season.title} </heading>
 
     <section>
@@ -24,13 +23,13 @@
     <section>
         <p> <b> Призы месяца: </b> </p>
         <p for="i, prize in enumerate(season.prizes)">
-            <p if="i < season.current_prize_index">  🔹{prize.title} </p>
+            <p if="i &lt; season.current_prize_index">  🔹{prize.title} </p>
             <p if="i == season.current_prize_index"> 🔶{prize.title} </p>
-            <p if="i > season.current_prize_index">  🔹??? </p>
+            <p if="i &gt; season.current_prize_index">  🔹??? </p>
         </p>
     </section>
 
-    <section if="client.clients_invited > 0">
+    <section if="client.clients_invited &gt; 0">
         Вам помогают: {client.clients_invited}
     </section>
 
@@ -46,8 +45,8 @@
     <inline-keyboard>
         <row> <button callback_data="season-help"> Что такое сезон? </button> </row>
         <row> <button callback_data="referral-link"> Пригласить друга </button> </row>
-        <row if="not is_prize_bought and client.season_points >= season.current_prize.cost">
-            <button callback_data="season-prize:{season.current_prize.coupon_type_id}:{season.current_prize.id}" >
+        <row if="not is_prize_bought and client.season_points &gt;= season.current_prize.cost">
+            <button callback_data="season-prize:{season.current_prize.coupon_type_id}:{season.current_prize.id}">
                 Получить
             </button>
         </row>
