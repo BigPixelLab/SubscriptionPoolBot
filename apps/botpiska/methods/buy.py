@@ -85,7 +85,7 @@ async def buy_for_user(client: Client, bill: Bill, qiwi_bill: qiwi_types.Bill) -
         created_at=rs.global_time.get()
     )
     client = Client.get(chat_id=client)
-    client.award_points(order.paid_amount * settings.SEASON_BONUS_PERCENTAGE)
+    client.award_points(qiwi_bill.amount.value * settings.SEASON_BONUS_PERCENTAGE)
 
     subscription: Subscription = bill.subscription
     service = Service.get_by_id(subscription.service_id)
@@ -122,7 +122,7 @@ async def buy_as_gift_by_user(client: Client, bill: Bill, qiwi_bill: qiwi_types.
         filename='GIFT.png'
     )
     client = Client.get(chat_id=client)
-    client.award_points(bill.paid_amount * settings.SEASON_BONUS_PERCENTAGE)
+    client.award_points(qiwi_bill.amount.value * settings.SEASON_BONUS_PERCENTAGE)
 
     bill.delete_instance()
     return (
