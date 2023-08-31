@@ -1,5 +1,5 @@
 <message requires="subscription_plans">
-    <img src.rs="{__dir__}/resources/CHATGPT-BANNER.jpg"/>
+    <img src.rs="{__dir__}/resources/CHATGPT-BANNER-SPEEDSEASON.png"/>
 
     <heading> CHATGPT ⚙ </heading>
     <section>

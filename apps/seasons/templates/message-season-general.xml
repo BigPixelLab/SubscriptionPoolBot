@@ -1,4 +1,6 @@
 <message requires="season, client, is_prize_bought">
+    <img src.rs="{season.current_prize.banner}"/>
+
     <heading> {season.title} </heading>
 
     <section>
@@ -43,12 +45,12 @@
     </section>
 
     <inline-keyboard>
-        <row> <button callback_data="season-help"> Что такое сезон? </button> </row>
-        <row> <button callback_data="referral-link"> Пригласить друга </button> </row>
         <row if="not is_prize_bought and client.season_points &gt;= season.current_prize.cost">
             <button callback_data="season-prize:{season.current_prize.coupon_type_id}:{season.current_prize.id}">
-                Получить
+                🔸 Получить 🔸
             </button>
         </row>
+        <row> <button callback_data="season-help"> Что такое сезон? </button> </row>
+        <row> <button callback_data="referral-link"> Пригласить друга </button> </row>
     </inline-keyboard>
 </message>
