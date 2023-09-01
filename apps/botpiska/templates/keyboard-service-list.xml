@@ -4,5 +4,6 @@
         <row> <button> SPOTIFY </button> </row>
         <row> <button> NETFLIX </button> </row>
         <row> <button> STEAM </button> </row>
+        <row> <button> НАЗАД </button> </row>
     </reply-keyboard>
 </template>

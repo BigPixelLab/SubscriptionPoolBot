@@ -18,5 +18,10 @@ async def start_command_handler(_, command: aiogram.filters.CommandObject, user:
         'services': services.Service.get_search_titles()
     })
 
+async def previous_state_handler(_):
+    return rse.tmpl_send('apps/botpiska/templates/message-previous-state.xml', {
+        'services': services.Service.get_search_titles()
+    })
 
-__all__ = ('start_command_handler',)
+
+__all__ = ('start_command_handler', 'previous_state_handler',)
