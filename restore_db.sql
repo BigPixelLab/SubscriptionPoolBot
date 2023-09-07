@@ -181,13 +181,13 @@ CREATE TABLE "Season" (
 );
 
 CREATE INDEX Season_pk ON "Season" (id);
-CREATE INDEX Season_prize1 ON "Season" (prize1_id);
-CREATE INDEX Season_prize2 ON "Season" (prize2_id);
-CREATE INDEX Season_prize3 ON "Season" (prize3_id);
+CREATE INDEX Season_prize1_id ON "Season" (prize1_id);
+CREATE INDEX Season_prize2_id ON "Season" (prize2_id);
+CREATE INDEX Season_prize3_id ON "Season" (prize3_id);
 
 
 CREATE TABLE "SeasonPrizeBought" (
-    client_id int not null
+    client_id bigint not null
         PRIMARY KEY,
     season_prize_id int not null
         REFERENCES "SeasonPrize" (id),
@@ -195,7 +195,7 @@ CREATE TABLE "SeasonPrizeBought" (
 );
 
 CREATE INDEX SeasonPrizeBought_pk ON "SeasonPrizeBought" (client_id);
-CREATE INDEX SeasonPrizeBought_season_prize ON "SeasonPrizeBought" (season_prize_id);
+CREATE INDEX SeasonPrizeBought_season_prize_id ON "SeasonPrizeBought" (season_prize_id);
 
 CREATE TABLE "Lottery" (
     id varchar not null
@@ -231,6 +231,27 @@ CREATE INDEX LotteryPrize_pk ON "LotteryPrize" (id);
 CREATE INDEX LotteryPrize_lottery_id ON "LotteryPrize" (lottery_id);
 CREATE INDEX LotteryPrize_coupon_type_id ON "LotteryPrize" (coupon_type_id);
 
+CREATE TABLE "StatisticTypeAction"(
+    id varchar not null
+        PRIMARY KEY,
+    title varchar not null
+);
+
+CREATE INDEX StatisticTypeAction_pk ON "StatisticTypeAction" (id);
+
+
+CREATE TABLE "Statistic"(
+    client_id bigint not null
+        REFERENCES "Client" (chat_id),
+    action_id varchar not null
+        REFERENCES "StatisticTypeAction" (id),
+    data varchar not null,
+--     data jsonb default null,
+    created_at timestamp not null
+);
+
+CREATE INDEX Statistic_client_id ON "Statistic" (client_id);
+CREATE INDEX Statistic_action_id ON "Statistic" (action_id);
 
 CREATE VIEW "SubGroupHierarchyView" AS
 WITH RECURSIVE "Group" AS (
@@ -378,7 +399,9 @@ UPDATE "Subscription" SET gift_coupon_type_id = 'gift_chatgpt_plus_1m' WHERE id 
 
 
 INSERT INTO "Client" (chat_id, created_at)
-VALUES (1099569178, now());
+VALUES
+    (1099569178, now()),
+    (0, now());
 --        (911233771, now());
 INSERT INTO "Employee" (chat_id)
 VALUES (1099569178);
@@ -408,18 +431,18 @@ VALUES
 INSERT INTO "SeasonPrize"
 	(coupon_type_id, banner, title, cost)
 VALUES
-	('spotify_promo_20', 'apps\botpiska\templates\resources\BILL.png', '1 мес', 10),
-	('spotify_promo_25', 'apps\botpiska\templates\resources\BILL.png', '2 мес', 20),
-	('spotify_promo_30', 'apps\botpiska\templates\resources\BILL.png', '3 мес', 30),
-    ('spotify_promo_20', 'apps\botpiska\templates\resources\BILL.png', '4 мес', 40),
-	('spotify_promo_25', 'apps\botpiska\templates\resources\BILL.png', '5 мес', 50),
-	('spotify_promo_30', 'apps\botpiska\templates\resources\BILL.png', '6 мес', 60),
-    ('spotify_promo_20', 'apps\botpiska\templates\resources\BILL.png', '7 мес', 70),
-	('spotify_promo_25', 'apps\botpiska\templates\resources\BILL.png', '8 мес', 80),
-	('spotify_promo_30', 'apps\botpiska\templates\resources\BILL.png', '9 мес', 90),
-    ('spotify_promo_20', 'apps\botpiska\templates\resources\BILL.png', '10 мес', 100),
-	('spotify_promo_25', 'apps\botpiska\templates\resources\BILL.png', '11 мес', 110),
-	('spotify_promo_30', 'apps\botpiska\templates\resources\BILL.png', '12 мес', 120);
+	('spotify_promo_20', 'apps/botpiska\templates\resources\BILL.png', '1 мес', 10),
+	('spotify_promo_25', 'apps/botpiska\templates\resources\BILL.png', '2 мес', 20),
+	('spotify_promo_30', 'apps/botpiska\templates\resources\BILL.png', '3 мес', 30),
+    ('spotify_promo_20', 'apps/botpiska\templates\resources\BILL.png', '4 мес', 40),
+	('spotify_promo_25', 'apps/botpiska\templates\resources\BILL.png', '5 мес', 50),
+	('spotify_promo_30', 'apps/botpiska/templates\resources\BILL.png', '6 мес', 60),
+    ('spotify_promo_20', 'apps/botpiska/templates\resources\BILL.png', '7 мес', 70),
+	('spotify_promo_25', 'apps/botpiska/templates\resources\BILL.png', '8 мес', 80),
+	('spotify_promo_30', 'apps/botpiska/templates\resources\BILL.png', '9 мес', 90),
+    ('spotify_promo_20', 'apps/botpiska/templates\resources\BILL.png', '10 мес', 100),
+	('spotify_promo_25', 'apps/botpiska/templates\resources\BILL.png', '11 мес', 110),
+	('spotify_promo_30', 'apps/botpiska/templates\resources\BILL.png', '12 мес', 120);
 
 
 INSERT INTO "Season"
@@ -429,6 +452,27 @@ VALUES
     (1, 'ВЕСНА', 3, 4, 5, 'Описание весеннего сезона'),
     (2, 'ЛЕТО', 6, 7, 8, 'Описание летнего сезона'),
     (3, 'ОСЕНЬ', 9, 10, 11, 'Описание осеннего сезона');
+
+INSERT INTO "StatisticTypeAction"
+    (id, title)
+VALUES
+    ('command_start', 'Запуск команды /start'),
+    ('command_start_deep_link', 'Запуск команды /start с купоном (записать купон в data)'),
+    ('open_support', 'Переход на страницу поддержки'),
+    ('open_showcase', 'Выбор товара (записать id товара в data)'),
+    ('open_bill', 'Выбор подписки (записать id подписки в data)'),
+    ('bought_as_gift', 'Получение товара в подарок'),
+    ('bought_for_self', 'Получение товара для себя'),
+    ('received_season_points', 'Получение бонусов сезона (записать количество бонусов в data)'),
+    ('received_season_points_from_friend', 'Получение бонусов сезона от приглашённого пользователя (записать количество бонусов и id пригласившего в data)'),
+    ('activated_coupon', 'Активация купона (записать код купона в data)'),
+    ('open_season', 'Переход на страницу сезона'),
+    ('open_referral_link', 'Получение реферальной ссылки (записать код купона в data)'),
+    ('open_season_about', 'Переход на страницу “Что такое сезон?”'),
+    ('bought_season_prize', 'Получение приза сезона (записать id подписки в data)'),
+    ('notification_subscription_renew', 'Получение уведомления о продлении (записать id заказа, вызвавшего уведомление, в data)'),
+    ('sent_post_simple', 'Отправка поста (записать первые 100 символов текста в data)'),
+    ('sent_lottery', 'Отправка лотереи (записать id лотереи в data)')
 
 
 
