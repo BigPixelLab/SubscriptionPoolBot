@@ -43,6 +43,7 @@ async def send_bill(
         rs.respond(rse.tmpl_send(
             'apps/botpiska/templates/message-terms.xml', {},
             on_success=lambda x: set_client_terms_message_id(x[0]),
+            priority=1
         ))
 
     # Разбираемся с ранее выставленными счетами

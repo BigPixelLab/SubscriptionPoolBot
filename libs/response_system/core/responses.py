@@ -238,7 +238,9 @@ def edit(
 
         on_success: TEditSuccessHandler = None,
         on_forbidden: TBasicHandler = None,
-        on_error: TBasicHandler = None
+        on_error: TBasicHandler = None,
+
+        priority: int = 0
 ) -> Response:
     response = Response()
     response.add_action(
@@ -250,7 +252,7 @@ def edit(
             on_forbidden=on_forbidden,
             on_error=on_error
         ),
-        priority=0
+        priority
     )
     return response
 
@@ -262,7 +264,9 @@ def delete(
 
         on_success: TDeleteSuccessHandler = None,
         on_forbidden: TBasicHandler = None,
-        on_error: TBasicHandler = None
+        on_error: TBasicHandler = None,
+
+        priority: int = 0
 ) -> Response:
     if chat and not isinstance(original, int):
         raise ValueError('Chat can be set only when original passed id')
@@ -286,7 +290,7 @@ def delete(
             on_forbidden=on_forbidden,
             on_error=on_error
         ),
-        priority=0
+        priority
     )
     return response
 
@@ -298,7 +302,9 @@ def send(
 
         on_success: TSendSuccessHandler = None,
         on_forbidden: TBasicHandler = None,
-        on_error: TBasicHandler = None
+        on_error: TBasicHandler = None,
+
+        priority: int = 2
 ) -> Response:
     response = Response()
     response.add_action(
@@ -310,7 +316,7 @@ def send(
             on_forbidden=on_forbidden,
             on_error=on_error
         ),
-        priority=2
+        priority
     )
     return response
 
@@ -319,10 +325,13 @@ def feedback(
         message: typing.Union[MessageRender, str],
         chat: int = None,
         bot: aiogram.Bot = None,
+
         on_success: TFeedbackSuccessHandler = None,
         on_forbidden: TBasicHandler = None,
         on_error: TBasicHandler = None,
-        on_delete: TBasicHandler = None
+        on_delete: TBasicHandler = None,
+
+        priority: int = 3
 ) -> Response:
     response = Response()
     response.add_action(
@@ -335,7 +344,7 @@ def feedback(
             on_error=on_error,
             on_delete=on_delete
         ),
-        priority=3
+        priority
     )
     return response
 
@@ -348,7 +357,9 @@ def notify(
         on_every_success: TNotifyEverySuccessHandler = None,
         on_every_forbidden: TNotifyBasicSuccessHandler = None,
         on_every_error: TNotifyBasicSuccessHandler = None,
-        on_completion: TNotifyCompletionHandler = None
+        on_completion: TNotifyCompletionHandler = None,
+
+        priority: int = 4
 ) -> Response:
     response = Response()
     response.add_action(
@@ -361,14 +372,14 @@ def notify(
             on_every_error=on_every_error,
             on_completion=on_completion
         ),
-        priority=4
+        priority
     )
     return response
 
 
-def do(function: typing.Awaitable) -> Response:
+def do(function: typing.Awaitable, priority: int = 5) -> Response:
     response = Response()
-    response.add_action(function, priority=5)
+    response.add_action(function, priority)
     return response
 
 

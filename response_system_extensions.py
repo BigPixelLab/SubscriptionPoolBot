@@ -70,7 +70,9 @@ def tmpl_edit(
 
         on_success: TEditSuccessHandler = None,
         on_forbidden: TBasicHandler = None,
-        on_error: TBasicHandler = None
+        on_error: TBasicHandler = None,
+
+        priority: int = 0
 ) -> Response:
     response = Response()
     response.add_action(
@@ -82,7 +84,7 @@ def tmpl_edit(
             on_forbidden=on_forbidden,
             on_error=on_error
         ),
-        priority=0
+        priority
     )
     return response
 
@@ -94,7 +96,9 @@ def tmpl_send(
 
         on_success: TSendSuccessHandler = None,
         on_forbidden: TBasicHandler = None,
-        on_error: TBasicHandler = None
+        on_error: TBasicHandler = None,
+
+        priority: int = 2
 ) -> Response:
     response = Response()
     response.add_action(
@@ -106,7 +110,7 @@ def tmpl_send(
             on_forbidden=on_forbidden,
             on_error=on_error
         ),
-        priority=2
+        priority
     )
     return response
 
@@ -119,7 +123,9 @@ def tmpl_feedback(
         on_success: TFeedbackSuccessHandler = None,
         on_forbidden: TBasicHandler = None,
         on_error: TBasicHandler = None,
-        on_delete: TBasicHandler = None
+        on_delete: TBasicHandler = None,
+
+        priority: int = 3
 ) -> Response:
     response = Response()
     response.add_action(
@@ -132,7 +138,7 @@ def tmpl_feedback(
             on_error=on_error,
             on_delete=on_delete
         ),
-        priority=3
+        priority
     )
     return response
 
@@ -146,7 +152,9 @@ def tmpl_notify(
         on_every_success: TNotifyEverySuccessHandler = None,
         on_every_forbidden: TNotifyBasicSuccessHandler = None,
         on_every_error: TNotifyBasicSuccessHandler = None,
-        on_completion: TNotifyCompletionHandler = None
+        on_completion: TNotifyCompletionHandler = None,
+
+        priority: int = 4
 ) -> Response:
     response = Response()
     response.add_action(
@@ -160,7 +168,7 @@ def tmpl_notify(
             on_every_error=on_every_error,
             on_completion=on_completion
         ),
-        priority=4
+        priority
     )
     return response
 
@@ -172,7 +180,9 @@ def tmpl_notify_employee(
         on_every_success: TNotifyEverySuccessHandler = None,
         on_every_forbidden: TNotifyBasicSuccessHandler = None,
         on_every_error: TNotifyBasicSuccessHandler = None,
-        on_completion: TNotifyCompletionHandler = None
+        on_completion: TNotifyCompletionHandler = None,
+
+        priority: int = 4
 ) -> Response:
     response = Response()
     response.add_action(
@@ -186,6 +196,6 @@ def tmpl_notify_employee(
             on_every_error=on_every_error,
             on_completion=on_completion
         ),
-        priority=4
+        priority
     )
     return response
