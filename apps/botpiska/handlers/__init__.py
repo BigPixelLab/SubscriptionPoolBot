@@ -5,5 +5,4 @@ from .command_start import *
 from .message_service import *
 from .message_service_list import *
 from .message_support import *
-from .message_terms import *
 from .op_command_start import *
