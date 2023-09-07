@@ -15,7 +15,7 @@
         </p>
     </section>
 
-    <section>
+    <section if="client.season_points &gt; 0">
         <span> Место в рейтинге: #{client.rating_position} </span>
         <span if="client.rating_position == 1"> 🥇 </span>
         <span if="client.rating_position == 2"> 🥈 </span>
