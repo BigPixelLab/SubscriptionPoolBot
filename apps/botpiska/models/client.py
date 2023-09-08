@@ -1,8 +1,6 @@
 import datetime
 import functools
-
 import peewee
-
 import ezqr
 import gls
 
@@ -61,11 +59,11 @@ class Client(gls.BaseModel):
         return ezqr.single_value(query, {'chat_id': self.chat_id})
 
     @classmethod
-    def get_or_register(cls, user_id: int, referral: int = None, force_referral: bool = False) -> 'Client':
+    def get_or_register(cls, user_id: int, referral: int = None, force_referral: bool = False) -> tuple['Client', bool]:
         """ Пытается получить пользователя из базы и, если не найден,
            добавить его. Реферал добавится только если у пользователя его нет """
 
-        client, _ = cls.get_or_create(chat_id=user_id, defaults={
+        client, is_created = cls.get_or_create(chat_id=user_id, defaults={
             'referral': referral,
             'created_at': datetime.datetime.now()
         })
@@ -74,7 +72,7 @@ class Client(gls.BaseModel):
             client.referral = referral
             client.save()
 
-        return client
+        return client, is_created
 
     @classmethod
     def get_all_chats(cls) -> list[int]:

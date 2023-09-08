@@ -472,7 +472,8 @@ VALUES
     ('bought_season_prize', 'Получение приза сезона (записать id подписки в data)'),
     ('notification_subscription_renew', 'Получение уведомления о продлении (записать id заказа, вызвавшего уведомление, в data)'),
     ('sent_post_simple', 'Отправка поста (записать первые 100 символов текста в data)'),
-    ('sent_lottery', 'Отправка лотереи (записать id лотереи в data)')
+    ('sent_lottery', 'Отправка лотереи (записать id лотереи в data)'),
+    ('first_command_start','Первый запуск команды /start')
 
 
 

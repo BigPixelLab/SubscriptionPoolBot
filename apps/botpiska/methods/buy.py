@@ -55,7 +55,7 @@ async def _order_wrapper(function, user: aiogram.types.User) -> Response:
     # Регистрируем пользователя, если не зарегистрирован и
     # устанавливаем его как реферала
     coupon = bill.coupon
-    client = Client.get_or_register(
+    client, _ = Client.get_or_register(
         user.id,
         referral=coupon.sets_referral_id if coupon else None,
         force_referral=True

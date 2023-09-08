@@ -31,7 +31,7 @@ async def send_bill(
         или предупреждения
     """
 
-    client = Client.get_or_register(user.id)
+    client, _ = Client.get_or_register(user.id)
 
     # Выводим соглашение, если оно ещё не было выведено для пользователя
     if not client.terms_message_id:

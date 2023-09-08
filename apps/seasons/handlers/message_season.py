@@ -15,7 +15,7 @@ from response_system import UserFriendlyException
 async def season_general_message_handler(_, user: aiogram.types.User):
     """ ... """
 
-    client = Client.get_or_register(user.id)
+    client, _ = Client.get_or_register(user.id)
     season = Season.get_current()
 
     if season is None or season.current_prize is None:
@@ -33,7 +33,7 @@ async def season_general_message_handler(_, user: aiogram.types.User):
 async def season_buy_prize_handler(_, user: aiogram.types.User, callback_data: callbacks.GetSeasonPrizeCallbackData):
     """ ... """
 
-    client = Client.get_or_register(user.id)
+    client, _ = Client.get_or_register(user.id)
     season = Season.get_current()
 
     if season is None or season.current_prize is None or season.current_prize.id != callback_data.season_prize_id:

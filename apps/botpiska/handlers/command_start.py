@@ -11,11 +11,13 @@ from apps.statistics.models import *
 async def start_command_handler(_, command: aiogram.filters.CommandObject, user: aiogram.types.User):
     """ ... """
 
-    Client.get_or_register(user.id)
+    client, is_created = Client.get_or_register(user.id)
     # Если передан купон как deep-link
     if command.args and coupons_methods.is_coupon_like(command.args):
         Statistic.record('command_start_deep_link', user.id,coupon=command.args)
         rs.respond(await coupons_methods.activate_coupon(command.args, user, silent=True))
+    elif is_created:
+        Statistic.record('first_command_start', user.id)
     else:
         Statistic.record('command_start', user.id)
     return rse.tmpl_send('apps/botpiska/templates/message-start.xml', {
