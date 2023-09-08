@@ -72,14 +72,8 @@ class Season(gls.BaseModel):
 
     @functools.cached_property
     def prizes(self) -> tuple[SeasonPrize, SeasonPrize, SeasonPrize]:
-        # Вариантом проще было бы сделать (self.prize1, self.prize2, self.prize3),
-        # но реализованным тут методом мы отправляем один запрос вместо трёх
-        query = (
-            SeasonPrize.select().where(SeasonPrize.id == self.prize1_id)
-            | SeasonPrize.select().where(SeasonPrize.id == self.prize2_id)
-            | SeasonPrize.select().where(SeasonPrize.id == self.prize3_id)
-        )
-        return tuple(query)
+        # noinspection PyTypeChecker
+        return self.prize1, self.prize2, self.prize3
 
     @property
     def current_prize_index(self) -> int:
