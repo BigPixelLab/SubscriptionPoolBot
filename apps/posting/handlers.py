@@ -42,6 +42,11 @@ async def post_button_handler(_, user: aiogram.types.User, callback_data: callba
 
     receivers = Client.get_all_chats()
 
+    try:
+        receivers.remove(0)
+    except ValueError:
+        pass
+
     def on_completion(succeeded, total):
         return gls.bot.send_message(user.id, f'Успешно отправлено: {succeeded} / {total}')
 
