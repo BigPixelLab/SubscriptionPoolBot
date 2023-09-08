@@ -23,6 +23,8 @@ class CouponType(gls.BaseModel):
     allows_gifts = peewee.BooleanField(default=True)
     """ Возможно ли покупать в подарок, после активации этого купона. Например,
         при активации подарочного купона, покупать в подарок не имеет смысла """
+    is_promo = peewee.BooleanField(default=False)
+    """ Является ли купон рекламным """
 
     class Meta:
         table_name = 'CouponType'
