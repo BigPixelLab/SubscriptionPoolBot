@@ -38,7 +38,8 @@ CREATE TABLE "CouponType" (
         CHECK ( discount >= 0 and discount <= 100 ),
     max_usages bigint,
     lifespan interval,
-    allows_gifts bool not null
+    allows_gifts bool not null,
+    is_promo bool not null default false
 );
 
 CREATE INDEX CouponType_pk ON "CouponType" (id);
@@ -347,43 +348,56 @@ VALUES
 
 INSERT INTO "CouponType" (
     id,                     subscription_group_id,  discount,
-    max_usages,             lifespan,               allows_gifts
+    max_usages,             lifespan,               allows_gifts,
+    is_promo
 ) VALUES (
     'gift_netflix_4k_1m',   'netflix_4k_1m',        100,
-    1,                      '30 days'::interval,    false
+    1,                      '30 days'::interval,    false,
+    false
 ), (
     'gift_netflix_HD_1m',   'netflix_HD_1m',        100,
-    1,                      '30 days'::interval,    false
+    1,                      '30 days'::interval,    false,
+    false
 ), (
     'gift_spotify_ind_1m',  'spotify_ind_1m',       100,
-    1,                      '30 days'::interval,    false
+    1,                      '30 days'::interval,    false,
+    false
 ), (
     'gift_spotify_ind_3m',  'spotify_ind_3m',       100,
-    1,                      '90 days'::interval,    false
+    1,                      '90 days'::interval,    false,
+    false
 ), (
     'gift_spotify_ind_6m',  'spotify_ind_6m',       100,
-    1,                      '180 days'::interval,   false
+    1,                      '180 days'::interval,   false,
+    false
 ), (
     'gift_spotify_ind_1y',  'spotify_ind_1y',       100,
-    1,                      '360 days'::interval,   false
+    1,                      '360 days'::interval,   false,
+    false
 ), (
     'gift_chatgpt_account', 'chatgpt_account',      100,
-    1,                      '30 days'::interval,    false
+    1,                      '30 days'::interval,    false,
+    false
 ), (
     'gift_chatgpt_plus_1m', 'chatgpt_plus_1m',      100,
-    1,                      '30 days'::interval,    false
+    1,                      '30 days'::interval,    false,
+    false
 ), (
     'spotify_promo_20',     'spotify',              20,
-    null,                   '30 days'::interval,    true
+    null,                   '30 days'::interval,    true,
+    true
 ), (
     'spotify_promo_25',     'spotify',              25,
-    null,                   '30 days'::interval,    true
+    null,                   '30 days'::interval,    true,
+    true
 ), (
     'spotify_promo_30',     'spotify',              30,
-    null,                   '30 days'::interval,    true
+    null,                   '30 days'::interval,    true,
+    true
 ), (
     'invitation',            'spotify',              30,
-    null,                   '30 days'::interval,    true
+    null,                   '30 days'::interval,    true,
+    false
 );
 
 
