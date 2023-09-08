@@ -9,6 +9,7 @@ import settings
 import template
 from apps.botpiska.models import Subscription
 from apps.botpiska.services import SERVICE_MAP, Service
+from apps.statistics.models import Statistic
 
 
 async def startup_handler():
@@ -22,7 +23,7 @@ async def startup_handler():
             AND NOT O.notified_renew
             AND O.closed_at IS NOT NULL
             AND %(now)s >= O.closed_at + S.duration - %(notify_before)s
-        RETURNING O.client_id, O.subscription_id
+        RETURNING O.id, O.client_id, O.subscription_id
     """
     args = {
         'notify_before': settings.NOTIFY_BEFORE,
@@ -32,7 +33,7 @@ async def startup_handler():
     chats_to_notify = gls.db.execute_sql(query, args)
 
     notified, total = 0, 0
-    for chat_id, subscription_id in chats_to_notify:
+    for order_id, chat_id, subscription_id in chats_to_notify:
         try:
             subscription = Subscription.get_by_id(subscription_id)
         except peewee.DoesNotExist:
@@ -54,7 +55,7 @@ async def startup_handler():
             'subscription': subscription,
             'featured': featured
         })
-
+        Statistic.record('notification_subscription_renew', chat_id, order=order_id)
         with contextlib.suppress(aiogram.exceptions.AiogramError):
             await message.send(chat_id, bot=gls.bot)
             notified += 1

@@ -7,6 +7,7 @@ import response_system_extensions as rse
 from apps.botpiska import methods as botpiska_methods
 from apps.botpiska.models import Bill, Subscription
 from apps.coupons import methods as coupons_methods
+from apps.statistics.models import Statistic
 from response_system import Response
 
 
@@ -16,6 +17,9 @@ async def activate_coupon(code: str, user: aiogram.types.User, silent: bool = Fa
 
     # Получение купона
     coupon = await coupons_methods.get_coupon(code, user.id)
+
+    # ...
+    Statistic.record('activated_coupon', user.id, coupon=coupon.code)
 
     # Если действителен - записываем в userdata
     key = StorageKey(bot.id, user.id, user.id)
