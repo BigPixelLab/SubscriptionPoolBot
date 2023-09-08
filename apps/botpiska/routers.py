@@ -31,6 +31,12 @@ botpiska_router.message(
     aiogram.filters.CommandStart()
 )(handlers.start_command_handler)
 
+# Запрос "Назад"
+botpiska_router.message(
+    F.text.lower() == "назад"
+)(handlers.previous_state_handler)
+
+
 # Запрос "Поддержка"
 botpiska_router.message(
     F.text.lower() == "поддержка"
