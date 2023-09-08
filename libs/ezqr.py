@@ -64,6 +64,7 @@ def fetch_values(query: str, args: QueryArgs, into: typing.Type[C] = list,
     """
     return into(row[0] for row in _execute(query, args, db))
 
+
 # query: str, args: QueryArgs, db: peewee.Database = None
 def fetch(model: typing.Type[T], query: str, args: QueryArgs, into: typing.Type[C] = list,
           db: peewee.Database = None) -> typing.Type[C][T]:

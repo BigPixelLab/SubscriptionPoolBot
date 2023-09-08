@@ -33,15 +33,9 @@ async def season_buy_prize_handler(_, user: aiogram.types.User, callback_data: c
     season = Season.get_current()
 
     if season is None or season.current_prize is None or season.current_prize_id != callback_data.season_prize_id:
-        return UserFriendlyException('Сообщение устарело.')
+        raise UserFriendlyException('Сообщение устарело.')
 
     is_prize_bought = season.current_prize.is_bought_by_client(client.chat_id)
-
-    if is_prize_bought:
-        return UserFriendlyException('Приз уже куплен.')
-
-    if client.season_points < season.current_prize.cost:
-        return UserFriendlyException('Недостаточно бонусов.')
 
     coupon = Coupon.from_type(type_id=callback_data.coupon_type_id)
     client.season_points -= season.current_prize.cost

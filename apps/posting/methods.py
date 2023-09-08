@@ -48,6 +48,15 @@ def get_post(key: str) -> MessageRender:
     )
 
 
+def remove_post(key: str):
+    global stored_posts
+
+    try:
+        del stored_posts[key]
+    except KeyError:
+        pass
+
+
 def generate_lottery_prize(prizes: list[LotteryPrize], count: int):
     if len(prizes) == 0:
         raise ValueError('Cannot pick a prize when there is no prizes')
