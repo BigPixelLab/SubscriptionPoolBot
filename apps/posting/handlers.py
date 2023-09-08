@@ -38,6 +38,8 @@ async def post_received_handler(message: aiogram.types.Message, state: FSMContex
 
 async def post_button_handler(_, user: aiogram.types.User, callback_data: callbacks.PostCallback) -> rs.Response:
     message = methods.get_post(callback_data.reference_id)
+    methods.remove_post(callback_data.reference_id)
+
     receivers = Client.get_all_chats()
 
     def on_completion(succeeded, total):
