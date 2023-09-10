@@ -23,7 +23,7 @@ def lottery_prizes_generator(num_clients, prizes):
             # del prizes[f'{prize_id}']
 
     # Проверка на наличие достаточного числа призов для всех клиентов
-    if total_count > num_clients:
+    if total_count < num_clients and total_weight ==0:
         raise ValueError("Не хватает призов для всех клиентов")
 
     while num_clients > 0:
@@ -43,10 +43,10 @@ def lottery_prizes_generator(num_clients, prizes):
             num_clients -= 1
 
 # Пример использования функции-генератора
-clients = 20
+clients = 100
 prizes = {
-    "000": {"coupon_type_id": "A", "weight": 3},
-    "xxx": {"coupon_type_id": "A", "weight": 100},
+    # "000": {"coupon_type_id": "A", "count": 30},
+    "xxx": {"coupon_type_id": "A", "weight": 1},
     "001": {"coupon_type_id": "B", "count": 3},
     "002": {"coupon_type_id": "B", "count": 5},
     "003": {"coupon_type_id": "C"},  # Приз без weight и count
