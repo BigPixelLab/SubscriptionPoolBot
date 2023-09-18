@@ -5,7 +5,7 @@ import response_system_extensions as rse
 
 from ..models import Subscription
 from ..services import Service
-from ...statistics.models import Statistic
+from ...statistics.models import Statistics
 
 
 async def service_message_handler(_, user: aiogram.types.User, service: Service):
@@ -14,7 +14,7 @@ async def service_message_handler(_, user: aiogram.types.User, service: Service)
     # Получаем список подписок данного сервиса в нужном порядке
     subscriptions = []
     if service.has_subscription_plans:
-        Statistic.record('open_showcase', user.id, product=service.id)
+        Statistics.record('open_showcase', user.id, product=service.id)
         subscriptions = Subscription.select_service_plans(service.id).execute()
 
     subscription_plans = _pair_with_calculated_discounts(subscriptions)

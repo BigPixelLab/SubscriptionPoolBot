@@ -16,7 +16,7 @@ from apps.posting import callbacks, methods
 from apps.posting.methods import generate_lottery_prize
 from apps.posting.models import Lottery, LotteryPrize
 from apps.posting.states import PostStates
-from apps.statistics.models import Statistic
+from apps.statistics.models import Statistics
 from message_render import MessageRenderList
 from template_for_aiogram.scopes import ELEMENT
 
@@ -43,7 +43,6 @@ async def post_button_handler(_, user: aiogram.types.User, callback_data: callba
 
     receivers = Client.get_all_chats()
     receivers.remove(0)
-    # Statistic.record('sent_post_simple',message=message.text[:100])
 
     try:
         receivers.remove(0)
@@ -69,7 +68,7 @@ async def lottery_command_handler(_, command: CommandObject):
 
     try:
         lottery = Lottery.get_by_id(command.args)
-        Statistic.record('sent_lottery',lottery_id=lottery.id)
+        Statistics.record('sent_lottery',lottery_id=lottery.id)
     except peewee.DoesNotExist:
         raise NoLotteryFound(f'Лотереи {command.args} нет в базе')
 

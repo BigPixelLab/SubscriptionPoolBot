@@ -3,7 +3,7 @@
 
     <section>
         <p> До "{season.current_prize.title}" </p>
-        <progressbar steps.py="client.season_points" of.py="season.current_prize.cost" />
+        <progressbar steps.py="client.season_points" of.py="season.current_prize.cost"/>
         <p if="not is_prize_bought">
             <i> {client.season_points}/{season.current_prize.cost} бонусов </i>.
             Осталось: {season.current_prize_days_left}д

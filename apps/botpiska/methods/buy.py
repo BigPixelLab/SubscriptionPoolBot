@@ -16,7 +16,7 @@ from apps.botpiska.models import Bill, Client, Order, Subscription
 from apps.botpiska.services import Service
 from apps.coupons.models import Coupon
 from apps.seasons.methods.get_season_bonus import send_award_points_message
-from apps.statistics.models import Statistic
+from apps.statistics.models import Statistics
 from libs.events import trigger_embedded_events, Event
 from response_system import Response
 from utils import do_nothing
@@ -88,16 +88,16 @@ async def buy_for_user(client: Client, bill: Bill, qiwi_bill: qiwi_types.Bill) -
     )
     bonus = int(qiwi_bill.amount.value * settings.SEASON_BONUS_PERCENTAGE)
     client = Client.get(chat_id=client)
-    Statistic.record('received_season_points', client.id, accrued=bonus)
+    Statistics.record('received_season_points', client.id, accrued=bonus)
     client.award_points(bonus)
-    Statistic.record('received_season_points_from_friend', client.id, accrued=bonus, friend=client.referral)
+    Statistics.record('received_season_points_from_friend', client.id, accrued=bonus, friend=client.referral)
     subscription: Subscription = bill.subscription
     service = Service.get_by_id(subscription.service_id)
 
     event = SelfOrderEvent(subscription, order, bill)
     await trigger_embedded_events('SELF_ORDERED', event)
 
-    Statistic.record('bought_for_self', client, subscription=subscription.id)
+    Statistics.record('bought_for_self', client, subscription=subscription.id)
 
     bill.delete_instance()
     return (
@@ -125,7 +125,7 @@ async def buy_as_gift_by_user(client: Client, bill: Bill, qiwi_bill: qiwi_types.
     )
     bonus = int(qiwi_bill.amount.value * settings.SEASON_BONUS_PERCENTAGE)
 
-    Statistic.record('bought_as_gift', client.chat_id, subscription=subscription.id)
+    Statistics.record('bought_as_gift', client.chat_id, subscription=subscription.id)
     gift_card_image = pilgram.PilImageInputFile(
         images.render_gift_card_image(f't.me/{settings.BOT_NAME}?start={gift_coupon.code}'),
         filename='GIFT.png'

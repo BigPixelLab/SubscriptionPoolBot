@@ -9,7 +9,7 @@ import settings
 import template
 from apps.botpiska.models import Subscription
 from apps.botpiska.services import SERVICE_MAP, Service
-from apps.statistics.models import Statistic
+from apps.statistics.models import Statistics
 
 
 async def startup_handler():
@@ -55,7 +55,7 @@ async def startup_handler():
             'subscription': subscription,
             'featured': featured
         })
-        Statistic.record('notification_subscription_renew', chat_id, order=order_id)
+        Statistics.record('notification_subscription_renew', chat_id, order=order_id)
         with contextlib.suppress(aiogram.exceptions.AiogramError):
             await message.send(chat_id, bot=gls.bot)
             notified += 1

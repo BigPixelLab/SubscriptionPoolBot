@@ -232,27 +232,42 @@ CREATE INDEX LotteryPrize_pk ON "LotteryPrize" (id);
 CREATE INDEX LotteryPrize_lottery_id ON "LotteryPrize" (lottery_id);
 CREATE INDEX LotteryPrize_coupon_type_id ON "LotteryPrize" (coupon_type_id);
 
-CREATE TABLE "StatisticTypeAction"(
+CREATE TABLE "StatisticsTypeAction"(
     id varchar not null
         PRIMARY KEY,
     title varchar not null
 );
 
-CREATE INDEX StatisticTypeAction_pk ON "StatisticTypeAction" (id);
+CREATE INDEX StatisticsTypeAction_pk ON "StatisticsTypeAction" (id);
 
 
-CREATE TABLE "Statistic"(
+CREATE TABLE "Statistics"(
     client_id bigint not null
         REFERENCES "Client" (chat_id),
     action_id varchar not null
-        REFERENCES "StatisticTypeAction" (id),
+        REFERENCES "StatisticsTypeAction" (id),
     data varchar not null,
 --     data jsonb default null,
     created_at timestamp not null
 );
 
-CREATE INDEX Statistic_client_id ON "Statistic" (client_id);
-CREATE INDEX Statistic_action_id ON "Statistic" (action_id);
+CREATE INDEX Statistics_client_id ON "Statistics" (client_id);
+CREATE INDEX Statistics_action_id ON "Statistics" (action_id);
+
+CREATE TABLE "SeasonPrizeBonus"(
+    id serial not null
+        PRIMARY KEY,
+    season_prize_id int not null
+        REFERENCES "SeasonPrize" (id),
+    percent numeric(1000,2) not null
+        check ( percent >= 0 and percent <= 100 ),
+    coupon_type_id varchar not null
+        REFERENCES "CouponType" (id)
+);
+
+CREATE INDEX SeasonPrizeBonus_pk ON "SeasonPrizeBonus" (id);
+CREATE INDEX SeasonPrizeBonus_season_prize_id ON "SeasonPrizeBonus" (season_prize_id);
+CREATE INDEX SeasonPrizeBonus_coupon_type_id ON "SeasonPrizeBonus" (coupon_type_id);
 
 CREATE VIEW "SubGroupHierarchyView" AS
 WITH RECURSIVE "Group" AS (
@@ -467,7 +482,7 @@ VALUES
     (2, 'ЛЕТО', 6, 7, 8, 'Описание летнего сезона'),
     (3, 'ОСЕНЬ', 9, 10, 11, 'Описание осеннего сезона');
 
-INSERT INTO "StatisticTypeAction"
+INSERT INTO "StatisticsTypeAction"
     (id, title)
 VALUES
     ('command_start', 'Запуск команды /start'),

@@ -8,7 +8,7 @@ from apps.botpiska.models import Client
 from apps.coupons.models import Coupon
 from apps.seasons.models import Season, SeasonPrizeBought
 from apps.seasons import callbacks
-from apps.statistics.models import Statistic
+from apps.statistics.models import Statistics
 from response_system import UserFriendlyException
 
 
@@ -22,7 +22,7 @@ async def season_general_message_handler(_, user: aiogram.types.User):
         return rse.tmpl_send('apps/seasons/templates/message-season-not-found.xml', {})
 
     is_prize_bought = season.current_prize.is_bought_by_client(client.chat_id)
-    Statistic.record('open_season', client.chat_id,)
+    Statistics.record('open_season', client.chat_id,)
     return rse.tmpl_send('apps/seasons/templates/message-season-general.xml', {
         'is_prize_bought': is_prize_bought,
         'client': client,
@@ -57,7 +57,7 @@ async def season_buy_prize_handler(_, user: aiogram.types.User, callback_data: c
         created_at=rs.global_time.get()
     )
 
-    Statistic.record('bought_season_prize', user.id, season_prize=season.current_prize.id)
+    Statistics.record('bought_season_prize', user.id, season_prize=season.current_prize.id)
 
     return (
         rse.tmpl_edit('apps/seasons/templates/message-season-general.xml', {
@@ -74,7 +74,7 @@ async def season_buy_prize_handler(_, user: aiogram.types.User, callback_data: c
 async def season_help_handler(_, user: aiogram.types.User):
     """ ... """
 
-    Statistic.record('open_season_about', user.id)
+    Statistics.record('open_season_about', user.id)
     return rse.tmpl_send('apps/seasons/templates/message-season-help.xml', {})
 
 
@@ -82,7 +82,7 @@ async def season_invite_handler(_, user: aiogram.types.User):
     """ ... """
 
     coupon = Coupon.get_clients_invitation(user.id)
-    Statistic.record('open_referral_link', user.id, coupon=coupon.code)
+    Statistics.record('open_referral_link', user.id, coupon=coupon.code)
     return rse.tmpl_send('apps/seasons/templates/message-season-invite.xml', {
         'deep-link': f'https://t.me/{settings.BOT_NAME}?start={coupon.code}'
     })

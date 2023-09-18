@@ -18,7 +18,7 @@ class JSONField(peewee.TextField):
             return json.loads(value)
 
 
-class StatisticTypeAction(gls.BaseModel):
+class StatisticsTypeAction(gls.BaseModel):
     """ ... """
 
     """ ID типа действия """
@@ -27,15 +27,15 @@ class StatisticTypeAction(gls.BaseModel):
     title = peewee.CharField()
 
     class Meta:
-        table_name = 'StatisticTypeAction'
+        table_name = 'StatisticsTypeAction'
 
 
-class Statistic(gls.BaseModel):
+class Statistics(gls.BaseModel):
     """ ... """
 
     client = peewee.ForeignKeyField(Client, on_delete='NO ACTION')
     """ Тип действия """
-    action = peewee.ForeignKeyField(StatisticTypeAction, backref='statistics', on_delete='NO ACTION')
+    action = peewee.ForeignKeyField(StatisticsTypeAction, backref='statistics', on_delete='NO ACTION')
     """ Данные действия """
     # data = peewee.CharField(null=True)
     data = JSONField()
@@ -44,7 +44,7 @@ class Statistic(gls.BaseModel):
 
 
     class Meta:
-        table_name = 'Statistic'
+        table_name = 'Statistics'
         primary_key = False
 
 
@@ -59,7 +59,7 @@ class Statistic(gls.BaseModel):
 
         # if not cls.is_user_action(user_id, action):
         try:
-            new_object = Statistic.create(
+            new_object = Statistics.create(
                 client=user_id,
                 action=action,
                 data=data,
