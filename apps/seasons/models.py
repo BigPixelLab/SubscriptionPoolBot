@@ -111,3 +111,17 @@ class SeasonPrizeBought(gls.BaseModel):
     class Meta:
         table_name = 'SeasonPrizeBought'
         primary_key = peewee.CompositeKey('client', 'season_prize')
+
+
+class SeasonPrizeBonus(gls.BaseModel):
+    id = peewee.IntegerField(primary_key=True)
+    season_prize = peewee.ForeignKeyField(SeasonPrize, on_delete='NO ACTION')
+    percent = peewee.DecimalField()
+    coupon_type = peewee.ForeignKeyField(CouponType, on_delete='NO ACTION')
+
+    class Meta:
+        table_name = 'SeasonPrizeBonus'
+
+
+
+
