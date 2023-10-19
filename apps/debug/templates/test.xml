@@ -1,0 +1,5 @@
+<message>
+    <p if="a"> Hello1 </p>
+    <p else-if="b"> Hello2 </p>
+    <p else=""> Hello3 </p>
+</message>

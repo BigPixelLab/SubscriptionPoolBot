@@ -59,10 +59,10 @@ async def get_coupon(
     if user_id and coupon.sets_referral_id == user_id:
         raise CouponProhibited(coupon, 'Купон запрещён для активации данным пользователем')
 
-    if coupon.expires_after and rs.global_time.get() > coupon.expires_after:
+    if coupon.type.lifespan and rs.global_time.get() > coupon.created_at + coupon.type.lifespan:
         raise CouponExpired(coupon, 'Истёк срок действия купона')
 
-    if coupon.max_usages and coupon.get_total_uses() >= coupon.max_usages:
+    if coupon.type.max_usages and coupon.get_total_uses() >= coupon.type.max_usages:
         raise CouponExceededUsage(coupon, 'Превышено разрешённое количество использований купона')
 
     if subscription_id and not coupon.is_allowed_for_subscription(subscription_id):

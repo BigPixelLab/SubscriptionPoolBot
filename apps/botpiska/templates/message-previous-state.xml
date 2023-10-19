@@ -1,0 +1,4 @@
+<message>
+    <p> Возвращаем на главный экран </p>
+    <template src="{__dir__}/keyboard-general.xml"/>
+</message>

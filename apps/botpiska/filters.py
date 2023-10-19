@@ -24,6 +24,7 @@ async def service_filter(message: aiogram.types.Message) -> dict | bool:
 
 async def employee_filter(message: aiogram.types.Message) -> dict | bool:
     """ ... """
+
     return Employee.is_employee(message.from_user.id)
 
 

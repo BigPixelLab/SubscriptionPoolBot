@@ -12,6 +12,10 @@ import os
 BOT_TOKEN = os.environ['TOKEN']
 OPERATOR_BOT_TOKEN = os.environ['OPERATOR_TOKEN']
 
+# Имя бота, как в телеграмм
+BOT_NAME = os.environ['BOT_NAME']
+
+
 # Включает/выключает режим разработки. Некоторые функции бота
 # будут доступны исключительно в этом режиме
 DEBUG = 'DEBUG' in os.environ
@@ -27,10 +31,10 @@ LIBS = [
 # CONTACTING ----------------------------------------------
 
 # Telegram ID пользователя, являющегося оператором поддержки
-SUPPORT_CHAT_ID = 839882467
+SUPPORT_CHAT_ID = os.environ['SUPPORT_CHAT_ID']
 
 # Telegram ID пользователя, являющегося оператором тех. поддержки
-TECH_SUPPORT_CHAT_ID = 1099569178
+TECH_SUPPORT_CHAT_ID = os.environ['TECH_SUPPORT_CHAT_ID']
 
 
 # PAYMENTS ------------------------------------------------
@@ -80,6 +84,12 @@ LOGGING_LEVEL = logging.INFO
 LOGGING_FORMAT = '%(filename)s:%(lineno)d #%(levelname)-8s ' \
                  '[%(asctime)s] - %(name)s - %(message)s'
 
+# Путь к файлу, куда будут записываться логи
+LOGGING_DIRECTORY = os.environ['LOGGING_DIRECTORY']
+
+# Формат имени файла логов
+LOGGING_FILENAME_FORMAT = '%Y_%m_%d_%H_%M_%S_%f.log'
+
 
 # OUTPUT --------------------------------------------------
 
@@ -97,3 +107,6 @@ COUPON_MAX_LENGTH = 6
 # За сколько дней заранее нужно оповестить пользователя,
 # что его подписка заканчивается
 NOTIFY_BEFORE = datetime.timedelta(days=3)  # 3
+
+# Процент, который мы будем брать от общей цены товара
+SEASON_BONUS_PERCENTAGE = 0.1

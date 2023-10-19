@@ -1,4 +1,4 @@
-<message requires="bill-image,subscription,bill,is_gifts_allowed">
+<message requires="bill-image, subscription, bill, is_gifts_allowed">
     <img src.cv="bill-image"/>
 
     <heading> СЧЁТ ЗА {subscription.title} </heading>
@@ -22,7 +22,7 @@
 
         <!-- Версия нижней части клавиатуры, когда подписка берётся уже
             в качестве подарка -->
-        <row if="not is_gifts_allowed">
+        <row else="">
             <button callback_data="get-for-self"> 🔸 Готово 🔸 </button>
         </row>
     </inline-keyboard>

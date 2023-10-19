@@ -5,7 +5,9 @@ basic_red = style.Style(
     foreground=palettes.RED_PALETTE,
     background=palettes.WHITE_PALETTE,
     border='[]',
-    rule=rules.rule_single
+    rule=rules.rule_single,
+    mark='🎁',
+    mark_reached='📦'
 )
 basic_orange = basic_red.updated(foreground=palettes.ORANGE_PALETTE)
 basic_yellow = basic_red.updated(foreground=palettes.YELLOW_PALETTE)

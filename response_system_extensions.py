@@ -13,7 +13,7 @@ from apps.botpiska.models import Employee
 from response_system.core import globals_
 from response_system.core.responses import TEditSuccessHandler, TBasicHandler, Response, TSendSuccessHandler, \
     TFeedbackSuccessHandler, TNotifyEverySuccessHandler, TNotifyBasicSuccessHandler, handle, \
-    TNotifyCompletionHandler, action_edit, action_send, action_feedback
+    TNotifyCompletionHandler, action_edit, action_send, action_feedback, __debugging__
 
 
 async def action_tmpl_notify(
@@ -44,13 +44,20 @@ async def action_tmpl_notify(
             result = await message.send(chat, bot=bot)
             await handle(on_every_success, result)
             succeeded += 1
-        except aiogram.exceptions.TelegramForbiddenError:
-            await handle(on_every_forbidden, chat)
-            await handle(on_every_error, chat)
-        except Exception:
+
+        except Exception as error:
+            do_raise = __debugging__ and on_every_error is None
+
+            if isinstance(error, aiogram.exceptions.TelegramForbiddenError):
+                do_raise = __debugging__ and on_every_forbidden is None
+                await handle(on_every_forbidden, chat)
+
             await handle(on_every_error, chat)
 
-    await on_completion(succeeded, len(receivers))
+            if do_raise:
+                raise
+
+    await handle(on_completion, succeeded, len(receivers))
 
 
 # ---
@@ -63,7 +70,9 @@ def tmpl_edit(
 
         on_success: TEditSuccessHandler = None,
         on_forbidden: TBasicHandler = None,
-        on_error: TBasicHandler = None
+        on_error: TBasicHandler = None,
+
+        priority: int = 0
 ) -> Response:
     response = Response()
     response.add_action(
@@ -75,7 +84,7 @@ def tmpl_edit(
             on_forbidden=on_forbidden,
             on_error=on_error
         ),
-        priority=0
+        priority
     )
     return response
 
@@ -87,7 +96,9 @@ def tmpl_send(
 
         on_success: TSendSuccessHandler = None,
         on_forbidden: TBasicHandler = None,
-        on_error: TBasicHandler = None
+        on_error: TBasicHandler = None,
+
+        priority: int = 2
 ) -> Response:
     response = Response()
     response.add_action(
@@ -99,7 +110,7 @@ def tmpl_send(
             on_forbidden=on_forbidden,
             on_error=on_error
         ),
-        priority=2
+        priority
     )
     return response
 
@@ -112,7 +123,9 @@ def tmpl_feedback(
         on_success: TFeedbackSuccessHandler = None,
         on_forbidden: TBasicHandler = None,
         on_error: TBasicHandler = None,
-        on_delete: TBasicHandler = None
+        on_delete: TBasicHandler = None,
+
+        priority: int = 3
 ) -> Response:
     response = Response()
     response.add_action(
@@ -125,7 +138,7 @@ def tmpl_feedback(
             on_error=on_error,
             on_delete=on_delete
         ),
-        priority=3
+        priority
     )
     return response
 
@@ -139,7 +152,9 @@ def tmpl_notify(
         on_every_success: TNotifyEverySuccessHandler = None,
         on_every_forbidden: TNotifyBasicSuccessHandler = None,
         on_every_error: TNotifyBasicSuccessHandler = None,
-        on_completion: TNotifyCompletionHandler = None
+        on_completion: TNotifyCompletionHandler = None,
+
+        priority: int = 4
 ) -> Response:
     response = Response()
     response.add_action(
@@ -153,7 +168,7 @@ def tmpl_notify(
             on_every_error=on_every_error,
             on_completion=on_completion
         ),
-        priority=4
+        priority
     )
     return response
 
@@ -165,7 +180,9 @@ def tmpl_notify_employee(
         on_every_success: TNotifyEverySuccessHandler = None,
         on_every_forbidden: TNotifyBasicSuccessHandler = None,
         on_every_error: TNotifyBasicSuccessHandler = None,
-        on_completion: TNotifyCompletionHandler = None
+        on_completion: TNotifyCompletionHandler = None,
+
+        priority: int = 4
 ) -> Response:
     response = Response()
     response.add_action(
@@ -179,6 +196,6 @@ def tmpl_notify_employee(
             on_every_error=on_every_error,
             on_completion=on_completion
         ),
-        priority=4
+        priority
     )
     return response

@@ -1,7 +1,9 @@
 <template>
     <reply-keyboard input_field_placeholder="Название сервиса" resize_keyboard="True">
+        <row> <button> CHAT-GPT </button> </row>
         <row> <button> SPOTIFY </button> </row>
         <row> <button> NETFLIX </button> </row>
         <row> <button> STEAM </button> </row>
+        <row> <button> НАЗАД </button> </row>
     </reply-keyboard>
 </template>

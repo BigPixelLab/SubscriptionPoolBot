@@ -1,0 +1,12 @@
+<message requires="subscription_plans">
+    <img src.rs="{__dir__}/resources/CHATGPT-BANNER-SPEEDSEASON.png"/>
+
+    <heading> CHATGPT ⚙ </heading>
+    <section>
+        Революционная AI теперь у тебя во вкладке барузера!
+    </section>
+    <section> ⚠️ <u><b> Для работы необходим VPN </b></u> ⚠️ </section>
+
+    <template src="{__dir__.parent}/keyboard-showcase-default.xml"
+              plans.cv="subscription_plans"/>
+</message>

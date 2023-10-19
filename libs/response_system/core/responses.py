@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import inspect
 import typing
 
 import aiogram
@@ -20,6 +21,7 @@ TNotifyEverySuccessHandler = typing.Callable[[int, int], typing.Awaitable]
 TNotifyCompletionHandler = typing.Callable[[int, int], typing.Awaitable]
 
 FEEDBACK_VISIBILITY_TIME = 2
+__debugging__ = False
 
 
 class Response:
@@ -64,7 +66,10 @@ def to_MessageRenderList(value: typing.Union[MessageRenderList, MessageRender, s
 async def handle(handler: typing.Optional[typing.Callable[[...], typing.Awaitable]], *args):
     if handler is None:
         return
-    await handler(*args)
+
+    result = handler(*args)
+    if inspect.isawaitable(result):
+        await result
 
 
 async def action_edit(
@@ -80,11 +85,18 @@ async def action_edit(
     try:
         result = await message.edit(original, bot=bot)
         await handle(on_success, result)
-    except aiogram.exceptions.TelegramForbiddenError:
-        await handle(on_forbidden)
+
+    except Exception as error:
+        do_raise = __debugging__ and on_error is None
+
+        if isinstance(error, aiogram.exceptions.TelegramForbiddenError):
+            do_raise = __debugging__ and on_forbidden is None
+            await handle(on_forbidden)
+
         await handle(on_error)
-    except Exception:
-        await handle(on_error)
+
+        if do_raise:
+            raise
 
 
 async def action_delete(
@@ -105,11 +117,18 @@ async def action_delete(
     try:
         result = await bot.delete_message(chat, original)
         await handle(on_success, result)
-    except aiogram.exceptions.TelegramForbiddenError:
-        await handle(on_forbidden)
+
+    except Exception as error:
+        do_raise = __debugging__ and on_error is None
+
+        if isinstance(error, aiogram.exceptions.TelegramForbiddenError):
+            do_raise = __debugging__ and on_forbidden is None
+            await handle(on_forbidden)
+
         await handle(on_error)
-    except Exception:
-        await handle(on_error)
+
+        if do_raise:
+            raise
 
 
 async def action_send(
@@ -125,11 +144,18 @@ async def action_send(
     try:
         result = await message.send(chat, bot=bot)
         await handle(on_success, result)
-    except aiogram.exceptions.TelegramForbiddenError:
-        await handle(on_forbidden)
+
+    except Exception as error:
+        do_raise = __debugging__ and on_error is None
+
+        if isinstance(error, aiogram.exceptions.TelegramForbiddenError):
+            do_raise = __debugging__ and on_forbidden is None
+            await handle(on_forbidden)
+
         await handle(on_error)
-    except Exception:
-        await handle(on_error)
+
+        if do_raise:
+            raise
 
 
 async def action_feedback(
@@ -144,7 +170,7 @@ async def action_feedback(
 ):
     # noinspection PyBroadException
     try:
-        fb, = message.send(chat, bot=bot)
+        fb = await message.send(chat, bot=bot)
         asyncio.create_task(
             action_delete(
                 fb.message_id,
@@ -154,11 +180,18 @@ async def action_feedback(
             )
         )
         await handle(on_success, fb)
-    except aiogram.exceptions.TelegramForbiddenError:
-        await handle(on_forbidden)
+
+    except Exception as error:
+        do_raise = __debugging__ and on_error is None
+
+        if isinstance(error, aiogram.exceptions.TelegramForbiddenError):
+            do_raise = __debugging__ and on_forbidden is None
+            await handle(on_forbidden)
+
         await handle(on_error)
-    except Exception:
-        await handle(on_error)
+
+        if do_raise:
+            raise
 
 
 async def action_notify(
@@ -179,11 +212,20 @@ async def action_notify(
             result = await message.send(chat, bot=bot)
             await handle(on_every_success, result)
             succeeded += 1
-        except aiogram.exceptions.TelegramForbiddenError:
-            await handle(on_every_forbidden, chat)
+
+        except Exception as error:
+            do_raise = __debugging__ and on_every_error is None
+
+            if isinstance(error, aiogram.exceptions.TelegramForbiddenError):
+                do_raise = __debugging__ and on_every_forbidden is None
+                await handle(on_every_forbidden, chat)
+
             await handle(on_every_error, chat)
-        except Exception:
-            await handle(on_every_error, chat)
+
+            if do_raise:
+                raise
+
+        await asyncio.sleep(0.5)
 
     await on_completion(succeeded, len(receivers))
 
@@ -198,7 +240,9 @@ def edit(
 
         on_success: TEditSuccessHandler = None,
         on_forbidden: TBasicHandler = None,
-        on_error: TBasicHandler = None
+        on_error: TBasicHandler = None,
+
+        priority: int = 0
 ) -> Response:
     response = Response()
     response.add_action(
@@ -210,7 +254,7 @@ def edit(
             on_forbidden=on_forbidden,
             on_error=on_error
         ),
-        priority=0
+        priority
     )
     return response
 
@@ -222,13 +266,18 @@ def delete(
 
         on_success: TDeleteSuccessHandler = None,
         on_forbidden: TBasicHandler = None,
-        on_error: TBasicHandler = None
+        on_error: TBasicHandler = None,
+
+        priority: int = 0
 ) -> Response:
     if chat and not isinstance(original, int):
         raise ValueError('Chat can be set only when original passed id')
 
     if chat is None and isinstance(original, int):
-        raise ValueError('Chat must be specified when original passed by id')
+        chat = globals_.message_var.get().chat.id
+
+    if original is None:
+        original = globals_.message_var.get()
 
     if isinstance(original, aiogram.types.Message):
         original, chat = original.message_id, original.chat.id
@@ -243,7 +292,7 @@ def delete(
             on_forbidden=on_forbidden,
             on_error=on_error
         ),
-        priority=0
+        priority
     )
     return response
 
@@ -255,7 +304,9 @@ def send(
 
         on_success: TSendSuccessHandler = None,
         on_forbidden: TBasicHandler = None,
-        on_error: TBasicHandler = None
+        on_error: TBasicHandler = None,
+
+        priority: int = 2
 ) -> Response:
     response = Response()
     response.add_action(
@@ -267,7 +318,7 @@ def send(
             on_forbidden=on_forbidden,
             on_error=on_error
         ),
-        priority=2
+        priority
     )
     return response
 
@@ -276,10 +327,13 @@ def feedback(
         message: typing.Union[MessageRender, str],
         chat: int = None,
         bot: aiogram.Bot = None,
+
         on_success: TFeedbackSuccessHandler = None,
         on_forbidden: TBasicHandler = None,
         on_error: TBasicHandler = None,
-        on_delete: TBasicHandler = None
+        on_delete: TBasicHandler = None,
+
+        priority: int = 3
 ) -> Response:
     response = Response()
     response.add_action(
@@ -292,7 +346,7 @@ def feedback(
             on_error=on_error,
             on_delete=on_delete
         ),
-        priority=3
+        priority
     )
     return response
 
@@ -305,7 +359,9 @@ def notify(
         on_every_success: TNotifyEverySuccessHandler = None,
         on_every_forbidden: TNotifyBasicSuccessHandler = None,
         on_every_error: TNotifyBasicSuccessHandler = None,
-        on_completion: TNotifyCompletionHandler = None
+        on_completion: TNotifyCompletionHandler = None,
+
+        priority: int = 4
 ) -> Response:
     response = Response()
     response.add_action(
@@ -318,14 +374,14 @@ def notify(
             on_every_error=on_every_error,
             on_completion=on_completion
         ),
-        priority=4
+        priority
     )
     return response
 
 
-def do(function: typing.Awaitable) -> Response:
+def do(function: typing.Awaitable, priority: int = 5) -> Response:
     response = Response()
-    response.add_action(function, priority=5)
+    response.add_action(function, priority)
     return response
 
 

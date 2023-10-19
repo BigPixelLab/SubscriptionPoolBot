@@ -1,13 +1,14 @@
 <message requires="subscription_plans">
-    <img src.rs="{__dir__}/resources/SPOTIFY-BANNER.jpg"/>
+    <img src.rs="{__dir__}/resources/SPOTIFY-BANNER-SPEEDSEASON-min.jpg"/>
 
-    <heading> SPOTIFY INDIVIDUAL </heading>
+    <heading> SPOTIFY INDIVIDUAL 🧩 </heading>
     <section>
         Слушай любимую музыку в любом месте в любое время с
         индивидуальной подпиской spotify premium.
     </section>
     <section>
         <p> <b> Ты получаешь: </b> </p>
+        <p> - Огромный выбор музыки, как российской, так и зарубежной </p>
         <p> - Анимированные обложки </p>
         <p> - Сохранение медиатеки </p>
         <p> - Полное отсутствие VPN </p>

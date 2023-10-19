@@ -72,7 +72,7 @@ def template(tag: Tag, *, src: str, __rem: dict):
         Пример использования::
 
             template.xml
-            │ <template requires="firstname,surname">
+            │ <template requires="firstname, surname">
             │     <p> Привет, {surname} {firstname}! </p>
             │ </template>
 
@@ -116,8 +116,35 @@ def template(tag: Tag, *, src: str, __rem: dict):
 
     # Processing template elements
 
+    cond_status = MutableVariable(None)
     for element in tmpl.childNodes:
-        tag.process(element, ReadOnlyDict(__rem))
+        tag.process(element, ReadOnlyDict(__rem), cond_status)
+
+
+@register([MESSAGE, ELEMENT])
+def paste(_, value: str) -> Text:
+    """
+        Вставляет текст переданный в value в сыром виде.
+
+        Тип текста: Text
+
+        ::
+
+            │ <paste/>
+            └── MESSAGE/ELEMENT Scope
+
+        Пример использования::
+
+            main.xml
+            │ <message>
+            │     <paste value="<b>    Oh, wow! </b>"/>
+            │ </message>
+
+            >>> render('main.xml', {})
+            MessageRender('<b>    Oh, wow! </b>')
+
+    """
+    return Text(value)
 
 
 SPACING_PATTERN = re.compile(r'\s+')
@@ -128,6 +155,7 @@ def _text_(tag: Tag) -> Paragraph:
     """ Не обрамлённый в теги текст """
     words = re.split(SPACING_PATTERN, tag.element.nodeValue)
     result = ' '.join(words).strip().format_map(tag.context)
+    result = result.replace('<', '&lt;').replace('>', '&gt;')
     return Text(result)
 
 
@@ -422,6 +450,34 @@ def u(tag: Tag) -> Text:
 
 
 @register([MESSAGE, ELEMENT])
+def s(tag: Tag) -> Text:
+    """
+        Зачёркнутый текст.
+
+        Тип текста: Text
+
+        ::
+
+            │ <s>
+            │     ... ELEMENT Scope ...
+            │ </s>
+            └── MESSAGE/ELEMENT Scope
+
+        Пример использования::
+
+            main.xml
+            │ <message>
+            │     <s> Hello World! </s>
+            │ </message>
+
+            >>> render('main.xml', {})
+            MessageRender('<s>Hello World!</s>')
+
+    """
+    return Text(f'<s>{ELEMENT.parse(tag.element, tag.context)}</s>')
+
+
+@register([MESSAGE, ELEMENT])
 def code(tag: Tag) -> Text:
     """
         Моноширинный копируемый текст.
@@ -538,7 +594,7 @@ def row_inline_keyboard(tag: Tag) -> KeyboardLayoutRow:
 def button_inline_keyboard(tag: Tag, *, text: str = None, url: str = None, callback_data: str = None,
                            web_app: WebAppInfo = None, login_url: LoginUrl = None,
                            switch_inline_query: str = None, switch_inline_query_current_chat: str = None,
-                           callback_game: CallbackGame = None, pay: bool = False) \
+                           callback_game: CallbackGame = None, pay: bool = False, cd: str = None) \
         -> InlineKeyboardButton:
     """
         Кнопка inline-клавиатуры.
@@ -554,7 +610,10 @@ def button_inline_keyboard(tag: Tag, *, text: str = None, url: str = None, callb
 
             <button[ text: str][ url: str][ callback_data: str][ web_app: WebAppInfo][ login_url: LoginUrl]
                 [ switch_inline_query: str][ switch_inline_query_current_chat: str]
-                [ callback_game: CallbackGame][ pay: bool]/>
+                [ callback_game: CallbackGame][ pay: bool][ cd: str]/>
+
+            cd - сокращённый способ использовать "callback_data". Если указано и то и другое,
+            предпочтение отдаётся "callback_data".
 
     """
 
@@ -562,7 +621,7 @@ def button_inline_keyboard(tag: Tag, *, text: str = None, url: str = None, callb
         text = NO_HTML.parse(tag.element, tag.context)
 
     return InlineKeyboardButton(
-        text=text, url=url, callback_data=callback_data, web_app=web_app, login_url=login_url,
+        text=text, url=url, callback_data=callback_data or cd, web_app=web_app, login_url=login_url,
         switch_inline_query=switch_inline_query, switch_inline_query_current_chat=switch_inline_query_current_chat,
         callback_game=callback_game, pay=pay
     )

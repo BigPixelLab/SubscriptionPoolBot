@@ -1,0 +1,4 @@
+<message>
+    <p> Забрать приз </p>
+    Купон: <code> {coupon_id} </code>
+</message>

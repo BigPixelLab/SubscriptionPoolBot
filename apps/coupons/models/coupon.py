@@ -81,6 +81,15 @@ class Coupon(gls.BaseModel):
         """, dict(client=user_id, coupon=self.code))
 
     @classmethod
+    def get_clients_invitation(cls, user_id: int):
+        """ Возвращает купон-приглашение указанного пользователя,
+            если нет - создаёт """
+        try:
+            return cls.get(type='invitation', sets_referral=user_id)
+        except peewee.DoesNotExist:
+            return cls.from_type('invitation', sets_referral=user_id)
+
+    @classmethod
     def get_random_code(cls):
         """ Возвращает случайный код купона. Уникальность не гарантируется """
         return ''.join(random.choices(

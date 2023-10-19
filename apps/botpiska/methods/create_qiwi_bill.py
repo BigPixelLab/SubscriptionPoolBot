@@ -8,6 +8,7 @@ import glQiwiApi.qiwi.exceptions
 import glQiwiApi.qiwi.clients.p2p.types as qiwi_types
 
 import settings
+from .. import settings as local_settings
 from response_system import UserFriendlyException
 
 logger = logging.getLogger(__name__)
@@ -22,7 +23,7 @@ async def create_qiwi_bill(
         amount: str,
         expires: datetime.datetime
 ) -> qiwi_types.Bill:
-    """ ... """
+    """ Отправляет серверу qiwi запрос на открытие счёта """
 
     while True:
         try:
@@ -37,5 +38,10 @@ async def create_qiwi_bill(
 
         except aiohttp.client_exceptions.ClientConnectorError as error:
             logger.info(error)
-            await asyncio.sleep(0.2)
+            await asyncio.sleep(local_settings.QIWI_CONNECTION_ATTEMPT_INTERVAL)
             continue
+
+
+__all__ = (
+    'create_qiwi_bill',
+)

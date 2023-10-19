@@ -23,7 +23,7 @@ class Subscription(gls.BaseModel):
     """ Короткое наименование подписки, для отображения в кнопках """
     title = peewee.CharField()
     """ Полное наименование подписки, с названием сервиса, типом и длительностью """
-    duration = IntervalField()
+    duration = IntervalField(null=True)
     """ Продолжительность подписки """
     price = peewee.DecimalField(max_digits=1000, decimal_places=2)
     """ Цена подписки """
@@ -43,6 +43,10 @@ class Subscription(gls.BaseModel):
     def monthly_price(self) -> decimal.Decimal:
         """ Цена за подписку в месяц """
         self.duration: datetime.timedelta
+        self.price: decimal.Decimal
+
+        if self.duration is None:
+            return self.price
         return self.price / decimal.Decimal(self.duration.days / 30)
 
     @property

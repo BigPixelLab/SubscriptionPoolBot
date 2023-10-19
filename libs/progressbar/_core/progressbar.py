@@ -1,7 +1,7 @@
 from .style import Style
 from .styles import basic_green
 
-default_size = 14
+default_size = 13
 default_style = basic_green
 
 

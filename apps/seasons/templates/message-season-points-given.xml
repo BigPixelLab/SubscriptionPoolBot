@@ -1,11 +1,28 @@
-<message requires="">
-    <img src="..."/>
+<message requires="is_prize_bought, client, season, subscription, bonus">
+    <heading> +{bonus} БОНУСОВ СЕЗОНА 🔶🔶🔶</heading>
 
-    <heading>Title</heading>
-    <br/>
-    <p></p>
+    <section>
+        <p> До "{season.current_prize.title}" </p>
+        <progressbar steps.py="client.season_points" of.py="season.current_prize.cost"/>
+        <p if="not is_prize_bought">
+            <i> {client.season_points}/{season.current_prize.cost} бонусов </i>.
+            Осталось: {season.current_prize_days_left}д
+        </p>
+        <p else="">
+            <i> 🎉 Приз уже получен </i>
+        </p>
+    </section>
 
     <inline-keyboard>
-        <button callback_data="...">Ok</button>
+        <row if="not is_prize_bought and client.season_points &gt;= season.current_prize.cost">
+            <button callback_data="season-prize:{season.current_prize.coupon_type_id}:{season.current_prize.id}">
+                🔸 Получить 🔸
+            </button>
+        </row>
+        <row>
+            <button callback_data="season-open">
+                Открыть сезон
+            </button>
+        </row>
     </inline-keyboard>
 </message>

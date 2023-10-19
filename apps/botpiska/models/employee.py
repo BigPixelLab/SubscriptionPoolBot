@@ -15,9 +15,11 @@ class Employee(gls.BaseModel):
 
     @classmethod
     def is_employee(cls, user_id: int):
+        """ ... """
         query = """ SELECT count(*) = 1 FROM "Employee" WHERE chat_id = %(user_id)s """
         return ezqr.single_value(query, {'user_id': user_id})
 
     @classmethod
     def get_all_chats(cls) -> list[int]:
+        """ ... """
         return ezqr.fetch_values(""" SELECT chat_id FROM "Employee" """, {})

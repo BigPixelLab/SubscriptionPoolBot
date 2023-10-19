@@ -1,4 +1,10 @@
+import functools
+from datetime import date, timedelta
+from typing import Optional
+
 import peewee
+
+import ezqr
 import gls
 from apps.botpiska.models import Client
 from apps.coupons.models import CouponType
@@ -11,7 +17,7 @@ class SeasonPrize(gls.BaseModel):
     """ID приза сезона"""
     coupon_type_id = peewee.ForeignKeyField(CouponType, on_delete='NO ACTION')
     """ ID типа купона"""
-    banner = peewee.CharField() # для чего это?
+    banner = peewee.CharField()
     """ Фото """
     title = peewee.CharField()
     """ Наименование """
@@ -21,11 +27,18 @@ class SeasonPrize(gls.BaseModel):
     class Meta:
         table_name = 'SeasonPrize'
 
-    @classmethod
-    def get_prize_id(cls, prize_id: str):
-        """ Возвращает сезон по id """
-        return cls.select() \
-            .where(cls.id == prize_id).get()
+    def is_bought_by_client(self, user_id: int):
+        query = """
+            SELECT count(1)
+            FROM "SeasonPrizeBought"
+            WHERE client_id = %(user_id)s
+                AND season_prize_id = %(season_prize_id)s
+        """
+        result = ezqr.single_value(query, {
+            'season_prize_id': self.id,
+            'user_id': user_id
+        })
+        return bool(result)
 
 
 class Season(gls.BaseModel):
@@ -35,30 +48,54 @@ class Season(gls.BaseModel):
     """ ID сезона """
     title = peewee.CharField()
     """ Название сезона """
-    price1 = peewee.ForeignKeyField(SeasonPrize, on_delete='NO ACTION')
+    prize1 = peewee.ForeignKeyField(SeasonPrize, on_delete='NO ACTION')
     """ 1-ый месяц сезона """
-    price2 = peewee.ForeignKeyField(SeasonPrize, on_delete='NO ACTION')
+    prize2 = peewee.ForeignKeyField(SeasonPrize, on_delete='NO ACTION')
     """ 2-ой месяц сезона """
-    price3 = peewee.ForeignKeyField(SeasonPrize, on_delete='NO ACTION')
+    prize3 = peewee.ForeignKeyField(SeasonPrize, on_delete='NO ACTION')
     """ 3-ий месяц сезона """
     description = peewee.TextField()
     """ Описание сезона """
-    # title = peewee.CharField()
-    # """ Наименование сезона """
 
     class Meta:
         table_name = 'Season'
 
-    @classmethod
-    def select_seasons(cls):
-        """ Возвращает все сезоны"""
-        return list(cls.select())
+    @functools.cached_property
+    def current_prize(self) -> Optional[SeasonPrize]:
+        month = date.today().month
+
+        if month % 12 // 3 != self.id:
+            return None
+
+        # Чтобы не делать два отдельных запроса, заодно кешируем призы
+        return self.prizes[self.current_prize_index]
+
+    @functools.cached_property
+    def prizes(self) -> tuple[SeasonPrize, SeasonPrize, SeasonPrize]:
+        # noinspection PyTypeChecker
+        return self.prize1, self.prize2, self.prize3
+
+    @property
+    def current_prize_index(self) -> int:
+        return date.today().month % 12 % 3
+
+    @property
+    def current_prize_days_left(self) -> int:
+        today = date.today()
+        # The day 28 exists in every month. 4 days later, it's always next month
+        next_month = today.replace(day=28) + timedelta(days=4)
+        # subtracting the number of the current day brings us back one month
+        end_of_the_month = next_month - timedelta(days=next_month.day)
+        # and to get days left we can subtract current date from it
+        return (end_of_the_month - today).days
 
     @classmethod
-    def get_season_id(cls, season_id: str):
-        """ Возвращает сезон по id """
-        return cls.select()\
-            .where(cls.id == season_id)
+    def get_current(cls) -> Optional['Season']:
+        season_id = date.today().month % 12 // 3
+        try:
+            return cls.get_by_id(season_id)
+        except peewee.DoesNotExist:
+            return None
 
 
 class SeasonPrizeBought(gls.BaseModel):
@@ -69,9 +106,22 @@ class SeasonPrizeBought(gls.BaseModel):
     season_prize = peewee.ForeignKeyField(SeasonPrize, on_delete='NO ACTION')
     """ ID приза сезона """
     created_at = peewee.DateTimeField()
-    """ Дата создани """
+    """ Дата создания """
 
     class Meta:
         table_name = 'SeasonPrizeBought'
-        primary_key = ('client', 'season_prize')
+        primary_key = peewee.CompositeKey('client', 'season_prize')
+
+
+class SeasonPrizeBonus(gls.BaseModel):
+    id = peewee.IntegerField(primary_key=True)
+    season_prize = peewee.ForeignKeyField(SeasonPrize, on_delete='NO ACTION')
+    percent = peewee.DecimalField()
+    coupon_type = peewee.ForeignKeyField(CouponType, on_delete='NO ACTION')
+
+    class Meta:
+        table_name = 'SeasonPrizeBonus'
+
+
+
 

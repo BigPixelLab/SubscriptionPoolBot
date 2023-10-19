@@ -1,6 +1,8 @@
 """ ... """
 import asyncio
+import datetime
 import logging
+import os
 import sys
 
 import aiogram.types
@@ -9,13 +11,21 @@ from aiogram.fsm.state import any_state
 from aiogram.fsm.storage.memory import MemoryStorage
 from glQiwiApi import QiwiP2PClient
 
+import settings
+# Добавляем папки с библиотеками и модулями в path
+sys.path.extend(settings.LIBS)
+
 import ezqr
 import response_system
-import settings
+import response_system.core.responses
 import gls
 import template
 import userdata
 from template_for_aiogram import aiogram_syntax
+
+logger = logging.getLogger('peewee')
+logger.addHandler(logging.StreamHandler())
+logger.setLevel(logging.DEBUG)
 
 logger = logging.getLogger(__name__)
 
@@ -37,19 +47,43 @@ def get_BaseModel(db):
     return BaseModel
 
 
+def log_uncaught_exceptions(exc_type, exc_value, exc_traceback):
+    if issubclass(exc_type, KeyboardInterrupt):
+        sys.__excepthook__(exc_type, exc_value, exc_traceback)
+        return
+    logger.error("Uncaught exception", exc_info=(exc_type, exc_value, exc_traceback))
+
+
 async def main():
     """ Точка входа в программу """
 
-    logging.basicConfig(level=settings.LOGGING_LEVEL, format=settings.LOGGING_FORMAT)
+    os.makedirs(settings.LOGGING_DIRECTORY, exist_ok=True)
+
+    logging_filename = os.path.join(
+        settings.LOGGING_DIRECTORY,
+        datetime.datetime.now().strftime(
+            settings.LOGGING_FILENAME_FORMAT
+        )
+    )
+
+    logging.basicConfig(
+        level=settings.LOGGING_LEVEL,
+        format=settings.LOGGING_FORMAT,
+        filename=logging_filename,
+        filemode='a'
+    )
+
+    sys.excepthook = log_uncaught_exceptions
+
     logger.info("Starting bot")
+    print("Starting bot")
 
     template.set_default_syntax(aiogram_syntax)
 
+    response_system.core.responses.__debugging__ = settings.DEBUG
+
     # noinspection PyUnresolvedReferences
     import template_extensions
-
-    # Добавляем папки с библиотеками и модулями в path
-    sys.path.extend(settings.LIBS)
 
     # Инициализация ботов
     gls.storage = MemoryStorage()
@@ -99,6 +133,10 @@ async def main():
     # Разрешаем циклические зависимости в базе данных
     for model in gls.BaseModel.__subclasses__():
         peewee.DeferredForeignKey.resolve(model)
+
+    # Инициализация событий
+    # noinspection PyUnresolvedReferences
+    import events
 
     # Запускаем ботов
     await asyncio.gather(
