@@ -22,6 +22,8 @@ class Style:
          * rule_foreground: RuleType | str - Rule function which renders foreground based on palette;
          * rule_background: RuleType | str - Rule function which renders background based on palette;
          * rule: RuleType | str - Shortcut to set same rule for both foreground and background.
+         * mark: str - Target mark
+         * mark_reached: str - Target mark reached
         """
         attrs = self._resolve_attributes(**kwargs)
         self._foreground = attrs['foreground']
@@ -30,6 +32,8 @@ class Style:
         self._border_right = attrs['border_right']
         self._rule_foreground = attrs['rule_foreground']
         self._rule_background = attrs['rule_background']
+        self._mark = attrs['mark']
+        self._mark_reached = attrs['mark_reached']
 
     @classmethod
     def _resolve_attributes(
@@ -41,7 +45,9 @@ class Style:
             border: _t.Union[tuple[str, str], str] = None,
             rule_foreground: _t.Union[RuleType, str] = None,
             rule_background: _t.Union[RuleType, str] = None,
-            rule: _t.Union[RuleType, str] = None
+            rule: _t.Union[RuleType, str] = None,
+            mark: str = None,
+            mark_reached: str = None
     ):
 
         # Palettes
@@ -111,7 +117,9 @@ class Style:
             'border_left': _border_left,
             'border_right': _border_right,
             'rule_foreground': _rule_foreground,
-            'rule_background': _rule_background
+            'rule_background': _rule_background,
+            'mark': mark,
+            'mark_reached': mark_reached
         }
 
     @classmethod
@@ -153,13 +161,23 @@ class Style:
     def rule_background(self):
         return self._rule_background
 
+    @property
+    def mark(self):
+        return self._mark
+
+    @property
+    def mark_reached(self):
+        return self._mark_reached
+
     def updated(self, **kwargs) -> 'Style':
         """ Creates new style based on this with made changes """
         self_attrs = {
             'border_left': self.border_left,
             'border_right': self.border_right,
             'rule_foreground': self.rule_foreground,
-            'rule_background': self.rule_background
+            'rule_background': self.rule_background,
+            'mark': self.mark,
+            'mark_reached': self.mark_reached
         }
         if 'foreground' not in kwargs:
             kwargs.update(foreground=self.foreground)

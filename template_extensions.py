@@ -15,6 +15,20 @@ from template_for_aiogram.scopes import *
 if typing.TYPE_CHECKING:
     from apps.botpiska.models.subscription import Subscription
 
+
+PROGRESSBAR_DEFAULT_STYLE = progressbar.styles.basic_green
+PROGRESSBAR_STYLES = {
+    'red': progressbar.styles.basic_red,
+    'orange': progressbar.styles.basic_orange,
+    'yellow': progressbar.styles.basic_yellow,
+    'green': progressbar.styles.basic_green,
+    'blue': progressbar.styles.basic_blue,
+    'purple': progressbar.styles.basic_purple,
+    'brown': progressbar.styles.basic_brown,
+    'black': progressbar.styles.basic_black,
+    'rainbow': progressbar.styles.basic_rainbow,
+}
+
 # TEMPLATE GLOBALS --------------------------------------------------
 
 set_global_context({
@@ -36,12 +50,18 @@ def res_extract_func(value, context, _) -> aiogram.types.InputFile | str:
 specifiers.update(rs=res_extract_func)
 
 
+# CONVERTERS --------------------------------------------------------
+
+def to_style(name: str) -> progressbar.Style:
+    return PROGRESSBAR_STYLES.get(name, PROGRESSBAR_DEFAULT_STYLE)
+
+
 # TAGS --------------------------------------------------------------
 
 @register([MESSAGE, ELEMENT], name='progressbar')
-def _progressbar(_, *, steps: int, of: int, width: int = None) -> str:
+def _progressbar(_, *, steps: int, of: int, width: int = None, style: ConvertBy[to_style] = None) -> str:
     """ Progressbar """
-    return progressbar.progressbar(steps / of, width)
+    return progressbar.progressbar(steps / of, width, style)
 
 
 # Python sometimes messes up annotations and turns them into strings,
