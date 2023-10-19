@@ -1,11 +1,14 @@
+import asyncio
 import logging
 
 import aiogram.types
 import aiogram.exceptions
 import peewee
+from aiogram import Bot
 from aiogram.filters import CommandObject
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import default_state
+from aiogram.types import User
 
 import gls
 import response_system as rs
@@ -37,7 +40,7 @@ async def post_received_handler(message: aiogram.types.Message, state: FSMContex
     })
 
 
-async def post_button_handler(_, user: aiogram.types.User, callback_data: callbacks.PostCallback) -> rs.Response:
+async def post_button_handler(_, user: User, callback_data: callbacks.PostCallback) -> rs.Response:
     message = methods.get_post(callback_data.reference_id)
     methods.remove_post(callback_data.reference_id)
 
@@ -48,6 +51,13 @@ async def post_button_handler(_, user: aiogram.types.User, callback_data: callba
         receivers.remove(0)
     except ValueError:
         pass
+
+    bot = Bot.get_current()
+    await bot.send_message(
+        user.id,
+        f'Получателей: {len(receivers)}\n'
+        f'Ожидаемое время полной отправки: {len(receivers) * 0.5} сек'
+    )
 
     def on_completion(succeeded, total):
         return gls.bot.send_message(user.id, f'Успешно отправлено: {succeeded} / {total}')
@@ -62,13 +72,13 @@ class NoLotteryFound(rs.UserFriendlyException):
     """ Лотереи с указанным id нет в базе """
 
 
-async def lottery_command_handler(_, command: CommandObject):
+async def lottery_command_handler(_, user: User, command: CommandObject):
     if command.args is None:
         return rs.feedback('Формат команды: <code>/lottery &lt;lottery_id&gt;</code>')
 
     try:
         lottery = Lottery.get_by_id(command.args)
-        Statistics.record('sent_lottery',lottery_id=lottery.id)
+        Statistics.record('sent_lottery', lottery_id=lottery.id)
     except peewee.DoesNotExist:
         raise NoLotteryFound(f'Лотереи {command.args} нет в базе')
 
@@ -80,6 +90,13 @@ async def lottery_command_handler(_, command: CommandObject):
     prize_generator = generate_lottery_prize(lottery.prizes, len(receivers))
 
     succeeded = 0
+
+    bot = Bot.get_current()
+    await bot.send_message(
+        user.id,
+        f'Получателей: {len(receivers)}\n'
+        f'Ожидаемое время полной отправки: {len(receivers) * 0.5} сек'
+    )
 
     for chat_id in receivers:
         messages: MessageRenderList = template.render('apps/posting/templates/message-lottery.xml', {
@@ -94,6 +111,8 @@ async def lottery_command_handler(_, command: CommandObject):
             pass
         else:
             succeeded += 1
+
+        await asyncio.sleep(0.5)
 
     return rs.send(f'Отправлено {succeeded}/{len(receivers)}')
 

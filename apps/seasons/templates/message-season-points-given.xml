@@ -12,15 +12,16 @@
             <i> 🎉 Приз уже получен </i>
         </p>
     </section>
-    <section>
-        Как получить больше бонусов? Какие можно получить подарки? Что вообще такое сезон?
-        Всё это можно узнать по кнопочке ниже
-    </section>
 
-     <inline-keyboard>
+    <inline-keyboard>
         <row if="not is_prize_bought and client.season_points &gt;= season.current_prize.cost">
             <button callback_data="season-prize:{season.current_prize.coupon_type_id}:{season.current_prize.id}">
                 🔸 Получить 🔸
+            </button>
+        </row>
+        <row>
+            <button callback_data="season-open">
+                Открыть сезон
             </button>
         </row>
     </inline-keyboard>

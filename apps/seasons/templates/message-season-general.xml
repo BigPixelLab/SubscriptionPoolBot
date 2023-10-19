@@ -1,13 +1,13 @@
 <message requires="season, client, is_prize_bought">
-    <img src.rs="{season.current_prize.banner}"/>
+    <anim src.rs="{season.current_prize.banner}"/>
 
-    <heading> {season.title} </heading>
+    <heading> {season.current_prize.title} {season.title} </heading>
 
     <section>
         <p> Твой прогресс: </p>
         <progressbar steps.py="client.season_points" of.py="season.current_prize.cost" />
         <p if="not is_prize_bought">
-            <i> {client.season_points}/{season.current_prize.cost} бонусов </i>.
+            <i> {client.season_points}/{season.current_prize.cost} бонусов. </i>
             Осталось: {season.current_prize_days_left}д
         </p>
         <p else="">
@@ -25,23 +25,14 @@
     <section>
         <p> <b> Призы месяца: </b> </p>
         <p for="i, prize in enumerate(season.prizes)">
-            <p if="i &lt; season.current_prize_index">  🔹{prize.title} </p>
-            <p if="i == season.current_prize_index"> 🔶{prize.title} </p>
-            <p if="i &gt; season.current_prize_index">  🔹??? </p>
+            <p if="i &lt; season.current_prize_index"> 🔹 <s> {prize.title} </s> </p>
+            <p if="i == season.current_prize_index"> 🔶 {prize.title} </p>
+            <p if="i &gt; season.current_prize_index"> 🔹 ??? </p>
         </p>
     </section>
 
     <section if="client.clients_invited &gt; 0">
         Вам помогают: {client.clients_invited}
-    </section>
-
-    <section>
-        <p> Зарабатывай бонусы за покупки и покупки друзей,
-            чтобы получать крутые призы каждый месяц! </p>
-    </section>
-    <section>
-        <p> Приглашать друзей выгодно - за все их покупки
-            ты получаешь столько же бонусов сколько и они! </p>
     </section>
 
     <inline-keyboard>
@@ -50,7 +41,9 @@
                 🔸 Получить 🔸
             </button>
         </row>
-        <row> <button callback_data="season-help"> Что такое сезон? </button> </row>
-        <row> <button callback_data="referral-link"> Пригласить друга </button> </row>
+        <row>
+            <button callback_data="season-help"> Как получить бонусы? </button>
+            <button callback_data="referral-link"> Пригласить друга </button>
+        </row>
     </inline-keyboard>
 </message>

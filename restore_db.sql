@@ -87,7 +87,8 @@ CREATE TABLE "SubscriptionGroup" (
     parent_id varchar
         REFERENCES "SubscriptionGroup" (id),
     subscription_id varchar
-        REFERENCES "Subscription" (id)
+        REFERENCES "Subscription" (id),
+    description varchar not null
 );
 
 -- Adding constraint that cannot been added due to circular references
@@ -502,7 +503,7 @@ VALUES
     ('notification_subscription_renew', 'Получение уведомления о продлении (записать id заказа, вызвавшего уведомление, в data)'),
     ('sent_post_simple', 'Отправка поста (записать первые 100 символов текста в data)'),
     ('sent_lottery', 'Отправка лотереи (записать id лотереи в data)'),
-    ('first_command_start','Первый запуск команды /start')
+    ('registration','Регистрация пользователя')
 
 
 

@@ -42,11 +42,9 @@ class Statistics(gls.BaseModel):
     """ Дата создания """
     created_at = peewee.DateTimeField()
 
-
     class Meta:
         table_name = 'Statistics'
         primary_key = False
-
 
     @classmethod
     def record(cls, action: str, user_id: int = 0, /, **data):

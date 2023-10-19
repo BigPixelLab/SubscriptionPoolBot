@@ -16,6 +16,11 @@ seasons_router.message(
 
 
 seasons_router.callback_query(
+    F.data == "season-open"
+)(handlers.season_open_message_handler)
+
+
+seasons_router.callback_query(
     callbacks.GetSeasonButtonCallbackData.filter()
 )(handlers.season_help_handler)
 

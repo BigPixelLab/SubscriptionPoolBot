@@ -72,6 +72,12 @@ class Client(gls.BaseModel):
             client.referral = referral
             client.save()
 
+        if is_created:
+            ezqr.execute("""
+                INSERT INTO "Statistics" (client_id, action_id, data, created_at)
+                VALUES (%(client_id)s, 'registration', '{}', now())
+            """, {'client_id': user_id})
+
         return client, is_created
 
     @classmethod

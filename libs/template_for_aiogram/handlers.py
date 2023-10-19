@@ -594,7 +594,7 @@ def row_inline_keyboard(tag: Tag) -> KeyboardLayoutRow:
 def button_inline_keyboard(tag: Tag, *, text: str = None, url: str = None, callback_data: str = None,
                            web_app: WebAppInfo = None, login_url: LoginUrl = None,
                            switch_inline_query: str = None, switch_inline_query_current_chat: str = None,
-                           callback_game: CallbackGame = None, pay: bool = False) \
+                           callback_game: CallbackGame = None, pay: bool = False, cd: str = None) \
         -> InlineKeyboardButton:
     """
         Кнопка inline-клавиатуры.
@@ -610,7 +610,10 @@ def button_inline_keyboard(tag: Tag, *, text: str = None, url: str = None, callb
 
             <button[ text: str][ url: str][ callback_data: str][ web_app: WebAppInfo][ login_url: LoginUrl]
                 [ switch_inline_query: str][ switch_inline_query_current_chat: str]
-                [ callback_game: CallbackGame][ pay: bool]/>
+                [ callback_game: CallbackGame][ pay: bool][ cd: str]/>
+
+            cd - сокращённый способ использовать "callback_data". Если указано и то и другое,
+            предпочтение отдаётся "callback_data".
 
     """
 
@@ -618,7 +621,7 @@ def button_inline_keyboard(tag: Tag, *, text: str = None, url: str = None, callb
         text = NO_HTML.parse(tag.element, tag.context)
 
     return InlineKeyboardButton(
-        text=text, url=url, callback_data=callback_data, web_app=web_app, login_url=login_url,
+        text=text, url=url, callback_data=callback_data or cd, web_app=web_app, login_url=login_url,
         switch_inline_query=switch_inline_query, switch_inline_query_current_chat=switch_inline_query_current_chat,
         callback_game=callback_game, pay=pay
     )

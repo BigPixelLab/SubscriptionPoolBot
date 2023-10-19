@@ -31,7 +31,7 @@ async def coupon_message_handler(_, user: aiogram.types.User, code: str):
     except coupons_methods.CouponExceededUsage as error:
         return rs.feedback(
             f'Превышено число использований купона "{error.coupon.code}" '
-            f'({error.coupon.max_usages} использований)'
+            f'({error.coupon.type.max_usages} использований)'
         )
 
     except coupons_methods.CouponWrongSubscription as error:

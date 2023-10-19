@@ -3,6 +3,7 @@
         <row> <button> СПИСОК ТОВАРОВ </button> </row>
         <row>
             <button> ПОДДЕРЖКА </button>
+            <button> КУПОН </button>
             <button> СЕЗОН </button>
         </row>
     </reply-keyboard>

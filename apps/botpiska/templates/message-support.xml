@@ -1,4 +1,6 @@
 <message>
+    <img src.rs="{__dir__}/resources/BANNER-PLACEHOLDER.png"/>
+
     <heading> ПОДДЕРЖКА </heading>
     <section>
         Если у вас возникли какие-либо сложности с получением

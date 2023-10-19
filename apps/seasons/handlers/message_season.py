@@ -22,8 +22,26 @@ async def season_general_message_handler(_, user: aiogram.types.User):
         return rse.tmpl_send('apps/seasons/templates/message-season-not-found.xml', {})
 
     is_prize_bought = season.current_prize.is_bought_by_client(client.chat_id)
-    Statistics.record('open_season', client.chat_id,)
+    Statistics.record('open_season', client.chat_id)
     return rse.tmpl_send('apps/seasons/templates/message-season-general.xml', {
+        'is_prize_bought': is_prize_bought,
+        'client': client,
+        'season': season
+    })
+
+
+async def season_open_message_handler(_, user: aiogram.types.User):
+    """ ... """
+
+    client, _ = Client.get_or_register(user.id)
+    season = Season.get_current()
+
+    if season is None or season.current_prize is None:
+        return rse.tmpl_send('apps/seasons/templates/message-season-not-found.xml', {})
+
+    is_prize_bought = season.current_prize.is_bought_by_client(client.chat_id)
+    Statistics.record('open_season', client.chat_id)
+    return rse.tmpl_edit('apps/seasons/templates/message-season-general.xml', {
         'is_prize_bought': is_prize_bought,
         'client': client,
         'season': season
@@ -90,6 +108,7 @@ async def season_invite_handler(_, user: aiogram.types.User):
 
 __all__ = (
     'season_general_message_handler',
+    'season_open_message_handler',
     'season_help_handler',
     'season_invite_handler',
     'season_buy_prize_handler',

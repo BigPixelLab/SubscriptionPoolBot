@@ -225,6 +225,8 @@ async def action_notify(
             if do_raise:
                 raise
 
+        await asyncio.sleep(0.5)
+
     await on_completion(succeeded, len(receivers))
 
 

@@ -36,11 +36,20 @@ botpiska_router.message(
     F.text.lower() == "назад"
 )(handlers.previous_state_handler)
 
-
 # Запрос "Поддержка"
 botpiska_router.message(
     F.text.lower() == "поддержка"
 )(handlers.support_message_handler)
+
+# Запрос "Купон"
+botpiska_router.message(
+    F.text.lower() == "купон"
+)(handlers.coupon_message_handler)
+
+# Деактивация купона
+botpiska_router.callback_query(
+    F.data == 'coupon-deactivate'
+)(handlers.coupon_deactivate_handler)
 
 # Вывод полного списка товаров
 botpiska_router.message(
