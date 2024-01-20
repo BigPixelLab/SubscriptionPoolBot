@@ -11,7 +11,7 @@ from apps.botpiska.models import Subscription
 from apps.statistics.models import Statistics
 
 
-async def buy_button_handler(_, callback_data: callbacks.BuyButtonCallbackData, user:aiogram.types.User):
+async def buy_button_handler(_, callback_data: callbacks.BuyButtonCallbackData, user: aiogram.types.User):
     """ ... """
 
     user = aiogram.types.User.get_current()

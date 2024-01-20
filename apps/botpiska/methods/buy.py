@@ -38,7 +38,7 @@ async def _order_wrapper(function, user: aiogram.types.User) -> Response:
         )
 
     # Получение статуса счёта (в DEBUG режиме всегда 'PAID')
-    status = settings.DEBUG and 'PAID' or bill.status.value
+    status = 'PAID' if settings.DEBUG else qiwi_bill.status.value
     # Счёт не оплачен - предупреждаем, что нужно оплатить, чтобы продолжить
     if status == 'WAITING':
         status_message = BILL_STATUSES['WAITING']
