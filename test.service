@@ -1,7 +1,0 @@
-[Service]
-WorkingDirectory= /root/SubscriptionPoolBot
-User=root
-ExecStart=/usr/bin/python3 main.py
-
-[Install]
-WantedBy=multi-user.target
