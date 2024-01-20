@@ -2,17 +2,20 @@
 from __future__ import annotations
 
 import aiogram
+from aiogram.types import WebAppInfo, InlineKeyboardButton
 
 import gls
 import pilgram
 import response_system as rs
 import response_system_extensions as rse
 import settings
+import template
 from apps.botpiska import images
 from apps.botpiska import methods as botpiska_methods
 from apps.botpiska.methods.create_qiwi_bill import create_qiwi_bill
 from apps.botpiska.models import Subscription, Bill, Client
 from apps.coupons import methods as coupons_methods
+from message_render import MessageRender
 from response_system import Response
 
 
@@ -114,13 +117,20 @@ async def send_bill(
 
     is_gifts_allowed = coupon is None or coupon.type.allows_gifts
 
+    tmpl: MessageRender = template.render('apps/botpiska/templates/message-bill.xml', {
+        'bill-image': bill_image,
+        'subscription': subscription,
+        'bill': qiwi_bill,
+        'is_gifts_allowed': is_gifts_allowed
+    }).extract()
+
+    tmpl.keyboard.inline_keyboard.insert(0, [InlineKeyboardButton(
+        text='Оплатить',
+        web_app=WebAppInfo(url=qiwi_bill.pay_url)
+    )])
+
     return (
-        rse.tmpl_send('apps/botpiska/templates/message-bill.xml', {
-            'bill-image': bill_image,
-            'subscription': subscription,
-            'bill': qiwi_bill,
-            'is_gifts_allowed': is_gifts_allowed
-        }, on_success=register_bill)
+        rs.send(tmpl, on_success=register_bill)
     )
 
 __all__ = ('send_bill',)
