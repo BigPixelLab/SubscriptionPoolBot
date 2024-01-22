@@ -1,5 +1,7 @@
 <messages>
     <message if="coupon is not None">
+        <img src.rs="{__dir__}/resources/BANNER-PLACEHOLDER.png"/>
+
         <heading> АКТИВНЫЙ КУПОН: 🎟 {coupon.code} </heading>
         <section>
             Предоставляет скидку {coupon.type.discount}% на
@@ -16,6 +18,8 @@
     </message>
 
     <message else="">
+        <img src.rs="{__dir__}/resources/BANNER-PLACEHOLDER.png"/>
+
         <heading> НЕТ АКТИВНОГО КУПОНА </heading>
         <section>
             Участвуйте в акциях 🎪, ищите у наших партнёров 💼 или

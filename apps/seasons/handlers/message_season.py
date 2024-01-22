@@ -84,7 +84,8 @@ async def season_buy_prize_handler(_, user: aiogram.types.User, callback_data: c
             'season': season
         })
         + rse.tmpl_send('apps/seasons/templates/message-season-prize.xml', {
-            'coupon_id': coupon.code
+            'deep-link': f'https://t.me/{settings.BOT_NAME}?start={coupon.code}',
+            'prize': season.current_prize
         })
     )
 
